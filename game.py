@@ -1,15 +1,18 @@
 import pygame
 
 from engine.board import Board
-from gui.constants import BLACK, WHITE, BLUE
+from gui.panel import Panel
 from gui.drawnobject import DrawnObject
+from gui.constants import WHITE, BLUE
 
 
 class Game(DrawnObject):
     def __init__(self) -> None:
         super().__init__()
+        self.update()
+
         self.board = Board()
-        self.load_images()
+        self.panel = Panel()
 
         self.player_is_white = True
         self.white_pov = self.player_is_white
@@ -19,13 +22,14 @@ class Game(DrawnObject):
         self.load_images()
 
     def get_x(self, col: int | float) -> int:
-        return round(self.x_padd+self.square_size*col)
+        return round(self.x_padd + self.square_size * col)
 
     def get_y(self, row: int | float) -> int:
-        return round(self.y_padd+self.square_size*row)
+        return round(self.y_padd + self.square_size * row)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
-        screen.fill(BLACK)
+        screen.fill(WHITE)
+        self.panel.draw(screen)
 
         # draw the checkerboard
         for rank in range(8):
