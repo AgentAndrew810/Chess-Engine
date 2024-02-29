@@ -7,6 +7,7 @@ from gui.drawnobject import DrawnObject
 
 class Game(DrawnObject):
     def __init__(self) -> None:
+        super().__init__()
         self.board = Board()
         self.load_images()
 
@@ -14,19 +15,14 @@ class Game(DrawnObject):
         self.white_pov = self.player_is_white
 
     def update(self) -> None:
-        print("here")
         # reload and resize image on window size changes
         self.load_images()
 
     def get_x(self, col: int | float) -> int:
-        return round(
-            self.x_padd + self.square_size * 3 + self.padd + self.square_size * col
-        )
+        return round(self.x_padd+self.square_size*col)
 
     def get_y(self, row: int | float) -> int:
-        return round(
-            self.y_padd + self.square_size + self.padd + self.square_size * row
-        )
+        return round(self.y_padd+self.square_size*row)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(BLACK)
@@ -77,6 +73,6 @@ class Game(DrawnObject):
 
         # resize each image to square_size
         for name, image in self.images.items():
-            self.images[name] = pygame.transform.scale(
+            self.images[name] = pygame.transform.smoothscale(
                 image, (self.square_size, self.square_size)
             )
