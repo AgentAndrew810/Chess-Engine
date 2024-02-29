@@ -1,10 +1,10 @@
 # the default width / height of the window
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 840
+SCREEN_HEIGHT = 720
 
 # the minimum width / height of the window
-MIN_WIDTH = 400
-MIN_HEIGHT = 300
+MIN_WIDTH = 410
+MIN_HEIGHT = 360
 
 # colours
 BLACK = (0, 0, 0)
