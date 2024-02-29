@@ -1,8 +1,8 @@
 import pygame
 
-from game.game import Game
-from game.drawnobject import DrawnObject
-from game.constants import SCREEN_WIDTH, SCREEN_HEIGHT, MIN_WIDTH, MIN_HEIGHT
+from game import Game
+from gui.drawnobject import DrawnObject
+from gui.constants import SCREEN_WIDTH, SCREEN_HEIGHT, MIN_WIDTH, MIN_HEIGHT
 
 # pygame setup
 pygame.init()
