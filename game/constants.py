@@ -8,5 +8,5 @@ MIN_HEIGHT = 300
 
 # colours
 BLACK = (0, 0, 0)
-BLUE = (97, 153, 190)
 WHITE = (215, 222, 230)
+BLUE = (97, 153, 190)
