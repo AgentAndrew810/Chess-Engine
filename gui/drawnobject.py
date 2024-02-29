@@ -1,6 +1,6 @@
 class DrawnObject:
     _instances = []
-    ratio = 4 / 3
+    ratio = 21 / 18
 
     def __init__(self) -> None:
         self._instances.append(self)
@@ -17,7 +17,7 @@ class DrawnObject:
             height = round(width / cls.ratio)
 
         # use the height and width to calculate other sizes
-        cls.padd = round(width / 32)
+        cls.padd = round(width / 21)
         cls.square_size = cls.padd * 2
         cls.board_size = cls.square_size * 8
 
