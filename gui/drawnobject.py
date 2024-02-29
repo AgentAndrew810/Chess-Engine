@@ -1,9 +1,9 @@
 class DrawnObject:
-    _instances = set()
+    _instances = []
     ratio = 4 / 3
 
     def __init__(self) -> None:
-        self._instances.add(self)
+        self._instances.append(self)
 
     @classmethod
     def set_sizes(cls, screen_width: int, screen_height: int) -> None:
