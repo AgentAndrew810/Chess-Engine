@@ -3,7 +3,7 @@ import pygame
 from engine.board import Board
 from gui.panel import Panel
 from gui.drawnobject import DrawnObject
-from gui.constants import WHITE, BLUE
+from gui.constants import BLACK, WHITE, BLUE
 
 
 class Game(DrawnObject):
@@ -57,6 +57,13 @@ class Game(DrawnObject):
 
             if piece not in " .":
                 screen.blit(self.images[piece], (self.get_x(file), self.get_y(rank)))
+
+        pygame.draw.rect(
+            screen,
+            BLACK,
+            (self.x_padd, self.y_padd, self.board_size, self.board_size),
+            self.line_size,
+        )
 
     def load_images(self) -> None:
         # load each piece where the key is the char stored in the board
