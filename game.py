@@ -3,7 +3,7 @@ import pygame
 from engine.board import Board
 from gui.panel import Panel
 from gui.drawnobject import DrawnObject
-from gui.constants import BLACK, WHITE, LIGHT, DARK
+from gui.constants import BLACK, LIGHT, DARK
 
 
 class Game(DrawnObject):
@@ -66,7 +66,7 @@ class Game(DrawnObject):
 
         pygame.draw.rect(
             screen,
-            WHITE,
+            (0, 0, 0),
             (self.x_padd, self.y_padd, self.board_size, self.board_size),
             self.line_size,
         )
