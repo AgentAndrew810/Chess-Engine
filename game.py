@@ -3,7 +3,7 @@ import pygame
 from engine.board import Board
 from gui.panel import Panel
 from gui.drawnobject import DrawnObject
-from gui.constants import BLACK, WHITE, BLUE
+from gui.constants import BLACK, WHITE, LIGHT, DARK
 
 
 class Game(DrawnObject):
@@ -28,13 +28,13 @@ class Game(DrawnObject):
         return round(self.y_padd + self.square_size * row)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
-        screen.fill(WHITE)
+        screen.fill(BLACK)
         self.panel.draw(screen)
 
         # draw the checkerboard
         for rank in range(8):
             for file in range(8):
-                colour = WHITE if (rank + file) % 2 == 0 else BLUE
+                colour = LIGHT if (rank + file) % 2 == 0 else DARK
 
                 # draw the square
                 pygame.draw.rect(
@@ -66,7 +66,7 @@ class Game(DrawnObject):
 
         pygame.draw.rect(
             screen,
-            BLACK,
+            WHITE,
             (self.x_padd, self.y_padd, self.board_size, self.board_size),
             self.line_size,
         )
