@@ -7,6 +7,7 @@ MIN_WIDTH = 410
 MIN_HEIGHT = 360
 
 # colours
-BLACK = (0, 0, 0)
-WHITE = (215, 222, 230)
-BLUE = (97, 153, 190)
+WHITE = (255, 255, 255)
+BLACK = (25, 23, 20)
+LIGHT = (205, 212, 220)
+DARK = (107, 163, 210)
