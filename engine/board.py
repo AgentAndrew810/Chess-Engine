@@ -1,4 +1,12 @@
-from .constants import STARTING_BOARD
+STARTING_BOARD = (
+    " " * 20
+    + " rnbqkbnr "
+    + " pppppppp "
+    + " ........ " * 4
+    + " PPPPPPPP "
+    + " RNBQKBNR "
+    + " " * 20
+)
 
 
 class Board:
