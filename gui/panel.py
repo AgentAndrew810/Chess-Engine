@@ -1,7 +1,7 @@
 import pygame
 
 from .drawnobject import DrawnObject
-from .constants import BLACK
+from .constants import WHITE
 
 
 class Panel(DrawnObject):
@@ -17,5 +17,8 @@ class Panel(DrawnObject):
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         pygame.draw.rect(
-            screen, BLACK, (self.x, self.y, self.width, self.height), self.line_size
+            screen,
+            WHITE,
+            (self.x, self.y, self.width, self.height),
+            self.line_size,
         )
