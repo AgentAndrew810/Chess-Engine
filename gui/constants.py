@@ -9,5 +9,5 @@ MIN_HEIGHT = 360
 # colours
 WHITE = (255, 255, 255)
 BLACK = (25, 23, 20)
-LIGHT = (205, 212, 220)
-DARK = (77, 140, 196)
+LIGHT = (237, 237, 237)
+DARK = (48, 93, 113)
