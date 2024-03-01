@@ -56,7 +56,13 @@ class Game(DrawnObject):
             file = pos % 10 - 1
 
             if piece not in " .":
-                screen.blit(self.images[piece], (self.get_x(file), self.get_y(rank)))
+                screen.blit(
+                    self.images[piece],
+                    (
+                        self.get_x(file) + self.line_size,
+                        self.get_y(rank) + self.line_size,
+                    ),
+                )
 
         pygame.draw.rect(
             screen,
@@ -85,5 +91,5 @@ class Game(DrawnObject):
         # resize each image to square_size
         for name, image in self.images.items():
             self.images[name] = pygame.transform.smoothscale(
-                image, (self.square_size, self.square_size)
+                image, (self.piece_size, self.piece_size)
             )
