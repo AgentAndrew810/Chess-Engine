@@ -21,6 +21,7 @@ class DrawnObject:
         cls.square_size = cls.padd * 2
         cls.board_size = cls.square_size * 8
         cls.line_size = round(cls.padd / 10)
+        cls.piece_size = cls.square_size - cls.line_size * 2
 
         # calculate the x_padd and y_padd based on if the height or width was adjusted
         # add extra x_padd or y_padd depending on if the width or height is bigger than ratio
