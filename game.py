@@ -13,8 +13,8 @@ class Game(DrawnObject):
 
         self.board = Board()
         self.panel = Panel()
-        
-        self.held_piece = None
+
+        self.held_piece = " "
         self.player_is_white = True
         self.white_pov = self.player_is_white
 
@@ -32,14 +32,15 @@ class Game(DrawnObject):
         return (rank, file) if self.white_pov else (7 - rank, 7 - file)
 
     def grab_piece(self, x: int, y: int) -> None:
-        print()
+        print(x, y)
         if (
             self.x_padd <= x <= self.x_padd + self.board_size
             and self.y_padd <= y <= self.y_padd + self.board_size
         ):
             # get the rank and file
-            rank = (x - self.x_padd) // 8
-            file = (y - self.y_padd) // 8
+            rank = (x - self.x_padd) // self.square_size
+            file = (y - self.y_padd) // self.square_size
+            print(rank, file)
 
             # flip the rank and file if black's pov
             rank, file = self.flip_rank_and_file(rank, file)
@@ -86,9 +87,9 @@ class Game(DrawnObject):
                 )
 
         # draw held piece
-        if self.held_piece:
+        if self.held_piece.isalpha():
             x, y = pygame.mouse.get_pos()
-            screen.blit(self.images[piece], (x, y))
+            screen.blit(self.images[self.held_piece], (x, y))
 
         # draw board border
         pygame.draw.rect(
