@@ -14,9 +14,10 @@ class Game(DrawnObject):
         self.board = Board()
         self.panel = Panel()
 
-        self.held_piece = " "
+        self.held_piece = ""
+        self.held_piece_pos = None
         self.player_is_white = True
-        self.white_pov = self.player_is_white
+        self.white_pov = not self.player_is_white
 
     def update(self) -> None:
         # reload and resize image on window size changes
@@ -32,22 +33,34 @@ class Game(DrawnObject):
         return (rank, file) if self.white_pov else (7 - rank, 7 - file)
 
     def grab_piece(self, x: int, y: int) -> None:
-        print(x, y)
-        if (
-            self.x_padd <= x <= self.x_padd + self.board_size
-            and self.y_padd <= y <= self.y_padd + self.board_size
-        ):
-            # get the rank and file
-            rank = (x - self.x_padd) // self.square_size
-            file = (y - self.y_padd) // self.square_size
-            print(rank, file)
+        # check if the mouse is outside the board
+        if not (self.x_padd < x < self.x_padd + self.board_size):
+            return
+        if not (self.y_padd < y < self.y_padd + self.board_size):
+            return
 
-            # flip the rank and file if black's pov
-            rank, file = self.flip_rank_and_file(rank, file)
+        # get the rank and file grabbed and their offsets
+        rank, self.y_offset = divmod(y - self.y_padd, self.square_size)
+        file, self.x_offset = divmod(x - self.x_padd, self.square_size)
 
-            # convert rank and file to pos in list
-            pos = (rank + 2) * 10 + file + 1
-            self.held_piece = self.board.board[pos]
+        # flip rank and file if playing as black
+        rank, file = self.flip_rank_and_file(rank, file)
+        piece = self.board.board[(rank + 2) * 10 + file + 1]
+
+        # check if grabbing the correct colour
+        if piece.isupper() == self.board.white_move:
+            self.held_piece_pos = (rank, file)
+            self.held_piece = piece
+
+    def drop_piece(self, x: int, y: int) -> None:
+        # check if the mouse is outside the board
+        if not (self.x_padd < x < self.x_padd + self.board_size):
+            return
+        if not (self.y_padd < y < self.y_padd + self.board_size):
+            return
+
+        self.held_piece = ""
+        self.held_piece_pos = None
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(BLACK)
@@ -77,7 +90,7 @@ class Game(DrawnObject):
                 )
 
             # draw piece
-            if piece.isalpha() and piece != self.held_piece:
+            if piece.isalpha() and (rank, file) != self.held_piece_pos:
                 screen.blit(
                     self.images[piece],
                     (
@@ -89,7 +102,9 @@ class Game(DrawnObject):
         # draw held piece
         if self.held_piece.isalpha():
             x, y = pygame.mouse.get_pos()
-            screen.blit(self.images[self.held_piece], (x, y))
+            screen.blit(
+                self.images[self.held_piece], (x - self.x_offset, y - self.y_offset)
+            )
 
         # draw board border
         pygame.draw.rect(
