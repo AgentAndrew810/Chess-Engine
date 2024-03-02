@@ -34,6 +34,9 @@ def main() -> None:
                 # adjust the screen and reset the sizes in each object
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
                 DrawnObject.set_sizes(width, height)
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                game.grab_piece(*event.pos)
 
         # draw everything to the screen
         game.draw(screen)
