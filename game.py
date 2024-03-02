@@ -27,26 +27,15 @@ class Game(DrawnObject):
     def get_y(self, row: int | float) -> int:
         return round(self.y_padd + self.square_size * row)
 
+    def flip_rank_and_file(self, rank: int, file: int) -> tuple[int, int]:
+        if self.white_pov:
+            return rank, file
+        else:
+            return 7 - rank, 7 - file
+
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(BLACK)
         self.panel.draw(screen)
-
-        # draw the checkerboard
-        for rank in range(8):
-            for file in range(8):
-                colour = LIGHT if (rank + file) % 2 == 0 else DARK
-
-                # draw the square
-                pygame.draw.rect(
-                    screen,
-                    colour,
-                    (
-                        self.get_x(file),
-                        self.get_y(rank),
-                        self.square_size,
-                        self.square_size,
-                    ),
-                )
 
         # draw each piece
         for pos in range(120):
@@ -55,14 +44,31 @@ class Game(DrawnObject):
             rank = pos // 10 - 2
             file = pos % 10 - 1
 
-            if piece not in " .":
-                screen.blit(
-                    self.images[piece],
+            # flip the rank and file if black's pov
+            rank, file = self.flip_rank_and_file(rank, file)
+
+            if piece != " ":
+                # draw the square
+                pygame.draw.rect(
+                    screen,
+                    LIGHT if (rank + file) % 2 == 0 else DARK,
                     (
-                        self.get_x(file) + self.line_size,
-                        self.get_y(rank) + self.line_size,
+                        self.get_x(file),
+                        self.get_y(rank),
+                        self.square_size,
+                        self.square_size,
                     ),
                 )
+
+                # draw piece
+                if piece.isalpha():
+                    screen.blit(
+                        self.images[piece],
+                        (
+                            self.get_x(file) + self.line_size,
+                            self.get_y(rank) + self.line_size,
+                        ),
+                    )
 
         pygame.draw.rect(
             screen,
