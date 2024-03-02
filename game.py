@@ -13,7 +13,8 @@ class Game(DrawnObject):
 
         self.board = Board()
         self.panel = Panel()
-
+        
+        self.held_piece = None
         self.player_is_white = True
         self.white_pov = self.player_is_white
 
@@ -28,10 +29,24 @@ class Game(DrawnObject):
         return round(self.y_padd + self.square_size * row)
 
     def flip_rank_and_file(self, rank: int, file: int) -> tuple[int, int]:
-        if self.white_pov:
-            return rank, file
-        else:
-            return 7 - rank, 7 - file
+        return (rank, file) if self.white_pov else (7 - rank, 7 - file)
+
+    def grab_piece(self, x: int, y: int) -> None:
+        print()
+        if (
+            self.x_padd <= x <= self.x_padd + self.board_size
+            and self.y_padd <= y <= self.y_padd + self.board_size
+        ):
+            # get the rank and file
+            rank = (x - self.x_padd) // 8
+            file = (y - self.y_padd) // 8
+
+            # flip the rank and file if black's pov
+            rank, file = self.flip_rank_and_file(rank, file)
+
+            # convert rank and file to pos in list
+            pos = (rank + 2) * 10 + file + 1
+            self.held_piece = self.board.board[pos]
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(BLACK)
@@ -60,16 +75,22 @@ class Game(DrawnObject):
                     ),
                 )
 
-                # draw piece
-                if piece.isalpha():
-                    screen.blit(
-                        self.images[piece],
-                        (
-                            self.get_x(file) + self.line_size,
-                            self.get_y(rank) + self.line_size,
-                        ),
-                    )
+            # draw piece
+            if piece.isalpha() and piece != self.held_piece:
+                screen.blit(
+                    self.images[piece],
+                    (
+                        self.get_x(file) + self.line_size,
+                        self.get_y(rank) + self.line_size,
+                    ),
+                )
 
+        # draw held piece
+        if self.held_piece:
+            x, y = pygame.mouse.get_pos()
+            screen.blit(self.images[piece], (x, y))
+
+        # draw board border
         pygame.draw.rect(
             screen,
             (0, 0, 0),
