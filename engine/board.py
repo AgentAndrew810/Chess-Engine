@@ -59,9 +59,9 @@ class Board:
                         continue
 
                     if new_piece == ".":
-                        moves.append(Move(pos, dest, False, False))
+                        moves.append(Move(pos, dest, False))
                     elif new_piece.isupper() != piece.isupper():
-                        moves.append(Move(pos, dest, True, False))
+                        moves.append(Move(pos, dest, True))
 
                     if piece.upper() in "BRQ":
                         dest += dir
@@ -72,6 +72,8 @@ class Board:
                                 break
 
                             if new_piece == ".":
-                                moves.append(Move(pos, dest, False, False))
+                                moves.append(Move(pos, dest, False))
                             else:
-                                moves.append(Move(pos, dest, True, False))
+                                moves.append(Move(pos, dest, True))
+
+        return moves
