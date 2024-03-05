@@ -1,7 +1,7 @@
 import pygame
 
 from controller import GameController
-from gui import (
+from game import (
     DrawnObject,
     MIN_WIDTH,
     MIN_HEIGHT,
