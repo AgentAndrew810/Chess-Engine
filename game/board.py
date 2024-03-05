@@ -55,7 +55,7 @@ class Board(DrawnObject):
                 )
 
             # draw piece
-            if piece.isalpha() and (rank, file) != held_piece:
+            if piece.isalpha() and (rank, file) != (held_piece.rank, held_piece.file):
                 screen.blit(
                     self.images[piece],
                     (

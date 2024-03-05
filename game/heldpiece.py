@@ -12,6 +12,6 @@ class HeldPiece(DrawnObject):
         self.piece = piece
 
     def drop(self) -> None:
-        self.rank = 0
-        self.file = 0
+        self.rank = -1
+        self.file = -1
         self.piece = ""
