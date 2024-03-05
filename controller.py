@@ -4,7 +4,7 @@ import engine
 import gui
 
 
-class Controller(gui.DrawnObject):
+class GameController(gui.DrawnObject):
     def __init__(self) -> None:
         super().__init__()
 
