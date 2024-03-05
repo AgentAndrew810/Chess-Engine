@@ -47,9 +47,9 @@ class GameController(gui.DrawnObject):
     def drop_piece(self, x: int, y: int) -> None:
         # check if the mouse is outside the board
         if not (self.x_padd < x < self.x_padd + self.board_size):
-            return
+            self.held_piece = None
         if not (self.y_padd < y < self.y_padd + self.board_size):
-            return
+            self.held_piece = None
 
         self.held_piece = None
 
