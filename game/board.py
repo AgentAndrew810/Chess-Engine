@@ -1,6 +1,8 @@
 import pygame
 
 import engine
+import utils
+from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
 from .constants import LIGHT, DARK
 
@@ -20,17 +22,12 @@ class Board(DrawnObject):
     def get_y(self, row: int | float) -> int:
         return round(self.y_padd + self.square_size * row)
 
-    def flip_rank_and_file(
-        self, rank: int, file: int, white_pov: bool
-    ) -> tuple[int, int]:
-        return (rank, file) if white_pov else (7 - rank, 7 - file)
-
     def draw(
         self,
         screen: pygame.surface.Surface,
         board: engine.Board,
         white_pov: bool,
-        held_piece: tuple[int, int] | None,
+        held_piece: HeldPiece,
         x_offset: int,
         y_offset: int,
     ) -> None:
@@ -42,7 +39,7 @@ class Board(DrawnObject):
             file = pos % 10 - 1
 
             # flip the rank and file if black's pov
-            rank, file = self.flip_rank_and_file(rank, file, white_pov)
+            rank, file = utils.flip_coordinates(rank, file, white_pov)
 
             if not piece.isspace():
                 # draw the square
@@ -68,11 +65,10 @@ class Board(DrawnObject):
                 )
 
         # draw held piece
-        if held_piece is not None:
+        if held_piece.piece:
             x, y = pygame.mouse.get_pos()
-            rank, file = held_piece
             screen.blit(
-                self.images[board.board[(rank + 2) * 10 + file + 1]],
+                self.images[held_piece.piece],
                 (x - x_offset, y - y_offset),
             )
 
