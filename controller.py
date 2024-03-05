@@ -1,7 +1,7 @@
 import pygame
 
-import engine
 import gui
+import engine
 
 
 class GameController(gui.DrawnObject):
@@ -22,6 +22,9 @@ class GameController(gui.DrawnObject):
         rank, file = divmod(pos, 10)
         return rank - 2, file - 1
 
+    def flip_rank_and_file(self, rank: int, file: int) -> tuple[int, int]:
+        return (rank, file) if self.white_pov else (7 - rank, 7 - file)
+
     def grab_piece(self, x: int, y: int) -> None:
         # check if the mouse is outside the board
         if not (self.x_padd < x < self.x_padd + self.board_size):
@@ -34,7 +37,7 @@ class GameController(gui.DrawnObject):
         file, self.x_offset = divmod(x - self.x_padd, self.square_size)
 
         # flip rank and file if playing as black
-        # rank, file = self.flip_rank_and_file(rank, file)
+        rank, file = self.flip_rank_and_file(rank, file)
         piece = self.board_representation.board[(rank + 2) * 10 + file + 1]
 
         # check if grabbing the correct colour

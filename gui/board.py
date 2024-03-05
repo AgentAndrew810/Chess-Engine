@@ -1,6 +1,5 @@
 import pygame
 
-
 import engine
 from .drawnobject import DrawnObject
 from .constants import LIGHT, DARK
