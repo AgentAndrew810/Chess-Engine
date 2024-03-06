@@ -1,17 +1,16 @@
-from .drawnobject import DrawnObject
-
-
-class HeldPiece(DrawnObject):
+class HeldPiece:
     def __init__(self) -> None:
-        super().__init__()
-        self.drop()
+        self.holding = False
 
     def grab(self, rank: int, file: int, piece: str) -> None:
+        self.holding = True
         self.rank = rank
         self.file = file
         self.piece = piece
 
     def drop(self) -> None:
-        self.rank = -1
-        self.file = -1
-        self.piece = ""
+        self.holding = False
+
+    @property
+    def position(self) -> tuple[int, int]:
+        return (self.rank, self.file) if self.holding else (-1, -1)
