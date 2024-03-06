@@ -31,46 +31,39 @@ class Board(DrawnObject):
         x_offset: int,
         y_offset: int,
     ) -> None:
-        # draw each piece
-        for pos in range(120):
-            # get the piece, rank, and file
-            piece = board.board[pos]
-            rank = pos // 10 - 2
-            file = pos % 10 - 1
+        for rank in range(8):
+            for file in range(8):
+                # get the pos and piece
+                pos = utils.get_pos(rank, file, white_pov)
+                piece = board.board[pos]
 
-            # flip the rank and file if black's pov
-            rank, file = utils.flip_coordinates(rank, file, white_pov)
+                # draw background square
+                if piece != " ":
+                    pygame.draw.rect(
+                        screen,
+                        LIGHT if (rank + file) % 2 == 0 else DARK,
+                        (
+                            self.get_x(file),
+                            self.get_y(rank),
+                            self.square_size,
+                            self.square_size,
+                        ),
+                    )
 
-            if not piece.isspace():
-                # draw the square
-                pygame.draw.rect(
-                    screen,
-                    LIGHT if (rank + file) % 2 == 0 else DARK,
-                    (
-                        self.get_x(file),
-                        self.get_y(rank),
-                        self.square_size,
-                        self.square_size,
-                    ),
-                )
-
-            # draw piece
-            if piece.isalpha() and (rank, file) != (held_piece.rank, held_piece.file):
-                screen.blit(
-                    self.images[piece],
-                    (
-                        self.get_x(file) + self.line_size,
-                        self.get_y(rank) + self.line_size,
-                    ),
-                )
+                # draw piece
+                if piece.isalpha() and (rank, file) != held_piece.position:
+                    screen.blit(
+                        self.images[piece],
+                        (
+                            self.get_x(file) + self.line_size,
+                            self.get_y(rank) + self.line_size,
+                        ),
+                    )
 
         # draw held piece
-        if held_piece.piece:
+        if held_piece.holding:
             x, y = pygame.mouse.get_pos()
-            screen.blit(
-                self.images[held_piece.piece],
-                (x - x_offset, y - y_offset),
-            )
+            screen.blit(self.images[held_piece.piece], (x - x_offset, y - y_offset))
 
         # draw board border
         pygame.draw.rect(
