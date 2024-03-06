@@ -15,7 +15,7 @@ class GameController(game.DrawnObject):
         self.held_piece = game.HeldPiece()
 
         self.player_is_white = True
-        self.white_pov = not self.player_is_white
+        self.white_pov = True
         self.x_offset = 0
         self.y_offset = 0
 
@@ -29,14 +29,13 @@ class GameController(game.DrawnObject):
         # get the rank and file grabbed and their offsets
         rank, self.y_offset = divmod(y - self.y_padd, self.square_size)
         file, self.x_offset = divmod(x - self.x_padd, self.square_size)
-        rank, file = utils.flip_coordinates(rank, file, self.white_pov)
 
-        # get the piece and position
-        pos = utils.get_pos(rank, file)
+        # get the pos and piece
+        pos = utils.get_pos(rank, file, self.white_pov)
         piece = self.board.board[pos]
 
         # check if grabbing the correct colour
-        if piece.isupper() == self.board.white_move:
+        if piece.isupper() == self.board.white_move and piece.isalpha():
             self.held_piece.grab(rank, file, piece)
 
     def drop_piece(self, x: int, y: int) -> None:
