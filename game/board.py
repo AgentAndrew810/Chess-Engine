@@ -4,7 +4,7 @@ import engine
 import utils
 from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
-from .constants import LIGHT, DARK
+from .constants import LIGHT, DARK, PINK
 
 
 class Board(DrawnObject):
@@ -50,15 +50,36 @@ class Board(DrawnObject):
                         ),
                     )
 
-                # draw piece
-                if piece.isalpha() and (rank, file) != held_piece.position:
-                    screen.blit(
-                        self.images[piece],
-                        (
-                            self.get_x(file) + self.line_size,
-                            self.get_y(rank) + self.line_size,
-                        ),
-                    )
+                if piece.isalpha():
+                    # draw the piece
+                    if (rank, file) != held_piece.position:
+                        screen.blit(
+                            self.images[piece],
+                            (
+                                self.get_x(file) + self.line_size,
+                                self.get_y(rank) + self.line_size,
+                            ),
+                        )
+
+                if pos in held_piece.moves:
+                    # determine the radius and width based on if its attacking a piece
+                    if piece.isalpha():
+                        # circle outline on piece
+                        radius = self.piece_size // 2
+                        width = self.line_size
+                    else:
+                        # dot on square
+                        radius = self.piece_size // 6
+                        width = 0
+
+                    # create a surface and draw the circle on it
+                    surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+                    pygame.draw.circle(surface, PINK, (radius, radius), radius, width)
+
+                    # draw the surface onto the screen
+                    x = self.get_x(file + 0.5) - radius
+                    y = self.get_y(rank + 0.5) - radius
+                    screen.blit(surface, (x, y))
 
         # draw held piece
         if held_piece.holding:
