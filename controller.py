@@ -13,9 +13,10 @@ class GameController(game.DrawnObject):
         self.board_gui = game.Board()
         self.panel = game.Panel()
         self.held_piece = game.HeldPiece()
+        self.next_moves = engine.get_moves(self.board)
 
         self.player_is_white = True
-        self.white_pov = True
+        self.white_pov = self.player_is_white
         self.x_offset = 0
         self.y_offset = 0
 
@@ -36,7 +37,7 @@ class GameController(game.DrawnObject):
 
         # check if grabbing the correct colour
         if piece.isupper() == self.board.white_move and piece.isalpha():
-            self.held_piece.grab(rank, file, piece)
+            self.held_piece.grab(rank, file, piece, self.next_moves)
 
     def drop_piece(self, x: int, y: int) -> None:
         # check if the mouse is outside the board
