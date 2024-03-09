@@ -1,6 +1,6 @@
 from .board import Board
 from .move import Move
-from .constants import OFFSETS
+from .constants import OFFSETS, N, NE, NW, S, SE, SW
 
 
 def get_moves(board: Board) -> list[Move]:
@@ -12,12 +12,25 @@ def get_moves(board: Board) -> list[Move]:
             continue
 
         if piece.upper() == "P":
-            pass
+            # get the destination and piece
+            dir, first_rank = (N, 8) if piece.isupper() else (S, 3)
+            dest = pos + dir
+
+            # add the normal pawn move
+            if board.board[dest] == ".":
+                moves.append(Move(pos, dest, False))
+
+                # if on first rank
+                if pos // 10 == first_rank:
+                    dest += dir
+                    # add the double pawn move
+                    if board.board[dest] == ".":
+                        moves.append(Move(pos, dest, False))
 
         else:
-            for direction in OFFSETS[piece.upper()]:
+            for dir in OFFSETS[piece.upper()]:
                 # get the new destination and piece
-                dest = pos + direction
+                dest = pos + dir
                 new_piece = board.board[dest]
 
                 # if sliding piece
@@ -27,20 +40,18 @@ def get_moves(board: Board) -> list[Move]:
                         if new_piece == " ":
                             break
 
+                        # break if hit piece, otherwise keep going
                         if new_piece == ".":
-                            # add the sliding move and keep going through loop
                             moves.append(Move(pos, dest, False))
-                            dest += direction
+                            dest += dir
                             new_piece = board.board[dest]
                         else:
-                            # add the attacking move then break
                             moves.append(Move(pos, dest, True))
                             break
                 else:
-                    # don't do anything if off the board
                     if new_piece != " ":
                         # add the piece if blank square or opposing colour
                         if new_piece == "." or piece.isupper() != new_piece.isupper():
-                            moves.append(Move(pos, dest, new_piece == "."))
+                            moves.append(Move(pos, dest, new_piece != "."))
 
     return moves
