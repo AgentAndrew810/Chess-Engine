@@ -3,7 +3,7 @@ from .move import Move
 
 # define directions
 N, E, S, W = -10, 1, 10, -1
-NE, NW, SE, SW = N + E, N + W, S + E, S + W
+NE, NW, SE, SW = -9, -11, 11, 9
 
 # define piece offsets
 OFFSETS = {
