@@ -52,7 +52,7 @@ class Board(DrawnObject):
 
                 if piece.isalpha():
                     # draw the piece
-                    if (rank, file) != held_piece.position:
+                    if pos != held_piece.pos:
                         screen.blit(
                             self.images[piece],
                             (
@@ -82,7 +82,7 @@ class Board(DrawnObject):
                     screen.blit(surface, (x, y))
 
         # draw held piece
-        if held_piece.holding:
+        if held_piece.pos:
             x, y = pygame.mouse.get_pos()
             screen.blit(self.images[held_piece.piece], (x - x_offset, y - y_offset))
 
