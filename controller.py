@@ -20,11 +20,16 @@ class GameController(game.DrawnObject):
         self.x_offset = 0
         self.y_offset = 0
 
-    def grab_piece(self, x: int, y: int) -> None:
-        # check if the mouse is outside the board
+    def outside_board(self, x: int, y: int) -> bool:
         if not (self.x_padd < x < self.x_padd + self.board_size):
-            return
-        if not (self.y_padd < y < self.y_padd + self.board_size):
+            return True
+        elif not (self.y_padd < y < self.y_padd + self.board_size):
+            return True
+
+        return False
+
+    def grab_piece(self, x: int, y: int) -> None:
+        if self.outside_board(x, y):
             return
 
         # get the rank and file grabbed and their offsets
@@ -37,14 +42,11 @@ class GameController(game.DrawnObject):
 
         # check if grabbing the correct colour
         if piece.isupper() == self.board.white_move and piece.isalpha():
-            self.held_piece.grab(rank, file, piece, self.next_moves)
+            self.held_piece.grab(pos, piece, self.next_moves)
 
     def drop_piece(self, x: int, y: int) -> None:
-        # check if the mouse is outside the board
-        if not (self.x_padd < x < self.x_padd + self.board_size):
-            pass
-        if not (self.y_padd < y < self.y_padd + self.board_size):
-            pass
+        if self.outside_board(x, y):
+            return
 
         self.held_piece.drop()
 
