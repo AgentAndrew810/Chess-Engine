@@ -1,6 +1,18 @@
 from .board import Board
 from .move import Move
-from .constants import OFFSETS, N, NE, NW, S, SE, SW
+
+# define directions
+N, E, S, W = -10, 1, 10, -1
+NE, NW, SE, SW = N + E, N + W, S + E, S + W
+
+# define piece offsets
+OFFSETS = {
+    "N": (N + NE, N + NW, S + SE, S + SW, E + NE, E + SE, W + NW, W + SW),
+    "B": (NE, NW, SE, SW),
+    "R": (N, E, S, W),
+    "Q": (N, NE, E, SE, S, SW, W, NW),
+    "K": (N, NE, E, SE, S, SW, W, NW),
+}
 
 
 def get_moves(board: Board) -> list[Move]:
@@ -26,6 +38,14 @@ def get_moves(board: Board) -> list[Move]:
                     # add the double pawn move
                     if board.board[dest] == ".":
                         moves.append(Move(pos, dest, False))
+
+            # add attacking moves
+            for dir in (NE, NW) if piece.isupper() else (SE, SW):
+                dest = pos + dir
+                new_piece = board.board[dest]
+
+                if new_piece.isalpha() and piece.isupper() != new_piece.isupper():
+                    moves.append(Move(pos, dest, True))
 
         else:
             for dir in OFFSETS[piece.upper()]:
