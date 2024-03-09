@@ -9,7 +9,7 @@ class GameController(game.DrawnObject):
     def __init__(self) -> None:
         super().__init__()
 
-        self.board = engine.Board()
+        self.board = engine.Board.create()
         self.board_gui = game.Board()
         self.panel = game.Panel()
         self.held_piece = game.HeldPiece()
@@ -41,12 +41,24 @@ class GameController(game.DrawnObject):
         piece = self.board.board[pos]
 
         # check if grabbing the correct colour
-        if piece.isupper() == self.board.white_move and piece.isalpha():
+        if piece.isalpha() and piece.isupper() == self.board.white_move:
             self.held_piece.grab(pos, piece, self.next_moves)
 
     def drop_piece(self, x: int, y: int) -> None:
         if self.outside_board(x, y):
             return
+
+        # get the rank and file
+        rank = (y - self.y_padd) // self.square_size
+        file = (x - self.x_padd) // self.square_size
+
+        # if valid move
+        dest = utils.get_pos(rank, file, self.white_pov)
+        if dest in self.held_piece.moves and self.held_piece.pos:
+            # make the move
+            move = engine.Move(self.held_piece.pos, dest, False)
+            self.board = self.board.make_move(move)
+            self.next_moves = engine.get_moves(self.board)
 
         self.held_piece.drop()
 
