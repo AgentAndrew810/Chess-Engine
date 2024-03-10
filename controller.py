@@ -20,6 +20,10 @@ class GameController(game.DrawnObject):
         self.x_offset = 0
         self.y_offset = 0
 
+    @property
+    def player_turn(self) -> bool:
+        return self.player_is_white == self.board.white_move
+
     def outside_board(self, x: int, y: int) -> bool:
         if not (self.x_padd < x < self.x_padd + self.board_size):
             return True
@@ -61,6 +65,11 @@ class GameController(game.DrawnObject):
             self.next_moves = engine.get_moves(self.board)
 
         self.held_piece.drop()
+
+    def make_computer_move(self) -> None:
+        move = engine.search(self.board)
+        self.board = self.board.make_move(move)
+        self.next_moves = engine.get_moves(self.board)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(game.BLACK)
