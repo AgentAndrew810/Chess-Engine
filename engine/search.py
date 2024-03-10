@@ -1,9 +1,9 @@
 import random
 
-from .get_moves import get_moves
+from .get_legal_moves import get_legal_moves
 from .board import Board
 from .move import Move
 
 
 def search(board: Board) -> Move:
-    return random.choice(get_moves(board))
+    return random.choice(get_legal_moves(board))
