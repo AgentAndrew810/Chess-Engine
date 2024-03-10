@@ -13,7 +13,7 @@ class GameController(game.DrawnObject):
         self.board_gui = game.Board()
         self.panel = game.Panel()
         self.held_piece = game.HeldPiece()
-        self.next_moves = engine.get_moves(self.board)
+        self.next_moves = engine.get_legal_moves(self.board)
 
         self.player_is_white = True
         self.white_pov = self.player_is_white
@@ -62,14 +62,14 @@ class GameController(game.DrawnObject):
             # make the move
             move = engine.Move(self.held_piece.pos, dest, False)
             self.board = self.board.make_move(move)
-            self.next_moves = engine.get_moves(self.board)
+            self.next_moves = engine.get_legal_moves(self.board)
 
         self.held_piece.drop()
 
     def make_computer_move(self) -> None:
         move = engine.search(self.board)
         self.board = self.board.make_move(move)
-        self.next_moves = engine.get_moves(self.board)
+        self.next_moves = engine.get_legal_moves(self.board)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(game.BLACK)
