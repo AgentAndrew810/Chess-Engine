@@ -1,4 +1,5 @@
 import unittest
+import time
 
 import engine
 
@@ -29,3 +30,12 @@ class TestMoveGeneration(unittest.TestCase):
         self.assertEqual(self.get_num_moves(board, 2), 2039)
         self.assertEqual(self.get_num_moves(board, 3), 97862)
         self.assertEqual(self.get_num_moves(board, 4), 4085603)
+
+    def test_time(self) -> None:
+        start = time.time()
+
+        board = engine.Board.create("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+        num_moves = self.get_num_moves(board, 4)
+        self.assertEqual(num_moves, 197281)
+
+        print(f"Time Taken: {time.time()-start}")
