@@ -14,9 +14,55 @@ OFFSETS = {
     "K": (N, NE, E, SE, S, SW, W, NW),
 }
 
+# positions for castling
+A1 = 91
+B1 = 92
+C1 = 93
+D1 = 94
+E1 = 95
+F1 = 96
+G1 = 97
+H1 = 98
+
+A8 = 21
+B8 = 22
+C8 = 23
+D8 = 24
+E8 = 25
+F8 = 26
+G8 = 27
+H8 = 28
+
 
 def get_moves(board: Board) -> list[Move]:
     moves = []
+
+    # castling moves
+    if board.wk:
+        if board.board[F1] == "." and board.board[G1] == "." and board.board[H1] == "R":
+            moves.append(Move(E1, G1, False, True))
+
+    if board.wq:
+        if (
+            board.board[D1] == "."
+            and board.board[C1] == "."
+            and board.board[B1] == "."
+            and board.board[A1] == "R"
+        ):
+            moves.append(Move(E1, C1, False, True))
+
+    if board.bk:
+        if board.board[F8] == "." and board.board[G8] == "." and board.board[H8] == "r":
+            moves.append(Move(E8, G8, False, True))
+
+    if board.bq:
+        if (
+            board.board[D8] == "."
+            and board.board[C8] == "."
+            and board.board[B8] == "."
+            and board.board[A8] == "r"
+        ):
+            moves.append(Move(E8, C8, False, True))
 
     for pos, piece in enumerate(board.board):
         # skip blank squares and wrong colour
