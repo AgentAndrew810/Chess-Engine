@@ -24,8 +24,9 @@ def get_legal_moves(board: Board) -> list[Move]:
             dir = E if move.castling == "K" else W
 
             # don't add move if in check or moving through check
-            if move.pos or move.dest + dir in opp_moves:
+            if move.pos in opp_moves or move.pos + dir in opp_moves:
                 continue
+
         moves.append(move)
-        
+
     return moves
