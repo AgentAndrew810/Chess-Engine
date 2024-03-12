@@ -31,10 +31,12 @@ class Board:
         board[move.pos] = "."
 
         if move.castling == "K":
+            print("King Castling")
             board[move.pos + E] = board[move.dest + E]
             board[move.dest + E] = "."
 
         if move.castling == "Q":
+            print("Queen Castling")
             board[move.pos + W] = board[move.dest + W * 2]
             board[move.dest + W * 2] = "."
 

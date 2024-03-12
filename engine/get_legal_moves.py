@@ -16,20 +16,16 @@ def get_legal_moves(board: Board) -> list[Move]:
 
         opp_moves = [opp_move.dest for opp_move in get_moves(child)]
 
+        # don't add move if opponent can attack king
         if king_loc in opp_moves:
             continue
 
         if move.castling:
-            if move.pos in opp_moves:
+            dir = E if move.castling == "K" else W
+
+            # don't add move if in check or moving through check
+            if move.pos or move.dest + dir in opp_moves:
                 continue
-
-            if move.castling == "K":
-                if move.dest + E in opp_moves:
-                    continue
-
-            if move.castling == "Q":
-                if move.dest + W in opp_moves:
-                    continue
-
         moves.append(move)
+        
     return moves
