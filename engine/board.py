@@ -48,7 +48,7 @@ class Board:
             board[move.pos + E] = board[move.dest + E]
             board[move.dest + E] = "."
 
-        if move.castling == "Q":
+        elif move.castling == "Q":
             board[move.pos + W] = board[move.dest + W * 2]
             board[move.dest + W * 2] = "."
 
@@ -67,16 +67,16 @@ class Board:
         if piece == "K":
             wck, wcq = False, False
 
-        if piece == "k":
+        elif piece == "k":
             bck, bcq = False, False
 
-        if piece == "R":
+        elif piece == "R":
             if move.pos == 98:
                 wck = False
             elif move.pos == 91:
                 wcq = False
 
-        if piece == "r":
+        elif piece == "r":
             if move.pos == 28:
                 bck = False
             elif move.pos == 21:
