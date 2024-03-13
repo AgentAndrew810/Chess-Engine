@@ -12,3 +12,6 @@ OFFSETS = {
     "Q": (N, NE, E, SE, S, SW, W, NW),
     "K": (N, NE, E, SE, S, SW, W, NW),
 }
+
+# all the pieces a pawn can promote to
+PROM_PIECES = ("b", "n", "r", "q")
