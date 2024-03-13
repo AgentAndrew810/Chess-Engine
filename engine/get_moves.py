@@ -16,7 +16,12 @@ def get_moves(board: Board) -> list[Move]:
             dir, first_rank, last_rank = (N, 8, 2) if piece.isupper() else (S, 3, 9)
             dest = pos + dir
 
-            # add the normal pawn move
+            # add en passant moves
+            for side_dir in (E, W):
+                if pos + side_dir == board.ep:
+                    moves.append(Move(pos, pos + dir + side_dir, ep=True))
+
+            # add normal pawn moves
             if board.board[dest] == ".":
                 if dest // 10 != last_rank:
                     moves.append(Move(pos, dest))
@@ -28,14 +33,13 @@ def get_moves(board: Board) -> list[Move]:
                         )
                         moves.append(Move(pos, dest, prom=prom_piece))
 
-                # if on first rank
+                # if on first rank, add the double pawn move
                 if pos // 10 == first_rank:
                     dest += dir
-                    # add the double pawn move
                     if board.board[dest] == ".":
-                        moves.append(Move(pos, dest))
+                        moves.append(Move(pos, dest, double=True))
 
-            # add attacking moves
+            # add pawn attacking moves
             for dir in (NE, NW) if piece.isupper() else (SE, SW):
                 dest = pos + dir
                 new_piece = board.board[dest]
@@ -50,7 +54,6 @@ def get_moves(board: Board) -> list[Move]:
                                 prom_piece.upper() if piece.isupper() else prom_piece
                             )
                             moves.append(Move(pos, dest, prom=prom_piece))
-
         else:
             for dir in OFFSETS[piece.upper()]:
                 # get the new destination and piece
@@ -79,11 +82,11 @@ def get_moves(board: Board) -> list[Move]:
                             moves.append(Move(pos, dest, capture=new_piece != "."))
 
             # castling
-            if piece == "K" and board.castle[0] or piece == "k" and board.castle[2]:
+            if piece == "K" and board.wcr[0] or piece == "k" and board.bcr[0]:
                 if board.board[pos + E] == "." and board.board[pos + E * 2] == ".":
                     moves.append(Move(pos, pos + E * 2, castling="K"))
 
-            if piece == "K" and board.castle[1] or piece == "k" and board.castle[3]:
+            if piece == "K" and board.wcr[1] or piece == "k" and board.bcr[1]:
                 if (
                     board.board[pos + W] == "."
                     and board.board[pos + W * 2] == "."
