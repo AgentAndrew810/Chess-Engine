@@ -58,11 +58,19 @@ class GameController(game.DrawnObject):
 
         # if valid move
         dest = utils.get_pos(rank, file, self.white_pov)
-        if dest in self.held_piece.moves and self.held_piece.pos:
-            # make the move
-            move = engine.Move(self.held_piece.pos, dest, False)
-            self.board = self.board.make_move(move)
-            self.next_moves = engine.get_legal_moves(self.board)
+
+        for move in self.next_moves:
+            if (self.held_piece.pos, dest) == (move.pos, move.dest):
+                # set the promotion to queen since thats the one the player will want
+                if move.prom:
+                    move.prom = "Q" if self.player_is_white else "q"
+
+                # make the move
+                self.board = self.board.make_move(move)
+                self.next_moves = engine.get_legal_moves(self.board)
+
+                # this is to make sure other moves aren't run (since there are 4 promotions)
+                break
 
         self.held_piece.drop()
 
