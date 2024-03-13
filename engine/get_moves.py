@@ -1,92 +1,94 @@
 from .board import Board
 from .move import Move
-from .constants import OFFSETS, N, E, S, W, NE, NW, SE, SW
+from .constants import OFFSETS, N, E, S, W, NE, NW, SE, SW, PROM_PIECES
 
 
 def get_moves(board: Board) -> list[Move]:
     moves = []
 
-    for pos, piece in enumerate(board.board):
+    # get info for pawns
+    pawn_dir = N if board.white_move else S
+    pawn_attack_moves = [NE, NW] if board.white_move else [SE, SW]
+    first_rank, last_rank = (8, 2) if board.white_move else (3, 9)
+
+    # for pos, p in enumerate(board.board):
+    for pos in range(21, 99):
+        p = board.board[pos]
+
         # skip blank squares and wrong colour
-        if piece in " ." or piece.isupper() != board.white_move:
+        if p in " ." or p.isupper() != board.white_move:
             continue
 
-        if piece.upper() == "P":
-            # get the destination and piece
-            dir, first_rank, last_rank = (N, 8, 2) if piece.isupper() else (S, 3, 9)
-            dest = pos + dir
-
+        if p.upper() == "P":
             # add en passant moves
-            for side_dir in (E, W):
+            for side_dir in [E, W]:
                 if pos + side_dir == board.ep:
-                    moves.append(Move(pos, pos + dir + side_dir, ep=True))
+                    moves.append(Move(pos, pos + pawn_dir + side_dir, ep=True))
 
             # add normal pawn moves
+            dest = pos + pawn_dir
             if board.board[dest] == ".":
-                if dest // 10 != last_rank:
-                    moves.append(Move(pos, dest))
-                else:
+                if dest // 10 == last_rank:
                     # promotion
-                    for prom_piece in ("q", "r", "b", "n"):
-                        prom_piece = (
-                            prom_piece.upper() if piece.isupper() else prom_piece
-                        )
-                        moves.append(Move(pos, dest, prom=prom_piece))
+                    for prom in PROM_PIECES:
+                        prom = prom.upper() if board.white_move else prom
+                        moves.append(Move(pos, dest, prom=prom))
+
+                else:
+                    moves.append(Move(pos, dest))
 
                 # if on first rank, add the double pawn move
                 if pos // 10 == first_rank:
-                    dest += dir
+                    dest += pawn_dir
                     if board.board[dest] == ".":
                         moves.append(Move(pos, dest, double=True))
 
             # add pawn attacking moves
-            for dir in (NE, NW) if piece.isupper() else (SE, SW):
+            for dir in pawn_attack_moves:
                 dest = pos + dir
-                new_piece = board.board[dest]
+                target = board.board[dest]
 
-                if new_piece.isalpha() and piece.isupper() != new_piece.isupper():
-                    if dest // 10 != last_rank:
-                        moves.append(Move(pos, dest, capture=True))
+                if target not in " ." and p.isupper() != target.isupper():
+                    if dest // 10 == last_rank:
+                        for prom in PROM_PIECES:
+                            prom = prom.upper() if board.white_move else prom
+                            moves.append(Move(pos, dest, prom=prom))
+
                     else:
-                        # promotion
-                        for prom_piece in ("q", "r", "b", "n"):
-                            prom_piece = (
-                                prom_piece.upper() if piece.isupper() else prom_piece
-                            )
-                            moves.append(Move(pos, dest, prom=prom_piece))
-        else:
-            for dir in OFFSETS[piece.upper()]:
-                # get the new destination and piece
-                dest = pos + dir
-                new_piece = board.board[dest]
+                        moves.append(Move(pos, dest, capture=True))
 
-                # if sliding piece
-                if piece.upper() in "BRQ":
-                    while new_piece == "." or piece.isupper() != new_piece.isupper():
+        else:
+            for dir in OFFSETS[p.upper()]:
+                dest = pos + dir
+                target = board.board[dest]
+
+                # if sliding p
+                if p.upper() in "BRQ":
+                    while target == "." or p.isupper() != target.isupper():
                         # break if off the board
-                        if new_piece == " ":
+                        if target == " ":
                             break
 
-                        # break if hit piece, otherwise keep going
-                        if new_piece == ".":
+                        # break if hit p, otherwise keep going
+                        if target == ".":
                             moves.append(Move(pos, dest))
                             dest += dir
-                            new_piece = board.board[dest]
+                            target = board.board[dest]
                         else:
                             moves.append(Move(pos, dest, capture=True))
                             break
                 else:
-                    if new_piece != " ":
-                        # add the piece if blank square or opposing colour
-                        if new_piece == "." or piece.isupper() != new_piece.isupper():
-                            moves.append(Move(pos, dest, capture=new_piece != "."))
+                    if target != " ":
+                        # add the p if blank square or opposing colour
+                        if target == "." or p.isupper() != target.isupper():
+                            moves.append(Move(pos, dest, capture=target != "."))
 
             # castling
-            if piece == "K" and board.wcr[0] or piece == "k" and board.bcr[0]:
+            if p == "K" and board.wcr[0] or p == "k" and board.bcr[0]:
                 if board.board[pos + E] == "." and board.board[pos + E * 2] == ".":
                     moves.append(Move(pos, pos + E * 2, castling="K"))
 
-            if piece == "K" and board.wcr[1] or piece == "k" and board.bcr[1]:
+            if p == "K" and board.wcr[1] or p == "k" and board.bcr[1]:
                 if (
                     board.board[pos + W] == "."
                     and board.board[pos + W * 2] == "."
