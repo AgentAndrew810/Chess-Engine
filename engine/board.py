@@ -41,7 +41,7 @@ class Board:
 
         # make the move
         board[move.pos] = "."
-        board[move.dest] = piece
+        board[move.dest] = move.prom if move.prom else piece
 
         # if castling move the rook
         if move.castling == "K":
@@ -54,10 +54,6 @@ class Board:
 
         # add en passant square
         ep = move.dest if move.double else -1
-
-        # if promoting update the piece
-        if move.prom:
-            board[move.dest] = move.prom
 
         # if en passant remove attacked piece
         if move.ep:
