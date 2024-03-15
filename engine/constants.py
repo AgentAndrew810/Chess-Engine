@@ -15,3 +15,9 @@ OFFSETS = {
 
 # all the pieces a pawn can promote to
 PROM_PIECES = ["b", "n", "r", "q"]
+
+# the default positions of the white rooks and black rooks
+WKROOK = 98
+WQROOK = 91
+BKROOK = 28
+BQROOK = 21
