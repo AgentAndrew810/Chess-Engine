@@ -20,9 +20,12 @@ class Board:
         self.ep = ep
 
     @classmethod
-    def create(cls, fen: str = DEFAULT_FEN) -> Board:
+    def create(cls, full_fen: str = DEFAULT_FEN) -> Board:
+        fen = full_fen.split(" ")
+
+        # get the board
         board = " " * 21
-        for char in fen:
+        for char in fen[0]:
             if char.isdigit():
                 board += "." * int(char)
             elif char == "/":
@@ -31,7 +34,12 @@ class Board:
                 board += char
         board += " " * 21
 
-        return cls(board, True, (True, True), (True, True), -1)
+        # get all additional stats
+        white_move = fen[1] == "w"
+        wcr = ("K" in fen[2], "Q" in fen[2])
+        bcr = ("k" in fen[2], "q" in fen[2])
+
+        return cls(board, white_move, wcr, bcr, -1)
 
     def make_move(self, move: Move) -> Board:
         board = list(self.board)
