@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .move import Move
-from .constants import DEFAULT_FEN, E, W
+from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
 
 
 class Board:
@@ -43,8 +43,6 @@ class Board:
 
     def make_move(self, move: Move) -> Board:
         board = list(self.board)
-        wck, wcq = self.wcr
-        bck, bcq = self.bcr
         piece = board[move.pos]
 
         # make the move
@@ -60,14 +58,17 @@ class Board:
             board[move.pos + W] = board[move.dest + W * 2]
             board[move.dest + W * 2] = "."
 
-        # add en passant square
-        ep = move.dest if move.double else -1
-
         # if en passant remove attacked piece
         if move.ep:
             board[self.ep] = "."
 
-        # update castling rights
+        # add en passant square
+        ep = move.dest if move.double else -1
+
+        # update castling rights if moved king or rook
+        wck, wcq = self.wcr
+        bck, bcq = self.bcr
+
         if piece == "K":
             wck, wcq = False, False
 
@@ -75,15 +76,25 @@ class Board:
             bck, bcq = False, False
 
         elif piece == "R":
-            if move.pos == 98:
+            if move.pos == WKROOK:
                 wck = False
-            elif move.pos == 91:
+            elif move.pos == WQROOK:
                 wcq = False
 
         elif piece == "r":
-            if move.pos == 28:
+            if move.pos == BKROOK:
                 bck = False
-            elif move.pos == 21:
+            elif move.pos == BQROOK:
                 bcq = False
+
+        # update castling rights if piece captured rook
+        if move.dest == WKROOK:
+            wck = False
+        elif move.dest == WQROOK:
+            wcq = False
+        elif move.dest == BKROOK:
+            bck = False
+        elif move.dest == BQROOK:
+            bcq = False
 
         return Board("".join(board), not self.white_move, (wck, wcq), (bck, bcq), ep)
