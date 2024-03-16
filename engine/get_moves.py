@@ -62,14 +62,14 @@ def get_moves(board: Board) -> list[Move]:
                 dest = pos + dir
                 target = board.board[dest]
 
-                # if sliding p
+                # if sliding piece
                 if p.upper() in "BRQ":
                     while target == "." or p.isupper() != target.isupper():
                         # break if off the board
                         if target == " ":
                             break
 
-                        # break if hit p, otherwise keep going
+                        # break if hit target, otherwise keep going
                         if target == ".":
                             moves.append(Move(pos, dest))
                             dest += dir
@@ -79,21 +79,21 @@ def get_moves(board: Board) -> list[Move]:
                             break
                 else:
                     if target != " ":
-                        # add the p if blank square or opposing colour
+                        # add the piece if blank square or opposing colour
                         if target == "." or p.isupper() != target.isupper():
                             moves.append(Move(pos, dest, capture=target != "."))
 
-            # castling
-            if p == "K" and board.wcr[0] or p == "k" and board.bcr[0]:
-                if board.board[pos + E] == "." and board.board[pos + E * 2] == ".":
-                    moves.append(Move(pos, pos + E * 2, castling="K"))
+            rook = "R" if board.white_move else "r"
+            # Check for king-side castling
+            if p == "K" and board.wck or p == "k" and board.bck:
+                if all(board.board[pos + E * i] == "." for i in range(1, 3)):
+                    if board.board[pos + E * 3] == rook:
+                        moves.append(Move(pos, pos + E * 2, castling="K"))
 
-            if p == "K" and board.wcr[1] or p == "k" and board.bcr[1]:
-                if (
-                    board.board[pos + W] == "."
-                    and board.board[pos + W * 2] == "."
-                    and board.board[pos + W * 3] == "."
-                ):
-                    moves.append(Move(pos, pos + W * 2, castling="Q"))
+            # Check for queen-side castling
+            if p == "K" and board.wcq or p == "k" and board.bcq:
+                if all(board.board[pos + W * i] == "." for i in range(1, 4)):
+                    if board.board[pos + W * 4] == rook:
+                        moves.append(Move(pos, pos + W * 2, castling="Q"))
 
     return moves
