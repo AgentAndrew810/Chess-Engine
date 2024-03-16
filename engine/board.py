@@ -5,18 +5,22 @@ from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
 
 
 class Board:
+    __slots__ = "board", "white_move", "wck", "wcq", "bck", "bcq", "ep"
+
     def __init__(
         self,
         board: str,
         white_move: bool,
-        wcr: tuple[bool, bool],
-        bcr: tuple[bool, bool],
+        wck: bool,
+        wcq: bool,
+        bck: bool,
+        bcq: bool,
         ep: int,
     ) -> None:
         self.board = board
         self.white_move = white_move
-        self.wcr = wcr  # wk, wq
-        self.bcr = bcr  # bk, bq
+        self.wck, self.wcq = wck, wcq
+        self.bck, self.bcq = bck, bcq
         self.ep = ep
 
     @classmethod
@@ -36,10 +40,10 @@ class Board:
 
         # get all additional stats
         white_move = fen[1] == "w"
-        wcr = ("K" in fen[2], "Q" in fen[2])
-        bcr = ("k" in fen[2], "q" in fen[2])
+        wck, wcq = "K" in fen[2], "Q" in fen[2]
+        bck, bcq = "k" in fen[2], "q" in fen[2]
 
-        return cls(board, white_move, wcr, bcr, -1)
+        return cls(board, white_move, wck, wcq, bck, bcq, -1)
 
     def make_move(self, move: Move) -> Board:
         board = list(self.board)
@@ -66,8 +70,8 @@ class Board:
         ep = move.dest if move.double else -1
 
         # update castling rights if moved king or rook
-        wck, wcq = self.wcr
-        bck, bcq = self.bcr
+        wck, wcq = self.wck, self.wcq
+        bck, bcq = self.bck, self.bcq
 
         if piece == "K":
             wck, wcq = False, False
@@ -86,15 +90,5 @@ class Board:
                 bck = False
             elif move.pos == BQROOK:
                 bcq = False
-
-        # update castling rights if piece captured rook
-        if move.dest == WKROOK:
-            wck = False
-        elif move.dest == WQROOK:
-            wcq = False
-        elif move.dest == BKROOK:
-            bck = False
-        elif move.dest == BQROOK:
-            bcq = False
-
-        return Board("".join(board), not self.white_move, (wck, wcq), (bck, bcq), ep)
+            
+        return Board("".join(board), not self.white_move, wck, wcq, bck, bcq, ep)
