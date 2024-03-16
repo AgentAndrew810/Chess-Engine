@@ -11,7 +11,6 @@ def get_moves(board: Board) -> list[Move]:
     pawn_attack_moves = [NE, NW] if board.white_move else [SE, SW]
     first_rank, last_rank = (8, 2) if board.white_move else (3, 9)
 
-    # for pos, p in enumerate(board.board):
     for pos in range(21, 99):
         p = board.board[pos]
 
