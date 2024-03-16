@@ -12,7 +12,7 @@ for p, table in EG_PIECE_TABLES.items():
     BEG_PIECE_TABLES[p.lower()] = [row[::-1] for row in table]
 
 
-def evaluate(board: Board, middle_game: bool=True) -> int:
+def evaluate(board: Board, middle_game: bool = True) -> int:
     score = 0
 
     for pos in range(21, 99):
@@ -26,7 +26,7 @@ def evaluate(board: Board, middle_game: bool=True) -> int:
 
         if p.isupper():
             score += PIECE_VALUES[p]
-            
+
             # add middle or endgame piece table values
             if middle_game:
                 score += MG_PIECE_TABLES[p][rank][file]
