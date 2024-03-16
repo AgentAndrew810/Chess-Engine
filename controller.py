@@ -1,7 +1,7 @@
 import pygame
 
-import game
 import engine
+import game
 import utils
 
 
