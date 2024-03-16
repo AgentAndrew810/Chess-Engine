@@ -1,4 +1,5 @@
 import pygame
+import time
 
 import engine
 import game
@@ -75,8 +76,14 @@ class GameController(game.DrawnObject):
         self.held_piece.drop()
 
     def make_computer_move(self) -> None:
+        start = time.time()
         move = engine.search(self.board)
-        self.board = self.board.make_move(move)
+        print(f"Time Taken: {round(time.time()-start, 3)}s")
+
+        if move:
+            self.board = self.board.make_move(move)
+        else:
+            print("Checkmate!")
         self.next_moves = engine.get_legal_moves(self.board)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
