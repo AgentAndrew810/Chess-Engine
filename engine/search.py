@@ -1,9 +1,10 @@
 from .get_legal_moves import get_legal_moves
 from .evaluate import evaluate
 from .board import Board
+from .move import Move
 
 
-def search(board: Board, depth=3):
+def search(board: Board, depth: int = 3) -> Move | None:
     moves = get_legal_moves(board)
     best_move = None
 
@@ -26,7 +27,7 @@ def search(board: Board, depth=3):
     return best_move
 
 
-def negamax(board: Board, depth, alpha, beta):
+def negamax(board: Board, depth: int, alpha: float, beta: float) -> float:
     moves = get_legal_moves(board)
 
     if depth == 0 or len(moves) == 0:
