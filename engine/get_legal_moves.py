@@ -17,7 +17,7 @@ def get_legal_moves(board: Board) -> list[Move]:
         if move.castling:
             dir = E if move.castling == "K" else W
 
-            # add temp king's to where the was and moves through in castling
+            # add temp king's to where the king was and moves through in castling
             # this ensures pawns can still attack these squares in opp_moves
             temp_board = list(child.board)
             temp_board[move.pos], temp_board[move.pos + dir] = king, king
