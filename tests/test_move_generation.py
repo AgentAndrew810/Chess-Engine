@@ -31,7 +31,7 @@ class TestMoveGeneration(unittest.TestCase):
         self.assertEqual(self.get_num_moves(board, 1), 48)
         self.assertEqual(self.get_num_moves(board, 2), 2039)
         self.assertEqual(self.get_num_moves(board, 3), 97862)
-        # self.assertEqual(self.get_num_moves(board, 4), 4085603)
+        self.assertEqual(self.get_num_moves(board, 4), 4085603)
 
     def test_position_3(self):
         board = engine.Board.create("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -")
@@ -56,7 +56,7 @@ class TestMoveGeneration(unittest.TestCase):
         self.assertEqual(self.get_num_moves(board, 1), 44)
         self.assertEqual(self.get_num_moves(board, 2), 1486)
         self.assertEqual(self.get_num_moves(board, 3), 62379)
-        # self.assertEqual(self.get_num_moves(board, 4), 2103487)
+        self.assertEqual(self.get_num_moves(board, 4), 2103487)
 
     def test_position_6(self):
         board = engine.Board.create(
@@ -65,7 +65,7 @@ class TestMoveGeneration(unittest.TestCase):
         self.assertEqual(self.get_num_moves(board, 1), 46)
         self.assertEqual(self.get_num_moves(board, 2), 2079)
         self.assertEqual(self.get_num_moves(board, 3), 89890)
-        # self.assertEqual(self.get_num_moves(board, 4), 3894594)
+        self.assertEqual(self.get_num_moves(board, 4), 3894594)
 
     def test_time(self) -> None:
         board = engine.Board.create(
