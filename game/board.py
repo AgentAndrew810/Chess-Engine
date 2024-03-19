@@ -4,7 +4,7 @@ import engine
 import utils
 from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
-from .constants import LIGHT, DARK, PINK
+from .constants import WHITE, BLUE, PINK, LAST_MOVE_POS, LAST_MOVE_DEST
 
 
 class Board(DrawnObject):
@@ -28,6 +28,7 @@ class Board(DrawnObject):
         board: engine.Board,
         white_pov: bool,
         held_piece: HeldPiece,
+        last_move: engine.Move,
         x_offset: int,
         y_offset: int,
     ) -> None:
@@ -38,10 +39,16 @@ class Board(DrawnObject):
                 piece = board.board[pos]
 
                 # draw background square
-                if piece != " ":
+                if piece not in " ":
+                    colour = WHITE if (rank + file) % 2 == 0 else BLUE
+                    if pos == last_move.pos:
+                        colour = LAST_MOVE_POS
+                    elif pos == last_move.dest:
+                        colour = LAST_MOVE_DEST
+
                     pygame.draw.rect(
                         screen,
-                        LIGHT if (rank + file) % 2 == 0 else DARK,
+                        colour,
                         (
                             self.get_x(file),
                             self.get_y(rank),
@@ -50,16 +57,15 @@ class Board(DrawnObject):
                         ),
                     )
 
-                if piece.isalpha():
-                    # draw the piece
-                    if pos != held_piece.pos:
-                        screen.blit(
-                            self.images[piece],
-                            (
-                                self.get_x(file) + self.line_size,
-                                self.get_y(rank) + self.line_size,
-                            ),
-                        )
+                # draw the piece
+                if piece.isalpha() and pos != held_piece.pos:
+                    screen.blit(
+                        self.images[piece],
+                        (
+                            self.get_x(file) + self.line_size,
+                            self.get_y(rank) + self.line_size,
+                        ),
+                    )
 
                 if pos in held_piece.moves:
                     # determine the radius and width based on if its attacking a piece
