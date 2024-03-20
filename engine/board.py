@@ -5,90 +5,122 @@ from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
 
 
 class Board:
-    __slots__ = "board", "white_move", "wck", "wcq", "bck", "bcq", "ep"
+    __slots__ = (
+        "board",
+        "white_move",
+        "wcr",
+        "bcr",
+        "ep",
+        "past_moves",
+        "past_captures",
+        "past_cr",
+    )
 
-    def __init__(
-        self,
-        board: str,
-        white_move: bool,
-        wck: bool,
-        wcq: bool,
-        bck: bool,
-        bcq: bool,
-        ep: int,
-    ) -> None:
-        self.board = board
-        self.white_move = white_move
-        self.wck, self.wcq = wck, wcq
-        self.bck, self.bcq = bck, bcq
-        self.ep = ep
-
-    @classmethod
-    def create(cls, full_fen: str = DEFAULT_FEN) -> Board:
+    def __init__(self, full_fen: str = DEFAULT_FEN) -> None:
         fen = full_fen.split(" ")
 
         # get the board
-        board = " " * 21
+        self.board = [" "] * 21
         for char in fen[0]:
             if char.isdigit():
-                board += "." * int(char)
+                self.board.extend(["."] * int(char))
             elif char == "/":
-                board += " " * 2
+                self.board.extend([" "] * 2)
             else:
-                board += char
-        board += " " * 21
+                self.board.append(char)
+        self.board.extend([" "] * 21)
 
         # get all additional stats
-        white_move = fen[1] == "w"
-        wck, wcq = "K" in fen[2], "Q" in fen[2]
-        bck, bcq = "k" in fen[2], "q" in fen[2]
+        self.white_move = fen[1] == "w"
+        self.wcr = ["K" in fen[2], "Q" in fen[2]]
+        self.bcr = ["k" in fen[2], "q" in fen[2]]
+        self.ep = 0
 
-        return cls(board, white_move, wck, wcq, bck, bcq, -1)
+        # extra info for unmaking moves
+        self.past_moves = [Move(-1, -1)]  # set for drawing past move on board
+        self.past_captures = []
+        self.past_cr = []
 
-    def make_move(self, move: Move) -> Board:
-        board = list(self.board)
-        piece = board[move.pos]
+    def make(self, move: Move) -> None:
+        piece = self.board[move.pos]
+        target = self.board[move.dest]
 
         # make the move
-        board[move.pos] = "."
-        board[move.dest] = move.prom if move.prom else piece
+        self.board[move.pos] = "."
+        self.board[move.dest] = move.prom if move.prom else piece
+        self.past_cr.append((self.wcr.copy(), self.bcr.copy()))
+        self.past_moves.append(move)
+        self.past_captures.append(target)
 
         # if castling move the rook
         if move.castling == "K":
-            board[move.pos + E] = board[move.dest + E]
-            board[move.dest + E] = "."
+            self.board[move.pos + E] = self.board[move.pos + E * 3]
+            self.board[move.pos + E * 3] = "."
 
         elif move.castling == "Q":
-            board[move.pos + W] = board[move.dest + W * 2]
-            board[move.dest + W * 2] = "."
+            self.board[move.pos + W] = self.board[move.pos + W * 4]
+            self.board[move.pos + W * 4] = "."
 
         # if en passant remove attacked piece
         if move.ep:
-            board[self.ep] = "."
+            self.board[self.ep] = "."
 
-        # add en passant square
-        ep = move.dest if move.double else -1
+        # update en passant square (based on pawn double move)
+        self.ep = move.dest if move.double else 0
 
         # update castling rights if moved king or rook
-        wck, wcq = self.wck, self.wcq
-        bck, bcq = self.bck, self.bcq
-
         if piece == "K":
-            wck, wcq = False, False
-
+            self.wcr = [False, False]
         elif piece == "k":
-            bck, bcq = False, False
+            self.bcr = [False, False]
 
         elif piece == "R":
             if move.pos == WKROOK:
-                wck = False
+                self.wcr[0] = False
             elif move.pos == WQROOK:
-                wcq = False
+                self.wcr[1] = False
 
         elif piece == "r":
             if move.pos == BKROOK:
-                bck = False
+                self.bcr[0] = False
             elif move.pos == BQROOK:
-                bcq = False
-            
-        return Board("".join(board), not self.white_move, wck, wcq, bck, bcq, ep)
+                self.bcr[1] = False
+
+        # update side to move
+        self.white_move = not self.white_move
+
+    def unmake(self) -> None:
+        self.wcr, self.bcr = self.past_cr.pop()
+        new_piece = self.past_captures.pop()
+        undo_move = self.past_moves.pop()
+        prior_move = self.past_moves[-1]
+
+        # update side to move
+        self.white_move = not self.white_move
+
+        # move the pieces back
+        self.board[undo_move.pos] = self.board[undo_move.dest]
+        self.board[undo_move.dest] = new_piece
+
+        # undo promotion
+        if undo_move.prom:
+            self.board[undo_move.pos] = "P" if self.white_move else "p"
+
+        # undo castling
+        if undo_move.castling == "K":
+            self.board[undo_move.pos + E * 3] = self.board[undo_move.pos + E]
+            self.board[undo_move.pos + E] = "."
+
+        elif undo_move.castling == "Q":
+            self.board[undo_move.pos + W * 4] = self.board[undo_move.pos + W]
+            self.board[undo_move.pos + W] = "."
+
+        # add ep square back
+        if prior_move.double:
+            self.ep = prior_move.dest
+        else:
+            self.ep = 0
+
+        # add piece taken by en passant back
+        if undo_move.ep:
+            self.board[self.ep] = "p" if self.white_move else "P"
