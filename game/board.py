@@ -4,8 +4,7 @@ import engine
 import utils
 from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
-from .constants import WHITE, BLUE, PINK, LAST_MOVE_POS, LAST_MOVE_DEST
-
+from .constants import WHITE, BLUE, PINK, DARK_PINK
 
 class Board(DrawnObject):
     def __init__(self) -> None:
@@ -41,12 +40,14 @@ class Board(DrawnObject):
                 if piece not in " ":
                     colour = WHITE if (rank + file) % 2 == 0 else BLUE
 
-                    # if moves have been made, colour the squares involved in the past move
-                    if board.past_moves:
-                        if pos == board.past_moves[-1].pos:
-                            colour = LAST_MOVE_POS
-                        elif pos == board.past_moves[-1].dest:
-                            colour = LAST_MOVE_DEST
+                    # colour the squares involved in the past move
+                    if pos in (board.past_moves[-1].pos, board.past_moves[-1].dest):
+                        colour = PINK
+
+                        # change colour of past move position if the move was one square over
+                        dist = abs(board.past_moves[-1].pos - board.past_moves[-1].dest)
+                        if dist in (1, 10) and pos == board.past_moves[-1].pos:
+                            colour = DARK_PINK
 
                     pygame.draw.rect(
                         screen,
@@ -75,14 +76,16 @@ class Board(DrawnObject):
                         # circle outline on piece
                         radius = self.piece_size // 2
                         width = self.line_size
+                        colour = DARK_PINK
                     else:
                         # dot on square
                         radius = self.piece_size // 6
                         width = 0
+                        colour = PINK
 
                     # create a surface and draw the circle on it
                     surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
-                    pygame.draw.circle(surface, PINK, (radius, radius), radius, width)
+                    pygame.draw.circle(surface, colour, (radius, radius), radius, width)
 
                     # draw the surface onto the screen
                     x = self.get_x(file + 0.5) - radius
