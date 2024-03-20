@@ -8,8 +8,10 @@ class Board:
     __slots__ = (
         "board",
         "white_move",
-        "wcr",
-        "bcr",
+        "wck",
+        "wcq",
+        "bck",
+        "bcq",
         "ep",
         "past_moves",
         "past_captures",
@@ -18,7 +20,6 @@ class Board:
 
     def __init__(self, full_fen: str = DEFAULT_FEN) -> None:
         fen = full_fen.split(" ")
-
         # get the board
         self.board = [" "] * 21
         for char in fen[0]:
@@ -32,8 +33,8 @@ class Board:
 
         # get all additional stats
         self.white_move = fen[1] == "w"
-        self.wcr = ["K" in fen[2], "Q" in fen[2]]
-        self.bcr = ["k" in fen[2], "q" in fen[2]]
+        self.wck, self.wcq = ["K" in fen[2], "Q" in fen[2]]
+        self.bck, self.bcq = ["k" in fen[2], "q" in fen[2]]
         self.ep = 0
 
         # extra info for unmaking moves
@@ -48,7 +49,7 @@ class Board:
         # make the move
         self.board[move.pos] = "."
         self.board[move.dest] = move.prom if move.prom else piece
-        self.past_cr.append((self.wcr.copy(), self.bcr.copy()))
+        self.past_cr.append((self.wck, self.wcq, self.bck, self.bcq))
         self.past_moves.append(move)
         self.past_captures.append(target)
 
@@ -70,27 +71,26 @@ class Board:
 
         # update castling rights if moved king or rook
         if piece == "K":
-            self.wcr = [False, False]
+            self.wck, self.wcq = False, False
         elif piece == "k":
-            self.bcr = [False, False]
+            self.bck, self.bcq = False, False
 
-        elif piece == "R":
-            if move.pos == WKROOK:
-                self.wcr[0] = False
-            elif move.pos == WQROOK:
-                self.wcr[1] = False
-
-        elif piece == "r":
-            if move.pos == BKROOK:
-                self.bcr[0] = False
-            elif move.pos == BQROOK:
-                self.bcr[1] = False
+        # check if move.pos is where rooks should be (no need to check if they are rooks)
+        # since if it isn't the rooks castling rights will be gone anyways
+        if move.pos == WKROOK:
+            self.wck = False
+        elif move.pos == WQROOK:
+            self.wcq = False
+        elif move.pos == BKROOK:
+            self.bck = False
+        elif move.pos == BQROOK:
+            self.bcq = False
 
         # update side to move
         self.white_move = not self.white_move
 
     def unmake(self) -> None:
-        self.wcr, self.bcr = self.past_cr.pop()
+        self.wck, self.wcq, self.bck, self.bcq = self.past_cr.pop()
         new_piece = self.past_captures.pop()
         undo_move = self.past_moves.pop()
         prior_move = self.past_moves[-1]
@@ -107,7 +107,7 @@ class Board:
             self.board[undo_move.pos] = "P" if self.white_move else "p"
 
         # undo castling
-        if undo_move.castling == "K":
+        elif undo_move.castling == "K":
             self.board[undo_move.pos + E * 3] = self.board[undo_move.pos + E]
             self.board[undo_move.pos + E] = "."
 

@@ -84,13 +84,13 @@ def get_moves(board: Board) -> list[Move]:
 
             rook = "R" if board.white_move else "r"
             # Check for king-side castling
-            if p == "K" and board.wcr[0] or p == "k" and board.bcr[0]:
+            if p == "K" and board.wck or p == "k" and board.bck:
                 if all(board.board[pos + E * i] == "." for i in range(1, 3)):
                     if board.board[pos + E * 3] == rook:
                         moves.append(Move(pos, pos + E * 2, castling="K"))
 
             # Check for queen-side castling
-            if p == "K" and board.wcr[1] or p == "k" and board.bcr[1]:
+            if p == "K" and board.wcq or p == "k" and board.bcq:
                 if all(board.board[pos + W * i] == "." for i in range(1, 4)):
                     if board.board[pos + W * 4] == rook:
                         moves.append(Move(pos, pos + W * 2, castling="Q"))
