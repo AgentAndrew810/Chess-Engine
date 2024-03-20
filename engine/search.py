@@ -24,12 +24,15 @@ def search(board: Board, depth: int = 3) -> Move | None:
     beta = float("inf")
 
     for move in moves:
-        child = board.make_move(move)
-        eval = -negamax(child, depth - 1, -beta, -alpha)
+        board.make(move)
+
+        eval = -negamax(board, depth - 1, -beta, -alpha)
 
         if eval > best_eval:
             best_move = move
             best_eval = eval
+
+        board.unmake()
 
         alpha = max(alpha, eval)
         if alpha > beta:
@@ -48,10 +51,10 @@ def negamax(board: Board, depth: int, alpha: float, beta: float) -> float:
     value = float("-inf")
 
     for move in moves:
-        child = board.make_move(move)
-
-        value = max(value, -negamax(child, depth - 1, -beta, -alpha))
+        board.make(move)
+        value = max(value, -negamax(board, depth - 1, -beta, -alpha))
         alpha = max(alpha, value)
+        board.unmake()
 
         if alpha >= beta:
             break
