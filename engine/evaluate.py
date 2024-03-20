@@ -1,6 +1,6 @@
 from utils import get_coords
 from .board import Board
-from .constants import PIECE_VALUES, MG_PIECE_TABLES, EG_PIECE_TABLES
+from .constants import POS_ON_BOARD, PIECE_VALUES, MG_PIECE_TABLES, EG_PIECE_TABLES
 
 BMG_PIECE_TABLES = {}
 BEG_PIECE_TABLES = {}
@@ -15,7 +15,7 @@ for p, table in EG_PIECE_TABLES.items():
 def evaluate(board: Board, middle_game: bool = True) -> int:
     score = 0
 
-    for pos in range(21, 99):
+    for pos in POS_ON_BOARD:
         p = board.board[pos]
 
         # skip blank squares

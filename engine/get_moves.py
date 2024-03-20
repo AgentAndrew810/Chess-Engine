@@ -1,6 +1,6 @@
 from .board import Board
 from .move import Move
-from .constants import OFFSETS, N, E, S, W, NE, NW, SE, SW, PROM_PIECES
+from .constants import OFFSETS, POS_ON_BOARD, N, E, S, W, NE, NW, SE, SW, PROM_PIECES
 
 
 def get_moves(board: Board) -> list[Move]:
@@ -11,11 +11,11 @@ def get_moves(board: Board) -> list[Move]:
     pawn_attack_moves = [NE, NW] if board.white_move else [SE, SW]
     first_rank, last_rank = (8, 2) if board.white_move else (3, 9)
 
-    for pos in range(21, 99):
+    for pos in POS_ON_BOARD:
         p = board.board[pos]
 
         # skip blank squares and wrong colour
-        if p in " ." or p.isupper() != board.white_move:
+        if p == "." or p.isupper() != board.white_move:
             continue
 
         if p.upper() == "P":
