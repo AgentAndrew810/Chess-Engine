@@ -7,6 +7,7 @@ from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
 class Board:
     def __init__(self, full_fen: str = DEFAULT_FEN) -> None:
         fen = full_fen.split(" ")
+
         # get the board
         self.board = [" "] * 21
         for char in fen[0]:
@@ -25,7 +26,7 @@ class Board:
         self.ep = 0
 
         # extra info for unmaking moves
-        self.past_moves = [Move(-1, -1)]  # set for drawing past move on board
+        self.past_moves = [Move(-1, -1)]
         self.past_captures = []
         self.past_cr = []
 
