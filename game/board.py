@@ -28,7 +28,6 @@ class Board(DrawnObject):
         board: engine.Board,
         white_pov: bool,
         held_piece: HeldPiece,
-        last_move: engine.Move,
         x_offset: int,
         y_offset: int,
     ) -> None:
@@ -41,10 +40,13 @@ class Board(DrawnObject):
                 # draw background square
                 if piece not in " ":
                     colour = WHITE if (rank + file) % 2 == 0 else BLUE
-                    if pos == last_move.pos:
-                        colour = LAST_MOVE_POS
-                    elif pos == last_move.dest:
-                        colour = LAST_MOVE_DEST
+
+                    # if moves have been made, colour the squares involved in the past move
+                    if board.past_moves:
+                        if pos == board.past_moves[-1].pos:
+                            colour = LAST_MOVE_POS
+                        elif pos == board.past_moves[-1].dest:
+                            colour = LAST_MOVE_DEST
 
                     pygame.draw.rect(
                         screen,
@@ -58,7 +60,7 @@ class Board(DrawnObject):
                     )
 
                 # draw the piece
-                if piece.isalpha() and pos != held_piece.pos:
+                if piece not in " ." and pos != held_piece.pos:
                     screen.blit(
                         self.images[piece],
                         (

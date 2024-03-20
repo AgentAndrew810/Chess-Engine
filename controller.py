@@ -10,12 +10,11 @@ class GameController(game.DrawnObject):
     def __init__(self) -> None:
         super().__init__()
 
-        self.board = engine.Board.create()
+        self.board = engine.Board()
         self.board_gui = game.Board()
         self.panel = game.Panel()
 
         self.held_piece = game.HeldPiece()
-        self.last_move = engine.Move(-1, -1)
         self.next_moves = engine.get_legal_moves(self.board)
 
         self.player_is_white = True
@@ -69,8 +68,7 @@ class GameController(game.DrawnObject):
                     move.prom = "Q" if self.player_is_white else "q"
 
                 # make the move
-                self.board = self.board.make_move(move)
-                self.last_move = move
+                self.board.make(move)
                 self.next_moves = engine.get_legal_moves(self.board)
 
                 # this is to make sure other moves aren't run (since there are 4 promotions)
@@ -78,14 +76,17 @@ class GameController(game.DrawnObject):
 
         self.held_piece.drop()
 
+    def back(self) -> None:
+        self.board.unmake()
+        self.next_moves = engine.get_legal_moves(self.board)
+
     def make_computer_move(self) -> None:
         start = time.time()
         move = engine.search(self.board)
         print(f"Time Taken: {round(time.time()-start, 3)}s")
 
         if move:
-            self.board = self.board.make_move(move)
-            self.last_move = move
+            self.board.make(move)
         else:
             print("Checkmate!")
         self.next_moves = engine.get_legal_moves(self.board)
@@ -98,7 +99,6 @@ class GameController(game.DrawnObject):
             self.board,
             self.white_pov,
             self.held_piece,
-            self.last_move,
             self.x_offset,
             self.y_offset,
         )
