@@ -5,19 +5,6 @@ from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
 
 
 class Board:
-    __slots__ = (
-        "board",
-        "white_move",
-        "wck",
-        "wcq",
-        "bck",
-        "bcq",
-        "ep",
-        "past_moves",
-        "past_captures",
-        "past_cr",
-    )
-
     def __init__(self, full_fen: str = DEFAULT_FEN) -> None:
         fen = full_fen.split(" ")
         # get the board
