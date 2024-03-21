@@ -1,15 +1,35 @@
 from .board import Board
 from .move import Move
-from .constants import OFFSETS, POS_ON_BOARD, N, E, S, W, NE, NW, SE, SW, PROM_PIECES
+from .constants import (
+    POS_ON_BOARD,
+    N,
+    E,
+    S,
+    W,
+    NE,
+    NW,
+    SE,
+    SW,
+    PROM_PIECES,
+    VALID_MOVES,
+)
 
 
 def get_moves(board: Board) -> list[Move]:
     moves = []
 
     # get info for pawns
-    pawn_dir = N if board.white_move else S
-    pawn_attack_moves = [NE, NW] if board.white_move else [SE, SW]
-    first_rank, last_rank = (8, 2) if board.white_move else (3, 9)
+    if board.white_move:
+        pawn_dir = N
+        pawn_attack_moves = [NE, NW]
+        first_rank, last_rank = 8, 2
+    else:
+        pawn_dir = S
+        pawn_attack_moves = [SE, SW]
+        first_rank, last_rank = 3, 9
+        
+    rook = "R" if board.white_move else "r"
+    
 
     for pos in POS_ON_BOARD:
         p = board.board[pos]
@@ -57,42 +77,45 @@ def get_moves(board: Board) -> list[Move]:
                         moves.append(Move(pos, dest, capture=True))
 
         else:
-            for dir in OFFSETS[p.upper()]:
-                dest = pos + dir
-                target = board.board[dest]
+            if p.upper() in "BRQ":
+                # iterate through each direction, and the moves in that direction
+                for dir, p_moves in VALID_MOVES[pos][p.upper()].items():
+                    # loop through every position in those moves
+                    for dest in p_moves:
+                        target = board.board[dest]
 
-                # if sliding piece
-                if p.upper() in "BRQ":
-                    while target == "." or p.isupper() != target.isupper():
-                        # break if off the board
-                        if target == " ":
-                            break
-
-                        # break if hit target, otherwise keep going
+                        # if no piece add the move
                         if target == ".":
                             moves.append(Move(pos, dest))
-                            dest += dir
-                            target = board.board[dest]
                         else:
-                            moves.append(Move(pos, dest, capture=True))
+                            # if enemy piece add the move
+                            if p.isupper() != target.isupper():
+                                moves.append(Move(pos, dest, capture=True))
+                            # if friendly or enemy exit the p_moves loop (exiting all moves in this direction)
                             break
-                else:
-                    if target != " ":
-                        # add the piece if blank square or opposing colour
-                        if target == "." or p.isupper() != target.isupper():
-                            moves.append(Move(pos, dest, capture=target != "."))
 
-            rook = "R" if board.white_move else "r"
-            # Check for king-side castling
-            if p == "K" and board.wck or p == "k" and board.bck:
-                if all(board.board[pos + E * i] == "." for i in range(1, 3)):
-                    if board.board[pos + E * 3] == rook:
-                        moves.append(Move(pos, pos + E * 2, castling="K"))
+            else:
+                # loop through every possible move
+                for dest in VALID_MOVES[pos][p.upper()]:
+                    target = board.board[dest]
+                    # add the piece if blank square or opposing colour
+                    if target == ".":
+                        moves.append(Move(pos, dest))
 
-            # Check for queen-side castling
-            if p == "K" and board.wcq or p == "k" and board.bcq:
-                if all(board.board[pos + W * i] == "." for i in range(1, 4)):
-                    if board.board[pos + W * 4] == rook:
-                        moves.append(Move(pos, pos + W * 2, castling="Q"))
+                    elif p.isupper() != target.isupper():
+                        moves.append(Move(pos, dest, capture=True))
+
+
+                # Check for king-side castling
+                if p == "K" and board.wck or p == "k" and board.bck:
+                    if all(board.board[pos + E * i] == "." for i in range(1, 3)):
+                        if board.board[pos + E * 3] == rook:
+                            moves.append(Move(pos, pos + E * 2, castling="K"))
+
+                # Check for queen-side castling
+                if p == "K" and board.wcq or p == "k" and board.bcq:
+                    if all(board.board[pos + W * i] == "." for i in range(1, 4)):
+                        if board.board[pos + W * 4] == rook:
+                            moves.append(Move(pos, pos + W * 2, castling="Q"))
 
     return moves
