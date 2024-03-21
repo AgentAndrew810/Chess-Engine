@@ -1,8 +1,8 @@
 import pygame
 import time
 
-import engine
 import game
+import engine
 import utils
 
 
@@ -10,9 +10,17 @@ class GameController(game.DrawnObject):
     def __init__(self) -> None:
         super().__init__()
 
+        x = self.x_padd + self.board_size + self.padd
+        y = self.y_padd
+
+        self.buttons = {
+            "back": game.Button(x, y + self.square_size * 2, game.GREY),
+            "flip": game.Button(x, y + self.square_size * 3, game.PURPLE),
+            "quit": game.Button(x, y + self.square_size * 4, game.RED),
+        }
+
         self.board = engine.Board()
         self.board_gui = game.Board()
-        self.panel = game.Panel()
 
         self.held_piece = game.HeldPiece()
         self.next_moves = engine.get_legal_moves(self.board)
@@ -102,4 +110,6 @@ class GameController(game.DrawnObject):
             self.x_offset,
             self.y_offset,
         )
-        self.panel.draw(screen)
+
+        for button in self.buttons.values():
+            button.draw(screen)
