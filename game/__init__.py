@@ -1,5 +1,5 @@
 from .board import Board
-from .panel import Panel
+from .button import Button
 from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
 from .constants import *
