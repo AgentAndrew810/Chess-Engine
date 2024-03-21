@@ -220,3 +220,24 @@ EG_PIECE_TABLES = {
         [-53, -34, -21, -11, -28, -14, -24, -43],
     ],
 }
+
+VALID_MOVES = {}
+
+for pos in POS_ON_BOARD:
+    VALID_MOVES[pos] = {}
+    for p in ["B", "R", "Q", "K", "N"]:
+        if p in "KN":
+            VALID_MOVES[pos][p] = [
+                pos + dir for dir in OFFSETS[p] if pos + dir in POS_ON_BOARD
+            ]
+        else:
+            VALID_MOVES[pos][p] = {}
+            for dir in OFFSETS[p]:
+                moves = []
+
+                dest = pos + dir
+                while dest in POS_ON_BOARD:
+                    moves.append(dest)
+                    dest += dir
+
+                VALID_MOVES[pos][p][dir] = moves
