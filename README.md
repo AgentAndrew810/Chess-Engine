@@ -6,6 +6,8 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 - Move Generation with only legal moves
 - Convert Board back to 64 lenth array
 - Precalculate all moves in 64 length array (including pawn moves this time)
+- Maybe use Numpy Array (faster?)
+- Test using named tuples for storing moves
 - Add better search
 - Add end-game piece value tables
 - Better pattern to checkmate (force king to edge)
