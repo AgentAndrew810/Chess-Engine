@@ -8,12 +8,10 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 - Precalculate all moves in 64 length array (including pawn moves this time)
 - Add better search
 - Add end-game piece value tables
-- Better pattern to checkmate
+- Better pattern to checkmate (force king to edge)
 - Stop bot from stale-mating
 
 ## Todo GUI
 - Add buttons (back, quit, sound, home)
 - Add menu
 - Add different gamemodes (play a friend, play engine, visualize battle)
-
-
