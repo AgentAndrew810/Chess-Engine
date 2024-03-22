@@ -94,7 +94,7 @@ POS_ON_BOARD = [
 ]
 
 # piece tables in middlegame
-MG_PIECE_TABLES = {
+WMG_TABLES = {
     "P": [
         [0, 0, 0, 0, 0, 0, 0, 0],
         [98, 134, 61, 95, 68, 126, 34, -11],
@@ -158,7 +158,7 @@ MG_PIECE_TABLES = {
 }
 
 # piece tables in endgame
-EG_PIECE_TABLES = {
+WEG_TABLES = {
     "P": [
         [0, 0, 0, 0, 0, 0, 0, 0],
         [178, 173, 158, 134, 147, 132, 165, 187],
@@ -221,23 +221,24 @@ EG_PIECE_TABLES = {
     ],
 }
 
-VALID_MOVES = {}
+MOVE_TABLES = {}
 
 for pos in POS_ON_BOARD:
-    VALID_MOVES[pos] = {}
-    for p in ["B", "R", "Q", "K", "N"]:
-        if p in "KN":
-            VALID_MOVES[pos][p] = [
-                pos + dir for dir in OFFSETS[p] if pos + dir in POS_ON_BOARD
-            ]
-        else:
-            VALID_MOVES[pos][p] = {}
-            for dir in OFFSETS[p]:
-                moves = []
+    MOVE_TABLES[pos] = {}
 
-                dest = pos + dir
-                while dest in POS_ON_BOARD:
-                    moves.append(dest)
-                    dest += dir
+    for p in "KN":
+        MOVE_TABLES[pos][p] = [
+            pos + dir for dir in OFFSETS[p] if pos + dir in POS_ON_BOARD
+        ]
+        
+    for p in "BRQ":
+        MOVE_TABLES[pos][p] = {}
+        for dir in OFFSETS[p]:
+            moves = []
 
-                VALID_MOVES[pos][p][dir] = moves
+            dest = pos + dir
+            while dest in POS_ON_BOARD:
+                moves.append(dest)
+                dest += dir
+
+            MOVE_TABLES[pos][p][dir] = moves

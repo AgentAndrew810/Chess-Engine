@@ -11,7 +11,7 @@ from .constants import (
     SE,
     SW,
     PROM_PIECES,
-    VALID_MOVES,
+    MOVE_TABLES,
 )
 
 
@@ -27,9 +27,8 @@ def get_moves(board: Board) -> list[Move]:
         pawn_dir = S
         pawn_attack_moves = [SE, SW]
         first_rank, last_rank = 3, 9
-        
+
     rook = "R" if board.white_move else "r"
-    
 
     for pos in POS_ON_BOARD:
         p = board.board[pos]
@@ -79,7 +78,7 @@ def get_moves(board: Board) -> list[Move]:
         else:
             if p.upper() in "BRQ":
                 # iterate through each direction, and the moves in that direction
-                for dir, p_moves in VALID_MOVES[pos][p.upper()].items():
+                for dir, p_moves in MOVE_TABLES[pos][p.upper()].items():
                     # loop through every position in those moves
                     for dest in p_moves:
                         target = board.board[dest]
@@ -96,7 +95,7 @@ def get_moves(board: Board) -> list[Move]:
 
             else:
                 # loop through every possible move
-                for dest in VALID_MOVES[pos][p.upper()]:
+                for dest in MOVE_TABLES[pos][p.upper()]:
                     target = board.board[dest]
                     # add the piece if blank square or opposing colour
                     if target == ".":
@@ -104,7 +103,6 @@ def get_moves(board: Board) -> list[Move]:
 
                     elif p.isupper() != target.isupper():
                         moves.append(Move(pos, dest, capture=True))
-
 
                 # Check for king-side castling
                 if p == "K" and board.wck or p == "k" and board.bck:
