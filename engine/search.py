@@ -5,13 +5,11 @@ from .move import Move
 
 
 def move_value(move: Move):
-    if move.capture:
+    if move.prom:
         return 0
-    elif move.prom:
+    elif move.capture:
         return 1
-    elif move.castling:
-        return 2
-    return 3
+    return 2
 
 
 def search(board: Board, depth: int = 3) -> Move | None:
