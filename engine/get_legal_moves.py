@@ -16,7 +16,11 @@ def get_legal_moves(board: Board) -> list[Move]:
 
         # get all the square the opponent can move
         opp_moves = [opp_move.dest for opp_move in get_moves(board)]
-        board.unmake()
+        board.unmake(move)
+
+        # don't add move if opponent move to the king square (attack it)
+        if king_loc in opp_moves:
+            continue
 
         if move.castling:
             opp_pawn = "p" if board.white_move else "P"
@@ -35,10 +39,6 @@ def get_legal_moves(board: Board) -> list[Move]:
             # don't add move if in check or moving through check
             if move.pos in opp_moves or move.pos + dir in opp_moves:
                 continue
-
-        # don't add move if opponent move to the king square (attack it)
-        if king_loc in opp_moves:
-            continue
 
         moves.append(move)
 

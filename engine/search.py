@@ -32,7 +32,7 @@ def search(board: Board, depth: int = 3) -> Move | None:
             best_move = move
             best_eval = eval
 
-        board.unmake()
+        board.unmake(move)
 
         alpha = max(alpha, eval)
         if alpha > beta:
@@ -54,7 +54,7 @@ def negamax(board: Board, depth: int, alpha: float, beta: float) -> float:
         board.make(move)
         value = max(value, -negamax(board, depth - 1, -beta, -alpha))
         alpha = max(alpha, value)
-        board.unmake()
+        board.unmake(move)
 
         if alpha >= beta:
             break
