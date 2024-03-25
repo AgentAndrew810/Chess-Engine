@@ -26,7 +26,7 @@ class Board:
         self.ep = 0
 
         # extra info for unmaking moves
-        self.past_moves = [Move(-1, -1)]
+        self.past_ep = []
         self.past_captures = []
         self.past_cr = []
 
@@ -38,7 +38,7 @@ class Board:
         self.board[move.pos] = "."
         self.board[move.dest] = move.prom if move.prom else piece
         self.past_cr.append((self.wck, self.wcq, self.bck, self.bcq))
-        self.past_moves.append(move)
+        self.past_ep.append(self.ep)
         self.past_captures.append(target)
 
         # if castling move the rook
@@ -77,39 +77,32 @@ class Board:
         # update side to move
         self.white_move = not self.white_move
 
-    def unmake(self) -> None:
+    def unmake(self, move: Move) -> None:
         self.wck, self.wcq, self.bck, self.bcq = self.past_cr.pop()
+        self.ep = self.past_ep.pop()
         new_piece = self.past_captures.pop()
-        undo_move = self.past_moves.pop()
-        prior_move = self.past_moves[-1]
-        piece = self.board[undo_move.dest]
+        piece = self.board[move.dest]
 
         # update side to move
         self.white_move = not self.white_move
 
         # move the pieces back
-        self.board[undo_move.pos] = piece
-        self.board[undo_move.dest] = new_piece
+        self.board[move.pos] = piece
+        self.board[move.dest] = new_piece
 
         # undo promotion
-        if undo_move.prom:
-            self.board[undo_move.pos] = "P" if self.white_move else "p"
+        if move.prom:
+            self.board[move.pos] = "P" if self.white_move else "p"
 
         # undo castling
-        elif undo_move.castling == "K":
-            self.board[undo_move.pos + E * 3] = self.board[undo_move.pos + E]
-            self.board[undo_move.pos + E] = "."
+        elif move.castling == "K":
+            self.board[move.pos + E * 3] = self.board[move.pos + E]
+            self.board[move.pos + E] = "."
 
-        elif undo_move.castling == "Q":
-            self.board[undo_move.pos + W * 4] = self.board[undo_move.pos + W]
-            self.board[undo_move.pos + W] = "."
-
-        # add ep square back
-        if prior_move.double:
-            self.ep = prior_move.dest
-        else:
-            self.ep = 0
+        elif move.castling == "Q":
+            self.board[move.pos + W * 4] = self.board[move.pos + W]
+            self.board[move.pos + W] = "."
 
         # add piece taken by en passant back
-        if undo_move.ep:
+        if move.ep:
             self.board[self.ep] = "p" if self.white_move else "P"
