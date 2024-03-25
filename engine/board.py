@@ -57,7 +57,7 @@ class Board:
         # update en passant square (based on pawn double move)
         self.ep = move.dest if move.double else 0
 
-        # update castling rights if moved king or rook
+        # update castling rights and king_location if king moved
         if piece == "K":
             self.wck, self.wcq = False, False
         elif piece == "k":
@@ -82,12 +82,13 @@ class Board:
         new_piece = self.past_captures.pop()
         undo_move = self.past_moves.pop()
         prior_move = self.past_moves[-1]
+        piece = self.board[undo_move.dest]
 
         # update side to move
         self.white_move = not self.white_move
 
         # move the pieces back
-        self.board[undo_move.pos] = self.board[undo_move.dest]
+        self.board[undo_move.pos] = piece
         self.board[undo_move.dest] = new_piece
 
         # undo promotion
