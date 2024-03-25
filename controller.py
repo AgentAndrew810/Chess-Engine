@@ -24,6 +24,7 @@ class GameController(game.DrawnObject):
 
         self.held_piece = game.HeldPiece()
         self.next_moves = engine.get_legal_moves(self.board)
+        self.last_move = engine.Move(-1, -1)
 
         self.player_is_white = True
         self.white_pov = self.player_is_white
@@ -77,6 +78,7 @@ class GameController(game.DrawnObject):
 
                 # make the move
                 self.board.make(move)
+                self.last_move = move
                 self.next_moves = engine.get_legal_moves(self.board)
 
                 # this is to make sure other moves aren't run (since there are 4 promotions)
@@ -85,7 +87,7 @@ class GameController(game.DrawnObject):
         self.held_piece.drop()
 
     def back(self) -> None:
-        self.board.unmake()
+        self.board.unmake(self.last_move)
         self.next_moves = engine.get_legal_moves(self.board)
 
     def make_computer_move(self) -> None:
@@ -95,8 +97,7 @@ class GameController(game.DrawnObject):
 
         if move:
             self.board.make(move)
-        else:
-            print("Checkmate!")
+            self.last_move = move
         self.next_moves = engine.get_legal_moves(self.board)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
@@ -107,6 +108,7 @@ class GameController(game.DrawnObject):
             self.board,
             self.white_pov,
             self.held_piece,
+            self.last_move,
             self.x_offset,
             self.y_offset,
         )

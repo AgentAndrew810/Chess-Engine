@@ -6,6 +6,7 @@ from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
 from .constants import WHITE, BLUE, PINK, DARK_PINK
 
+
 class Board(DrawnObject):
     def __init__(self) -> None:
         super().__init__()
@@ -27,6 +28,7 @@ class Board(DrawnObject):
         board: engine.Board,
         white_pov: bool,
         held_piece: HeldPiece,
+        last_move: engine.Move,
         x_offset: int,
         y_offset: int,
     ) -> None:
@@ -41,12 +43,12 @@ class Board(DrawnObject):
                     colour = WHITE if (rank + file) % 2 == 0 else BLUE
 
                     # colour the squares involved in the past move
-                    if pos in (board.past_moves[-1].pos, board.past_moves[-1].dest):
+                    if pos in (last_move.pos, last_move.dest):
                         colour = PINK
 
                         # change colour of past move position if the move was one square over
-                        dist = abs(board.past_moves[-1].pos - board.past_moves[-1].dest)
-                        if dist in (1, 10) and pos == board.past_moves[-1].pos:
+                        dist = abs(last_move.pos - last_move.dest)
+                        if dist in (1, 10) and pos == last_move.pos:
                             colour = DARK_PINK
 
                     pygame.draw.rect(
