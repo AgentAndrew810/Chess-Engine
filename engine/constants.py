@@ -19,8 +19,10 @@ PROM_PIECES = ["b", "n", "r", "q"]
 # the default positions of the white rooks and black rooks
 WKROOK = 98
 WQROOK = 91
+WHITE_KING = 95
 BKROOK = 28
 BQROOK = 21
+BLACK_KING = 25
 
 # the values of pieces
 PIECE_VALUES = {"P": 100, "N": 320, "B": 330, "R": 500, "Q": 900, "K": 20000}
@@ -232,7 +234,6 @@ all_tables = [
     (MG_TABLES, MG_TABLES_2D),
     (EG_TABLES, EG_TABLES_2D),
 ]
-
 for new_tables, old_tables in all_tables:
     for piece, table in old_tables.items():
         new_table = [0] * 21
@@ -248,11 +249,13 @@ MOVE_TABLES = {}
 for pos in POS_ON_BOARD:
     MOVE_TABLES[pos] = {}
 
+    # king and knight moves
     for p in "KN":
         MOVE_TABLES[pos][p] = [
             pos + dir for dir in OFFSETS[p] if pos + dir in POS_ON_BOARD
         ]
 
+    # bishop, rook, and queen moves
     for p in "BRQ":
         MOVE_TABLES[pos][p] = {}
         for dir in OFFSETS[p]:
