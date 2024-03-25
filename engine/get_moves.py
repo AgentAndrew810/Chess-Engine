@@ -34,13 +34,13 @@ def get_moves(board: Board) -> list[Move]:
 
     rook = "R" if board.white_move else "r"
 
-    # check for king-side castling
+    # add king-side castling moves
     if board.white_move and board.wck or not board.white_move and board.bck:
         if all(board.board[king + E * i] == "." for i in range(1, 3)):
             if board.board[king + E * 3] == rook:
                 moves.append(Move(king, king + E * 2, castling="K"))
 
-    # check for queen-side castling
+    # add queen-side castling moves
     if board.white_move and board.wcq or not board.white_move and board.bcq:
         if all(board.board[king + W * i] == "." for i in range(1, 4)):
             if board.board[king + W * 4] == rook:
@@ -59,7 +59,7 @@ def get_moves(board: Board) -> list[Move]:
                 if pos + side_dir == board.ep:
                     moves.append(Move(pos, pos + pawn_dir + side_dir, ep=True))
 
-            # add normal pawn moves
+            # add forward pawn moves
             dest = pos + pawn_dir
             if board.board[dest] == ".":
                 if dest // 10 == last_rank:
