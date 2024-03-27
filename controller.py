@@ -23,7 +23,7 @@ class GameController(game.DrawnObject):
         self.board_gui = game.Board()
 
         self.held_piece = game.HeldPiece()
-        self.next_moves = engine.get_legal_moves(self.board)
+        self.next_moves = engine.move_gen(self.board)
         self.last_move = engine.Move(-1, -1)
 
         self.player_is_white = True
@@ -79,7 +79,7 @@ class GameController(game.DrawnObject):
                 # make the move
                 self.board.make(move)
                 self.last_move = move
-                self.next_moves = engine.get_legal_moves(self.board)
+                self.next_moves = engine.move_gen(self.board)
 
                 # this is to make sure other moves aren't run (since there are 4 promotions)
                 break
@@ -88,7 +88,7 @@ class GameController(game.DrawnObject):
 
     def back(self) -> None:
         self.board.unmake(self.last_move)
-        self.next_moves = engine.get_legal_moves(self.board)
+        self.next_moves = engine.move_gen(self.board)
 
     def make_computer_move(self) -> None:
         start = time.time()
@@ -98,7 +98,7 @@ class GameController(game.DrawnObject):
         if move:
             self.board.make(move)
             self.last_move = move
-        self.next_moves = engine.get_legal_moves(self.board)
+        self.next_moves = engine.move_gen(self.board)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(game.BLACK)
