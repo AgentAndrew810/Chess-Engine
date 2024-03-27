@@ -2,25 +2,27 @@ import unittest
 
 import engine
 
+
 class TestMoveGeneration(unittest.TestCase):
     def perft(self, board: engine.Board, depth: int) -> int:
         if depth == 0:
             return 1
 
         num = 0
-        for move in engine.get_legal_moves(board):
+        for move in engine.move_gen(board):
             board.make(move)
             num += self.perft(board, depth - 1)
-            board.unmake()
+            board.unmake(move)
 
         return num
 
     def debug_perft(self, board: engine.Board, depth: int) -> None:
         total = 0
-        for move in engine.get_legal_moves(board):
+        for move in engine.move_gen(board):
+        #for move in engine.get_legal_moves(board):
             board.make(move)
             num = self.perft(board, depth - 1)
-            board.unmake()
+            board.unmake(move)
 
             total += num
             print(f"Move: {move} - {num}")
