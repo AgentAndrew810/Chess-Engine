@@ -12,7 +12,7 @@ class Move:
         castling: str = "",
         prom: str = "",
         double: bool = False,
-        ep: bool = False,
+        ep: int = 0,
     ) -> None:
         self.pos = pos
         self.dest = dest
@@ -28,5 +28,6 @@ class Move:
             ranks = "87654321"
             rank, file = utils.get_coords(pos)
             return files[file] + ranks[rank]
+        
 
         return chess_position(self.pos) + chess_position(self.dest) + self.prom
