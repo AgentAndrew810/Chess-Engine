@@ -56,11 +56,13 @@ def move_gen(board: Board):
     king = "K" if board.white_move else "k"
     king_pos = board.board.index(king)
 
-    in_check, pins, checks = get_pins_and_checks(board, king_pos)
+    in_check, pins, checks = get_pins_and_checks(
+        board.board, board.white_move, king_pos
+    )
 
     if in_check:
         if len(checks) == 1:
-            moves = get_all_moves(board, pins)
+            moves = get_all_moves(board, pins, king_pos)
 
             check = checks[0]
             checking_piece_pos = check[0]
@@ -80,22 +82,26 @@ def move_gen(board: Board):
             # filer out any move that isn't valid
             moves = list(
                 filter(
-                    lambda x: x.pos == king_pos or x.dest in valid_squares,
+                    lambda x: x.pos == king_pos or x.dest in valid_squares or x.ep,
                     moves,
                 )
             )
         else:
             moves = get_king_moves(board, pos)
     else:
-        moves = get_all_moves(board, pins)
+        moves = get_all_moves(board, pins, king_pos)
         rook = "R" if board.white_move else "r"
 
         # add king-side castling moves
         if board.white_move and board.wck or not board.white_move and board.bck:
             if all(board.board[king_pos + E * i] == "." for i in range(1, 3)):
                 if board.board[king_pos + E * 3] == rook:
-                    check1, _, _ = get_pins_and_checks(board, king_pos + E)
-                    check2, _, _ = get_pins_and_checks(board, king_pos + E * 2)
+                    check1, _, _ = get_pins_and_checks(
+                        board.board, board.white_move, king_pos + E
+                    )
+                    check2, _, _ = get_pins_and_checks(
+                        board.board, board.white_move, king_pos + E * 2
+                    )
                     if not check1 and not check2:
                         moves.append(Move(king_pos, king_pos + E * 2, castling="K"))
 
@@ -103,8 +109,12 @@ def move_gen(board: Board):
         if board.white_move and board.wcq or not board.white_move and board.bcq:
             if all(board.board[king_pos + W * i] == "." for i in range(1, 4)):
                 if board.board[king_pos + W * 4] == rook:
-                    check1, _, _ = get_pins_and_checks(board, king_pos + W)
-                    check2, _, _ = get_pins_and_checks(board, king_pos + W * 2)
+                    check1, _, _ = get_pins_and_checks(
+                        board.board, board.white_move, king_pos + W
+                    )
+                    check2, _, _ = get_pins_and_checks(
+                        board.board, board.white_move, king_pos + W * 2
+                    )
                     if not check1 and not check2:
                         moves.append(Move(king_pos, king_pos + W * 2, castling="Q"))
 
@@ -115,12 +125,11 @@ def get_king_moves(board: Board, pos: int, num=3):
     moves = []
     p = board.board[pos]
     for dest in TARGETS[pos]["K"]:
-        
         # replace the king and get in_check (must do this so sliding piece will go through old king)
         board.board[pos] = "."
-        in_check, _, _ = get_pins_and_checks(board, dest)
+        in_check, _, _ = get_pins_and_checks(board.board, board.white_move, dest)
         board.board[pos] = p
-        
+
         target = board.board[dest]
 
         if in_check:
@@ -135,7 +144,7 @@ def get_king_moves(board: Board, pos: int, num=3):
     return moves
 
 
-def get_all_moves(board: Board, pins):
+def get_all_moves(board: Board, pins, king_pos):
     moves = []
 
     first_rank, last_rank = (8, 2) if board.white_move else (3, 9)
@@ -147,11 +156,20 @@ def get_all_moves(board: Board, pins):
 
         for side_dir in (E, W):
             if board.board[board.ep + pawn_dir + side_dir] == pawn:
-                moves.append(
-                    Move(
-                        board.ep + pawn_dir + side_dir, board.ep, ep=board.ep + pawn_dir
-                    )
+                move = Move(
+                    board.ep + pawn_dir + side_dir, board.ep, ep=board.ep + pawn_dir
                 )
+
+                # check if it will leave king in check
+                temp_board = board.board.copy()
+                temp_board[move.ep] = "."
+                temp_board[move.dest], temp_board[move.pos] = temp_board[move.pos], "."
+                in_check, _, _ = get_pins_and_checks(
+                    temp_board, board.white_move, king_pos
+                )
+                
+                if not in_check:
+                    moves.append(move)
 
     for pos in VALID_POS:
         p = board.board[pos]
@@ -238,7 +256,7 @@ def get_all_moves(board: Board, pins):
     return moves
 
 
-def get_pins_and_checks(board: Board, king_pos: int):
+def get_pins_and_checks(board: list[str], white_move: bool, king_pos: int):
     pins, checks = [], []
     in_check = False
 
@@ -248,7 +266,7 @@ def get_pins_and_checks(board: Board, king_pos: int):
         for dist in range(1, 8):
             # get the piece and destination
             dest = king_pos + dir * dist
-            piece = board.board[dest]
+            piece = board[dest]
             is_white = piece.isupper()
 
             if piece == ".":
@@ -256,7 +274,7 @@ def get_pins_and_checks(board: Board, king_pos: int):
 
             if piece != " ":
                 # if friendly piece
-                if is_white == board.white_move:
+                if is_white == white_move:
                     # if the first piece, add it to possible pin
                     if not possible_pin:
                         possible_pin = (dest, dir)
@@ -264,7 +282,7 @@ def get_pins_and_checks(board: Board, king_pos: int):
                     else:
                         break
                 # enemy piece
-                elif is_white != board.white_move:
+                elif is_white != white_move:
                     if (
                         (0 <= i <= 3 and piece.upper() == "R")
                         or (4 <= i <= 7 and piece.upper() == "B")
@@ -297,9 +315,9 @@ def get_pins_and_checks(board: Board, king_pos: int):
 
     for dir in KNIGHT_MOVES:
         dest = king_pos + dir
-        piece = board.board[dest]
+        piece = board[dest]
         if dest in VALID_POS:
-            if piece.upper() == "N" and piece.isupper() != board.white_move:
+            if piece.upper() == "N" and piece.isupper() != white_move:
                 in_check = True
                 checks.append((dest, dir))
 
