@@ -1,4 +1,4 @@
-from .get_legal_moves import get_legal_moves
+from .move_gen import move_gen
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
@@ -13,7 +13,7 @@ def move_value(move: Move):
 
 
 def search(board: Board, depth: int = 3) -> Move | None:
-    moves = get_legal_moves(board)
+    moves = move_gen(board)
     moves = sorted(moves, key=lambda x: move_value(x))
     best_move = None
 
@@ -40,7 +40,7 @@ def search(board: Board, depth: int = 3) -> Move | None:
 
 
 def negamax(board: Board, depth: int, alpha: float, beta: float) -> float:
-    moves = get_legal_moves(board)
+    moves = move_gen(board)
     moves = sorted(moves, key=lambda x: move_value(x))
 
     if depth == 0 or len(moves) == 0:

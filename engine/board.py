@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from utils import get_pos
 from .move import Move
 from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
 
@@ -23,7 +24,16 @@ class Board:
         self.white_move = fen[1] == "w"
         self.wck, self.wcq = ["K" in fen[2], "Q" in fen[2]]
         self.bck, self.bcq = ["k" in fen[2], "q" in fen[2]]
-        self.ep = 0
+
+        # get en passant square
+        if fen[3] != "-":
+            files = "abcdefgh"
+            ranks = "87654321"
+            rank = ranks.index(fen[3][1])
+            file = files.index(fen[3][0])
+            self.ep = get_pos(rank, file)
+        else:
+            self.ep = 0
 
         # extra info for unmaking moves
         self.past_ep = []
@@ -52,10 +62,10 @@ class Board:
 
         # if en passant remove attacked piece
         if move.ep:
-            self.board[self.ep] = "."
+            self.board[move.ep] = "."
 
         # update en passant square (based on pawn double move)
-        self.ep = move.dest if move.double else 0
+        self.ep = (move.pos + move.dest) // 2 if move.double else 0
 
         # update castling rights and king_location if king moved
         if piece == "K":
@@ -105,4 +115,4 @@ class Board:
 
         # add piece taken by en passant back
         if move.ep:
-            self.board[self.ep] = "p" if self.white_move else "P"
+            self.board[move.ep] = "p" if self.white_move else "P"
