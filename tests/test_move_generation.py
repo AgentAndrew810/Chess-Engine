@@ -37,28 +37,28 @@ class TestMoveGeneration(unittest.TestCase):
 
     def test_pos_2(self):
         board = engine.Board(
-            "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -"
+            "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - "
         )
         self.assertEqual(self.perft(board, 1), 48)
         self.assertEqual(self.perft(board, 2), 2039)
         self.assertEqual(self.perft(board, 3), 97862)
         self.assertEqual(self.perft(board, 4), 4085603)
 
-    # def test_pos_3(self): # currently fails
-    #     board = engine.Board("8/2p5/3p4/KP5r/1R2Pp1k/8/6P1/8 b - e3 0 1")
-    #     self.assertEqual(self.perft(board, 1), 14)
-    #     self.assertEqual(self.perft(board, 2), 191)
-    #     self.assertEqual(self.perft(board, 3), 2812)
-    #     self.assertEqual(self.perft(board, 4), 43238)
+    def test_pos_3(self):  # currently fails
+        board = engine.Board("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ")
+        self.assertEqual(self.perft(board, 1), 14)
+        self.assertEqual(self.perft(board, 2), 191)
+        self.assertEqual(self.perft(board, 3), 2812)
+        self.assertEqual(self.perft(board, 4), 43238)
 
-    # def test_pos_4(self): # currently fails
-    #     board = engine.Board(
-    #         "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
-    #     )
-    #     self.assertEqual(self.perft(board, 1), 6)
-    #     self.assertEqual(self.perft(board, 2), 264)
-    #     self.assertEqual(self.perft(board, 3), 9467)
-    #     self.assertEqual(self.perft(board, 4), 422333)
+    def test_pos_4(self): # currently fails
+        board = engine.Board(
+            "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
+        )
+        self.assertEqual(self.perft(board, 1), 6)
+        self.assertEqual(self.perft(board, 2), 264)
+        self.assertEqual(self.perft(board, 3), 9467)
+        self.assertEqual(self.perft(board, 4), 422333)
 
     def test_pos_5(self):
         board = engine.Board(
@@ -78,6 +78,6 @@ class TestMoveGeneration(unittest.TestCase):
         self.assertEqual(self.perft(board, 3), 89890)
         self.assertEqual(self.perft(board, 4), 3894594)
 
-    # def test_time(self) -> None:
-    #     board = engine.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    #     self.assertEqual(self.perft(board, 4), 197281)
+    def test_time(self) -> None:
+        board = engine.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        self.assertEqual(self.perft(board, 4), 197281)
