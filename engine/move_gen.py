@@ -59,7 +59,7 @@ def move_gen(board: Board):
     in_check, pins, checks = get_pins_and_checks(
         board.board, board.white_move, king_pos
     )
-
+    
     if in_check:
         if len(checks) == 1:
             moves = get_all_moves(board, pins, king_pos)
@@ -87,7 +87,7 @@ def move_gen(board: Board):
                 )
             )
         else:
-            moves = get_king_moves(board, pos)
+            moves = get_king_moves(board, king_pos)
     else:
         moves = get_all_moves(board, pins, king_pos)
         rook = "R" if board.white_move else "r"
@@ -121,7 +121,7 @@ def move_gen(board: Board):
     return moves
 
 
-def get_king_moves(board: Board, pos: int, num=3):
+def get_king_moves(board: Board, pos: int):
     moves = []
     p = board.board[pos]
     for dest in TARGETS[pos]["K"]:
