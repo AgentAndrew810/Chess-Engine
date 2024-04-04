@@ -251,9 +251,7 @@ for pos in POS_ON_BOARD:
 
     # king and knight moves
     for p in "KN":
-        MOVE_TABLES[pos][p] = [
-            pos + dir for dir in OFFSETS[p] if pos + dir in POS_ON_BOARD
-        ]
+        MOVE_TABLES[pos][p] = [pos + dir for dir in OFFSETS[p] if pos + dir in POS_ON_BOARD]
 
     # bishop, rook, and queen moves
     for p in "BRQ":

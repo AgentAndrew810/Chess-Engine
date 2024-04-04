@@ -27,12 +27,8 @@ for pos in VALID_POS:
     TARGETS[pos] = {}
 
     # pawn forward moves
-    TARGETS[pos]["p"] = {
-        dir: pos + dir for dir in OFFSETS["p"] if pos + dir in VALID_POS
-    }
-    TARGETS[pos]["P"] = {
-        dir: pos + dir for dir in OFFSETS["P"] if pos + dir in VALID_POS
-    }
+    TARGETS[pos]["p"] = {dir: pos + dir for dir in OFFSETS["p"] if pos + dir in VALID_POS}
+    TARGETS[pos]["P"] = {dir: pos + dir for dir in OFFSETS["P"] if pos + dir in VALID_POS}
 
     # king and knight
     for p in "KN":
@@ -56,9 +52,7 @@ def move_gen(board: Board):
     king = "K" if board.white_move else "k"
     king_pos = board.board.index(king)
 
-    in_check, pins, checks = get_pins_and_checks(
-        board.board, board.white_move, king_pos
-    )
+    in_check, pins, checks = get_pins_and_checks(board.board, board.white_move, king_pos)
 
     if in_check:
         if len(checks) == 1:
@@ -96,12 +90,8 @@ def move_gen(board: Board):
         if board.white_move and board.wck or not board.white_move and board.bck:
             if all(board.board[king_pos + E * i] == "." for i in range(1, 3)):
                 if board.board[king_pos + E * 3] == rook:
-                    check1, _, _ = get_pins_and_checks(
-                        board.board, board.white_move, king_pos + E
-                    )
-                    check2, _, _ = get_pins_and_checks(
-                        board.board, board.white_move, king_pos + E * 2
-                    )
+                    check1, _, _ = get_pins_and_checks(board.board, board.white_move, king_pos + E)
+                    check2, _, _ = get_pins_and_checks(board.board, board.white_move, king_pos + E * 2)
                     if not check1 and not check2:
                         moves.append(Move(king_pos, king_pos + E * 2, castling="K"))
 
@@ -109,12 +99,8 @@ def move_gen(board: Board):
         if board.white_move and board.wcq or not board.white_move and board.bcq:
             if all(board.board[king_pos + W * i] == "." for i in range(1, 4)):
                 if board.board[king_pos + W * 4] == rook:
-                    check1, _, _ = get_pins_and_checks(
-                        board.board, board.white_move, king_pos + W
-                    )
-                    check2, _, _ = get_pins_and_checks(
-                        board.board, board.white_move, king_pos + W * 2
-                    )
+                    check1, _, _ = get_pins_and_checks(board.board, board.white_move, king_pos + W)
+                    check2, _, _ = get_pins_and_checks(board.board, board.white_move, king_pos + W * 2)
                     if not check1 and not check2:
                         moves.append(Move(king_pos, king_pos + W * 2, castling="Q"))
 
@@ -156,17 +142,13 @@ def get_all_moves(board: Board, pins, king_pos):
 
         for side_dir in (E, W):
             if board.board[board.ep + pawn_dir + side_dir] == pawn:
-                move = Move(
-                    board.ep + pawn_dir + side_dir, board.ep, ep=board.ep + pawn_dir
-                )
+                move = Move(board.ep + pawn_dir + side_dir, board.ep, ep=board.ep + pawn_dir)
 
                 # check if it will leave king in check
                 temp_board = board.board.copy()
                 temp_board[move.ep] = "."
                 temp_board[move.dest], temp_board[move.pos] = temp_board[move.pos], "."
-                in_check, _, _ = get_pins_and_checks(
-                    temp_board, board.white_move, king_pos
-                )
+                in_check, _, _ = get_pins_and_checks(temp_board, board.white_move, king_pos)
 
                 if not in_check:
                     moves.append(move)
@@ -205,11 +187,7 @@ def get_all_moves(board: Board, pins, king_pos):
                                 target = board.board[dest]
                                 if target == ".":
                                     moves.append(Move(pos, dest, double=True))
-                elif (
-                    target != "."
-                    and p.isupper() != target.isupper()
-                    and abs(dir) in (9, 11)
-                ):
+                elif target != "." and p.isupper() != target.isupper() and abs(dir) in (9, 11):
                     if not is_pinned or pin_dir in (dir, -dir):
                         if dest // 10 == last_rank:
                             for prom in PROM_PIECES:
@@ -287,14 +265,7 @@ def get_pins_and_checks(board: list[str], white_move: bool, king_pos: int):
                         (0 <= i <= 3 and piece.upper() == "R")
                         or (4 <= i <= 7 and piece.upper() == "B")
                         or (0 <= i <= 7 and piece.upper() == "Q")
-                        or (
-                            dist == 1
-                            and piece.upper() == "P"
-                            and (
-                                (is_white and 6 <= i <= 7)
-                                or (not is_white and 4 <= i <= 5)
-                            )
-                        )
+                        or (dist == 1 and piece.upper() == "P" and ((is_white and 6 <= i <= 7) or (not is_white and 4 <= i <= 5)))
                         or (dist == 1 and piece.upper() == "K")
                     ):
                         # no piece is blocking -> in check

@@ -23,16 +23,10 @@ class Button(DrawnObject):
         return False
 
     def draw(self, screen: pygame.surface.Surface) -> None:
-        colour, edge = (
-            (self.hover, self.edge_hover)
-            if self.is_over()
-            else (self.colour, self.edge)
-        )
+        colour, edge = (self.hover, self.edge_hover) if self.is_over() else (self.colour, self.edge)
 
         # draw inside
-        pygame.draw.rect(
-            screen, colour, (self.x, self.y, self.square_size, self.square_size)
-        )
+        pygame.draw.rect(screen, colour, (self.x, self.y, self.square_size, self.square_size))
 
         # draw outline
         pygame.draw.rect(

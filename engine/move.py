@@ -28,6 +28,5 @@ class Move:
             ranks = "87654321"
             rank, file = utils.get_coords(pos)
             return files[file] + ranks[rank]
-        
 
         return chess_position(self.pos) + chess_position(self.dest) + self.prom

@@ -45,7 +45,7 @@ def main() -> None:
 
             # if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             #     game_controller.drop_piece(*event.pos)
-                
+
             if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
                 game_controller.back()
 
