@@ -1,8 +1,8 @@
 from .board import Board
 from .move import Move
+from .constants import VALID_POS
 
 DIRECTIONS = [-10, -1, 1, 10, -11, -9, 9, 11]
-VALID_POS = [num for start in range(21, 92, 10) for num in range(start, start + 8)]
 KNIGHT_MOVES = [-19, -21, 21, 19, -8, 12, -12, 8]
 
 N, E, S, W = -10, 1, 10, -1
