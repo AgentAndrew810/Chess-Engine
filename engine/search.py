@@ -67,11 +67,11 @@ def negamax(board: Board, depth: int, alpha: float, beta: float) -> float:
 
     for move in moves:
         board.make(move)
-        value = max(value, -negamax(board, depth - 1, -beta, -alpha))
+        value = -negamax(board, depth - 1, -beta, -alpha)
         alpha = max(alpha, value)
         board.unmake(move)
 
         if beta <= alpha:
             break
 
-    return value
+    return alpha
