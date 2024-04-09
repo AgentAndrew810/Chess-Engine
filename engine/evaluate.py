@@ -1,11 +1,11 @@
 from .board import Board
-from .constants import POS_ON_BOARD, PIECE_VALUES, MG_TABLES
+from .constants import VALID_POS, PIECE_VALUES, MG_TABLES
 
 
 def evaluate(board: Board, middle_game: bool = True) -> int:
     score = 0
 
-    for pos in POS_ON_BOARD:
+    for pos in VALID_POS:
         p = board.board[pos]
 
         # skip blank squares

@@ -4,15 +4,6 @@ DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 N, E, S, W = -10, 1, 10, -1
 NE, NW, SE, SW = -9, -11, 11, 9
 
-# define piece offsets
-OFFSETS = {
-    "N": [N + NE, N + NW, S + SE, S + SW, E + NE, E + SE, W + NW, W + SW],
-    "B": [NE, NW, SE, SW],
-    "R": [N, E, S, W],
-    "Q": [N, NE, E, SE, S, SW, W, NW],
-    "K": [N, NE, E, SE, S, SW, W, NW],
-}
-
 # all the pieces a pawn can promote to
 PROM_PIECES = ["b", "n", "r", "q"]
 
@@ -28,72 +19,7 @@ BLACK_KING = 25
 PIECE_VALUES = {"P": 100, "N": 320, "B": 330, "R": 500, "Q": 900, "K": 20000}
 
 # all the indices that are actually on the chess board in the list
-POS_ON_BOARD = [
-    21,
-    22,
-    23,
-    24,
-    25,
-    26,
-    27,
-    28,
-    31,
-    32,
-    33,
-    34,
-    35,
-    36,
-    37,
-    38,
-    41,
-    42,
-    43,
-    44,
-    45,
-    46,
-    47,
-    48,
-    51,
-    52,
-    53,
-    54,
-    55,
-    56,
-    57,
-    58,
-    61,
-    62,
-    63,
-    64,
-    65,
-    66,
-    67,
-    68,
-    71,
-    72,
-    73,
-    74,
-    75,
-    76,
-    77,
-    78,
-    81,
-    82,
-    83,
-    84,
-    85,
-    86,
-    87,
-    88,
-    91,
-    92,
-    93,
-    94,
-    95,
-    96,
-    97,
-    98,
-]
+VALID_POS = [num for start in range(21, 92, 10) for num in range(start, start + 8)]
 
 # piece tables in middlegame
 MG_TABLES_2D = {
@@ -243,27 +169,3 @@ for new_tables, old_tables in all_tables:
         new_table.extend([0] * 19)
 
         new_tables[piece] = new_table
-
-# create tables of the moves each piece can make from each position
-MOVE_TABLES = {}
-for pos in POS_ON_BOARD:
-    MOVE_TABLES[pos] = {}
-
-    # king and knight moves
-    for p in "KN":
-        MOVE_TABLES[pos][p] = [
-            pos + dir for dir in OFFSETS[p] if pos + dir in POS_ON_BOARD
-        ]
-
-    # bishop, rook, and queen moves
-    for p in "BRQ":
-        MOVE_TABLES[pos][p] = {}
-        for dir in OFFSETS[p]:
-            moves = []
-
-            dest = pos + dir
-            while dest in POS_ON_BOARD:
-                moves.append(dest)
-                dest += dir
-
-            MOVE_TABLES[pos][p][dir] = moves

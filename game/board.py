@@ -126,6 +126,4 @@ class Board(DrawnObject):
 
         # resize each image to square_size
         for name, image in self.images.items():
-            self.images[name] = pygame.transform.smoothscale(
-                image, (self.piece_size, self.piece_size)
-            )
+            self.images[name] = pygame.transform.smoothscale(image, (self.piece_size, self.piece_size))

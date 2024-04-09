@@ -16,7 +16,7 @@ class TestSpeedMoveGen(unittest.TestCase):
         self.assertEqual(num, 4085603)
 
         print(f"Nodes: {num}")
-        print(f"Time: {round(time.time()-start), 3}s")
+        print(f"Time: {round(time.time()-start, 3)}s")
         print(f"Speed: {round(num/(time.time()-start))} nodes/sec")
 
 
