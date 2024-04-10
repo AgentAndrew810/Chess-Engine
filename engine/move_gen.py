@@ -1,24 +1,10 @@
 from .board import Board
 from .move import Move
-from .constants import VALID_POS
+from .constants import VALID_POS, N, E, S, W, OFFSETS
 
 DIRECTIONS = [-10, -1, 1, 10, -11, -9, 9, 11]
-KNIGHT_MOVES = [-19, -21, 21, 19, -8, 12, -12, 8]
-
-N, E, S, W = -10, 1, 10, -1
-NE, NW, SE, SW = -9, -11, 11, 9
 
 PROM_PIECES = ["b", "n", "r", "q"]
-
-OFFSETS = {
-    "p": [S, SE, SW],
-    "P": [N, NE, NW],
-    "N": [N + NE, N + NW, S + SE, S + SW, E + NE, E + SE, W + NW, W + SW],
-    "B": [NE, NW, SE, SW],
-    "R": [N, E, S, W],
-    "Q": [N, NE, E, SE, S, SW, W, NW],
-    "K": [N, NE, E, SE, S, SW, W, NW],
-}
 
 
 # create tables of the moves each piece can make from each position
