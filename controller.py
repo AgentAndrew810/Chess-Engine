@@ -3,7 +3,6 @@ import time
 
 import game
 import engine
-import utils
 
 
 class GameController(game.DrawnObject):
@@ -52,7 +51,7 @@ class GameController(game.DrawnObject):
         file, self.x_offset = divmod(x - self.x_padd, self.square_size)
 
         # get the pos and piece
-        pos = utils.get_pos(rank, file, self.white_pov)
+        pos = game.get_pos(rank, file, self.white_pov)
         piece = self.board.board[pos]
 
         # check if grabbing the correct colour
@@ -68,7 +67,7 @@ class GameController(game.DrawnObject):
         file = (x - self.x_padd) // self.square_size
 
         # if valid move
-        dest = utils.get_pos(rank, file, self.white_pov)
+        dest = game.get_pos(rank, file, self.white_pov)
 
         for move in self.next_moves:
             if (self.held_piece.pos, dest) == (move.pos, move.dest):
