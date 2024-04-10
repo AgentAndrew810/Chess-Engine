@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from utils import get_pos
 from .move import Move
+from .utils import get_pos
 from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
 
 
@@ -27,11 +27,7 @@ class Board:
 
         # get en passant square
         if fen[3] != "-":
-            files = "abcdefgh"
-            ranks = "87654321"
-            rank = ranks.index(fen[3][1])
-            file = files.index(fen[3][0])
-            self.ep = get_pos(rank, file)
+            self.ep = get_pos(fen[3])
         else:
             self.ep = 0
 
