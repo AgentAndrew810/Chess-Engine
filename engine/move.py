@@ -1,4 +1,4 @@
-import utils
+from .utils import get_square
 
 
 class Move:
@@ -23,10 +23,4 @@ class Move:
         self.ep = ep
 
     def __repr__(self) -> str:
-        def chess_position(pos) -> str:
-            files = "abcdefgh"
-            ranks = "87654321"
-            rank, file = utils.get_coords(pos)
-            return files[file] + ranks[rank]
-
-        return chess_position(self.pos) + chess_position(self.dest) + self.prom
+        return get_square(self.pos) + get_square(self.dest) + self.prom

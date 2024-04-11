@@ -1,6 +1,5 @@
 import pygame
 
-from utils import darken
 from .drawnobject import DrawnObject
 
 
@@ -10,9 +9,16 @@ class Button(DrawnObject):
         self.y = y
 
         self.colour = colour
-        self.edge = darken(colour, 0.5)
-        self.hover = darken(colour, 0.6)
-        self.edge_hover = darken(self.edge, 0.6)
+        self.edge = self.darken(colour, 0.5)
+        self.hover = self.darken(colour, 0.6)
+        self.edge_hover = self.darken(self.edge, 0.6)
+
+    def darken(self, colour: tuple[int, int, int], factor: float) -> tuple[int, int, int]:
+        return (
+            round(colour[0] * factor),
+            round(colour[1] * factor),
+            round(colour[2] * factor),
+        )
 
     def is_over(self):
         x, y = pygame.mouse.get_pos()

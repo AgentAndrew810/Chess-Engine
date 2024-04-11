@@ -1,7 +1,7 @@
 import pygame
 
 import engine
-import utils
+from .utils import get_pos
 from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
 from .constants import WHITE, BLUE, PINK, DARK_PINK
@@ -35,7 +35,7 @@ class Board(DrawnObject):
         for rank in range(8):
             for file in range(8):
                 # get the pos and piece
-                pos = utils.get_pos(rank, file, white_pov)
+                pos = get_pos(rank, file, white_pov)
                 piece = board.board[pos]
 
                 # draw background square
