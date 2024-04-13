@@ -1,8 +1,9 @@
 from __future__ import annotations
+import random
 
 from .move import Move
 from .utils import get_pos
-from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
+from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK, VALID_POS
 
 
 class Board:
@@ -35,6 +36,13 @@ class Board:
         self.past_ep = []
         self.past_captures = []
         self.past_cr = []
+        
+        # zobrist keys
+        self.zobrist_pieces = {}
+        for piece in "pPkKnNbBrRqQ":
+            self.zobrist_pieces[piece] = {}
+            for pos in VALID_POS:
+                self.zobrist_pieces[piece][pos] = random.getrandbits(64) 
 
     def make(self, move: Move) -> None:
         piece = self.board[move.pos]
