@@ -19,6 +19,7 @@ class GameController(game.DrawnObject):
         }
 
         self.board = engine.Board()
+        self.computer = engine.Engine()
         self.board_gui = game.Board()
 
         self.held_piece = game.HeldPiece()
@@ -90,9 +91,7 @@ class GameController(game.DrawnObject):
         self.next_moves = engine.move_gen(self.board)
 
     def make_computer_move(self) -> None:
-        start = time.time()
-        move = engine.search(self.board)
-        print(f"Time Taken: {round(time.time()-start, 3)}s")
+        move = self.computer.search(self.board)
 
         if move:
             self.board.make(move)
@@ -112,5 +111,5 @@ class GameController(game.DrawnObject):
             self.y_offset,
         )
 
-        for button in self.buttons.values():
-            button.draw(screen)
+        # for button in self.buttons.values():
+        #     button.draw(screen)
