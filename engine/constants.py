@@ -29,6 +29,9 @@ BLACK_KING = 25
 # the values of pieces
 PIECE_VALUES = {"P": 100, "N": 320, "B": 330, "R": 500, "Q": 900, "K": 0}
 
+# how much a mate is worth (high number but not infinity)
+MATE_SCORE = 100000
+
 # all the indices that are actually on the chess board in the list
 VALID_POS = [num for start in range(21, 92, 10) for num in range(start, start + 8)]
 
