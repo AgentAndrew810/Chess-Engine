@@ -4,6 +4,7 @@ from .move_gen import move_gen, get_pins_and_checks
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
+from .constants import MATE_SCORE
 
 
 class Engine:
@@ -35,7 +36,17 @@ class Engine:
                 break
 
         time_taken = time.time() - start
-        print(f"Time Taken: {round(time_taken, 3)}s - Speed: {round(self.nodes/time_taken)}nps - Total Nodes: {self.nodes} - Score: {best_eval}")
+        if time_taken == 0:
+            speed = self.nodes
+        else:
+            speed = self.nodes / time_taken
+
+        if best_eval > 0:
+            eval = f"Computer is up {round(best_eval/100, 2)}"
+        else:
+            eval = f"Player is up {round(-best_eval/100, 2)}"
+
+        print(f"Time Taken: {round(time_taken, 3)}s - Speed: {round(speed)}nps - Total Nodes: {self.nodes} - Eval: {eval}")
 
         return best_move
 
@@ -50,17 +61,17 @@ class Engine:
         moves = move_gen(board)
         moves = sorted(moves, key=lambda x: self.move_value(x))
 
-        # determine if in check
-        king = "K" if board.white_move else "k"
-        king_pos = board.board.index(king)
-        in_check, _, _ = get_pins_and_checks(board.board, board.white_move, king_pos)
-
         self.nodes += 1
 
         if len(moves) == 0:
+            # determine if in check
+            king = "K" if board.white_move else "k"
+            king_pos = board.board.index(king)
+            in_check, _, _ = get_pins_and_checks(board.board, board.white_move, king_pos)
+
             # if in check with no moves -> checkmate -> return super low score
             if in_check:
-                return -100000 - depth
+                return -MATE_SCORE - depth
             # not in check with no moves -> stalemate -> draw
             else:
                 return 0
