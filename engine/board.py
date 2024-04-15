@@ -1,5 +1,5 @@
 from __future__ import annotations
-import random
+from random import getrandbits
 
 from .move import Move
 from .utils import get_pos
@@ -36,13 +36,26 @@ class Board:
         self.past_ep = []
         self.past_captures = []
         self.past_cr = []
-        
+
         # zobrist keys
         self.zobrist_pieces = {}
+        self.zobrist_ep = {}
+
+        # pieces
         for piece in "pPkKnNbBrRqQ":
             self.zobrist_pieces[piece] = {}
             for pos in VALID_POS:
-                self.zobrist_pieces[piece][pos] = random.getrandbits(64) 
+                self.zobrist_pieces[piece][pos] = getrandbits(64)
+
+        # ep
+        for pos in VALID_POS:
+            self.zobrist_ep[pos] = getrandbits(64)
+
+        # side
+        self.zobrist_side = getrandbits(64)
+
+        # castling rights
+        self.zobrist_ep = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}
 
     def make(self, move: Move) -> None:
         piece = self.board[move.pos]
