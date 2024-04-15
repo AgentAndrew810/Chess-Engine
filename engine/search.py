@@ -5,12 +5,12 @@ from .evaluate import evaluate
 from .board import Board
 from .move import Move
 
+
 class Engine:
     def search(self, board: Board, depth: int = 4) -> Move | None:
         start = time.time()
         self.nodes = 0
-        print(evaluate(board))
-        
+
         moves = move_gen(board)
         moves = sorted(moves, key=lambda x: self.move_value(x))
         best_move = None
@@ -33,12 +33,11 @@ class Engine:
             alpha = max(alpha, eval)
             if beta <= alpha:
                 break
-            
-        time_taken = time.time()-start
+
+        time_taken = time.time() - start
         print(f"Time Taken: {round(time_taken, 3)}s - Speed: {round(self.nodes/time_taken)}nps - Total Nodes: {self.nodes} - Score: {best_eval}")
 
         return best_move
-
 
     def move_value(self, move: Move) -> int:
         if move.prom:
@@ -56,10 +55,6 @@ class Engine:
         king_pos = board.board.index(king)
         in_check, _, _ = get_pins_and_checks(board.board, board.white_move, king_pos)
 
-        # add a depth of 1 if in check
-        if in_check:
-            depth += 1
-            
         self.nodes += 1
 
         if len(moves) == 0:
