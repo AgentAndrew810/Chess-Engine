@@ -85,10 +85,6 @@ class GameController(game.DrawnObject):
 
         self.held_piece.drop()
 
-    def back(self) -> None:
-        self.board.unmake(self.last_move)
-        self.next_moves = engine.move_gen(self.board)
-
     def make_computer_move(self) -> None:
         move = self.computer.search(self.board)
 
