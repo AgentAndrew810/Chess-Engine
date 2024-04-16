@@ -41,21 +41,43 @@ class Board:
         self.zobrist_pieces = {}
         self.zobrist_ep = {}
 
-        # pieces
-        for piece in "pPkKnNbBrRqQ":
-            self.zobrist_pieces[piece] = {}
-            for pos in VALID_POS:
-                self.zobrist_pieces[piece][pos] = getrandbits(64)
-
-        # ep
         for pos in VALID_POS:
+            # pieces
+            self.zobrist_pieces[pos] = {}
+            for piece in "pPkKnNbBrRqQ":
+                self.zobrist_pieces[pos][piece] = getrandbits(64)
+                
+            # ep
             self.zobrist_ep[pos] = getrandbits(64)
 
         # side
         self.zobrist_side = getrandbits(64)
 
         # castling rights
-        self.zobrist_ep = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}
+        self.zobrist_cr = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}
+
+    def get_zobrist(self) -> None:
+        self.zobrist = 0
+
+        for pos in VALID_POS:
+            p = self.board[pos]
+            if p not in " .":
+                self.zobrist ^= self.zobrist_pieces[pos][p]
+
+        if self.wck:
+            self.zobrist ^= self.zobrist_cr["wk"]
+        if self.wcq:
+            self.zobrist ^= self.zobrist_cr["wq"]
+        if self.bck:
+            self.zobrist ^= self.zobrist_cr["bk"]
+        if self.bcq:
+            self.zobrist ^= self.zobrist_cr["bq"]
+        
+        if self.white_move:
+            self.zobrist ^= self.zobrist_side
+            
+        if self.ep:
+            self.zobrist ^= self.zobrist_ep[self.ep]
 
     def make(self, move: Move) -> None:
         piece = self.board[move.pos]
@@ -103,6 +125,8 @@ class Board:
 
         # update side to move
         self.white_move = not self.white_move
+        
+        self.get_zobrist()
 
     def unmake(self, move: Move) -> None:
         self.wck, self.wcq, self.bck, self.bcq = self.past_cr.pop()
