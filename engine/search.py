@@ -6,10 +6,11 @@ from .board import Board
 from .move import Move
 from .constants import MATE_SCORE
 
+
 class Engine:
-    def search(self, board: Board, depth: int = 6) -> Move | None:
+    def search(self, board: Board, depth: int = 4) -> Move | None:
         start = time.time()
-        
+
         self.tt = {}
         self.nodes = 0
         self.returned_tt_nodes = 0
@@ -51,7 +52,6 @@ class Engine:
 
         print(f"Time Taken: {round(time_taken, 3)}s - Speed: {round(speed)}nps - Total Nodes: {self.nodes} - Eval: {eval}")
         print(f"TT Nodes: {self.tt_nodes} - TT Returned Nodes: {self.returned_tt_nodes}")
-        print(len(self.tt))
 
         return best_move
 
@@ -65,22 +65,22 @@ class Engine:
     def negamax(self, board: Board, depth: int, alpha: float, beta: float) -> float:
         alpha_orig = alpha
         self.nodes += 1
-        
+
         tt_entry = self.tt.get(board.zobrist)
         if tt_entry is not None and tt_entry["depth"] >= depth:
             self.tt_nodes += 1
             if tt_entry["flag"] == "exact":
                 self.returned_tt_nodes += 1
-                
+
                 return tt_entry["value"]
             elif tt_entry["flag"] == "lower":
                 alpha = max(alpha, tt_entry["value"])
             elif tt_entry["flag"] == "upper":
                 beta = min(beta, tt_entry["value"])
-            
+
             if alpha >= beta:
                 return tt_entry["value"]
-            
+
         moves = move_gen(board)
         moves = sorted(moves, key=lambda x: self.move_value(x))
 
@@ -110,7 +110,7 @@ class Engine:
 
             if alpha >= beta:
                 break
-            
+
         new_entry = {"depth": depth, "value": value}
         if value <= alpha_orig:
             new_entry["flag"] = "upper"
