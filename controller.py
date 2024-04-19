@@ -17,7 +17,7 @@ class GameController(game.DrawnObject):
             "quit": game.Button(x, y + self.square_size * 4, game.RED),
         }
 
-        self.board = engine.Board()
+        self.board = engine.Board("1R6/Pn6/K6p/7P/8/4NNp1/6P1/7k w - - 0 1")
         self.computer = engine.Engine()
         self.board_gui = game.Board()
 
@@ -25,8 +25,8 @@ class GameController(game.DrawnObject):
         self.next_moves = engine.move_gen(self.board)
         self.last_move = engine.Move(-1, -1)
 
-        self.player_is_white = True
-        self.white_pov = self.player_is_white
+        self.player_is_white = False
+        self.white_pov = not self.player_is_white
         self.x_offset = 0
         self.y_offset = 0
 
