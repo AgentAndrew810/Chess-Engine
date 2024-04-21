@@ -1,11 +1,8 @@
 from .board import Board
 from .move import Move
-from .constants import VALID_POS, N, E, S, W, OFFSETS
+from .constants import VALID_POS, N, E, S, W, OFFSETS, PROM_PIECES
 
 DIRECTIONS = [-10, -1, 1, 10, -11, -9, 9, 11]
-
-PROM_PIECES = ["b", "n", "r", "q"]
-
 
 # create tables of the moves each piece can make from each position
 TARGETS = {}
