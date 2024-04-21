@@ -1,19 +1,12 @@
+from __future__ import annotations
+
 from .utils import get_square
 
 
 class Move:
     __slots__ = "pos", "dest", "capture", "castling", "prom", "double", "ep"
 
-    def __init__(
-        self,
-        pos: int,
-        dest: int,
-        capture: bool = False,
-        castling: str = "",
-        prom: str = "",
-        double: bool = False,
-        ep: int = 0,
-    ) -> None:
+    def __init__(self, pos: int, dest: int, capture: bool = False, castling: str = "", prom: str = "", double: bool = False, ep: int = 0) -> None:
         self.pos = pos
         self.dest = dest
         self.capture = capture
