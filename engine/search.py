@@ -13,19 +13,9 @@ class Engine:
 
         self.tt = {}
         self.nodes = 0
-        eval = 0
-            
-        # iterative deepening
-        for depth in range(1, 1000):
-            eval = self.negamax(board, depth, float("-inf"), float("inf"))
 
-            # exit if a mate was found - makes it so the mate is actually played
-            # otherwise the mate would just be kept within the depth forever            
-            if eval == MATE_SCORE:
-                break
-            
-            if time.time()-start >= 1:
-                break
+        depth = 7
+        eval = self.negamax(board, depth, float("-inf"), float("inf"))
 
         # get time taken
         time_taken = time.time() - start
@@ -33,26 +23,39 @@ class Engine:
             speed = self.nodes
         else:
             speed = self.nodes / time_taken
-            
+
         # format eval
-        eval = eval if board.white_move else -eval # switch to positive = white winning - negative = black winning rather than perspective of engine
-        eval_output = "+" if eval >= 0 else "-" # add positive and negative signs
-        eval_output += f"M{depth//2}" if abs(eval) == MATE_SCORE else str(eval) # add M if checkmate
-            
+        eval = eval if board.white_move else -eval  # switch from perspective of engine to perspective of white
+        eval_output = f"+{eval}" if eval >= 0 else str(eval)  # add positive and negative signs + convert to string
+
         print(f"Nodes: {self.nodes} - Time: {round(time_taken, 3)}s - Speed: {round(speed)}nps - Depth: {depth} - Eval: {eval_output}")
+
+        # get PV line
+        pv_moves = []
+        move = self.tt.get(board.zobrist, {}).get("move")
+        while move is not None:
+            pv_moves.append(move)
+            board.make(move)
+            move = self.tt.get(board.zobrist, {}).get("move")
+        print(pv_moves)
+
+        # undo moves made in order to get the pv line
+        for move in reversed(pv_moves):
+            board.unmake(move)
+
         return self.tt.get(board.zobrist, {"move": None})["move"]
 
     def move_value(self, move: Move) -> int:
         if move.prom:
-            return 0
+            return 1
         elif move.capture:
             return 1
         return 2
-    
-    def negamax(self, board: Board, depth:int, alpha:float, beta:float) -> float:
+
+    def negamax(self, board: Board, depth: int, alpha: float, beta: float, ply: int = 0) -> float:
         alpha_orig = alpha
         self.nodes += 1
-        
+
         # tt_entry = self.tt.get(board.zobrist)
         # if tt_entry is not None and tt_entry["depth"] >= depth:
         #     if tt_entry["flag"] == "exact":
@@ -62,13 +65,13 @@ class Engine:
         #     elif tt_entry["flag"] == "upper":
         #         beta = min(beta, tt_entry["value"])
 
-            # if alpha >= beta:
-            #     return tt_entry["value"]
-            
+        #     if alpha >= beta:
+        #         return tt_entry["value"]
+
         # get and sort moves
         moves = move_gen(board)
         moves = sorted(moves, key=lambda x: self.move_value(x))
-        
+
         if len(moves) == 0:
             # determine if in check
             king = "K" if board.white_move else "k"
@@ -77,35 +80,41 @@ class Engine:
 
             # if in check with no moves -> checkmate -> return super low score
             if in_check:
-                return -MATE_SCORE
+                return -MATE_SCORE + ply
             # not in check with no moves -> stalemate -> draw
             else:
                 return 0
 
         if depth == 0:
             return evaluate(board)
-        
+
         best_value = float("-inf")
         best_move = None
-        
+
         for move in moves:
             board.make(move)
-            value = -self.negamax(board, depth-1, -beta, -alpha)
-            alpha = max(alpha, value)
+            if ply == 0:
+                print(f"----- MOVE {move} -----")
+            value = -self.negamax(board, depth - 1, -beta, -alpha, ply + 1)
             board.unmake(move)
-            
+
             if value >= best_value:
                 best_value = value
                 best_move = move
-            
+
+            alpha = max(alpha, value)
+
             if alpha >= beta:
                 break
-            
+
+        if ply == 1:
+            print(f"    Best Response: {best_move} Value: {best_value}")
+
         # store in transposition table
-        new_entry = {"depth": depth, "value": value, "move": best_move}
-        if value <= alpha_orig:
+        new_entry = {"depth": depth, "value": best_value, "move": best_move}
+        if best_value <= alpha_orig:
             new_entry["flag"] = "upper"
-        elif value >= beta:
+        elif best_value >= beta:
             new_entry["flag"] = "lower"
         else:
             new_entry["flag"] = "exact"
