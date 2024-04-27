@@ -6,18 +6,22 @@ from .board import Board
 from .move import Move
 from .constants import MATE_SCORE
 
+MAX_TIME = 2
+
 
 class Engine:
     def search(self, board: Board) -> Move | None:
         start = time.time()
-
         self.tt = {}
         self.nodes = 0
+        
+        for depth in range(1, 1000):
+            eval = self.negamax(board, depth, float("-inf"), float("inf"), 0)
+            
+            if time.time() - start > MAX_TIME:
+                break        
 
-        depth = 7
-        eval = self.negamax(board, depth, float("-inf"), float("inf"))
-
-        # get time taken
+        # get time taken and speed
         time_taken = time.time() - start
         if time_taken == 0:
             speed = self.nodes
@@ -30,21 +34,8 @@ class Engine:
 
         print(f"Nodes: {self.nodes} - Time: {round(time_taken, 3)}s - Speed: {round(speed)}nps - Depth: {depth} - Eval: {eval_output}")
 
-        # get PV line
-        pv_moves = []
-        move = self.tt.get(board.zobrist, {}).get("move")
-        while move is not None:
-            pv_moves.append(move)
-            board.make(move)
-            move = self.tt.get(board.zobrist, {}).get("move")
-        print(pv_moves)
-
-        # undo moves made in order to get the pv line
-        for move in reversed(pv_moves):
-            board.unmake(move)
-
         return self.tt.get(board.zobrist, {"move": None})["move"]
-
+    
     def move_value(self, move: Move) -> int:
         if move.prom:
             return 1
@@ -52,21 +43,21 @@ class Engine:
             return 1
         return 2
 
-    def negamax(self, board: Board, depth: int, alpha: float, beta: float, ply: int = 0) -> float:
+    def negamax(self, board: Board, depth: int, alpha: float, beta: float, ply: int) -> float:
         alpha_orig = alpha
         self.nodes += 1
 
-        # tt_entry = self.tt.get(board.zobrist)
-        # if tt_entry is not None and tt_entry["depth"] >= depth:
-        #     if tt_entry["flag"] == "exact":
-        #         return tt_entry["value"]
-        #     elif tt_entry["flag"] == "lower":
-        #         alpha = max(alpha, tt_entry["value"])
-        #     elif tt_entry["flag"] == "upper":
-        #         beta = min(beta, tt_entry["value"])
+        tt_entry = self.tt.get(board.zobrist)
+        if tt_entry is not None and tt_entry["depth"] >= depth:
+            if tt_entry["flag"] == "exact":
+                return tt_entry["value"]
+            elif tt_entry["flag"] == "lower":
+                alpha = max(alpha, tt_entry["value"])
+            elif tt_entry["flag"] == "upper":
+                beta = min(beta, tt_entry["value"])
 
-        #     if alpha >= beta:
-        #         return tt_entry["value"]
+            if alpha >= beta:
+                return tt_entry["value"]
 
         # get and sort moves
         moves = move_gen(board)
@@ -93,12 +84,10 @@ class Engine:
 
         for move in moves:
             board.make(move)
-            if ply == 0:
-                print(f"----- MOVE {move} -----")
             value = -self.negamax(board, depth - 1, -beta, -alpha, ply + 1)
             board.unmake(move)
 
-            if value >= best_value:
+            if value > best_value:
                 best_value = value
                 best_move = move
 
@@ -106,9 +95,6 @@ class Engine:
 
             if alpha >= beta:
                 break
-
-        if ply == 1:
-            print(f"    Best Response: {best_move} Value: {best_value}")
 
         # store in transposition table
         new_entry = {"depth": depth, "value": best_value, "move": best_move}
