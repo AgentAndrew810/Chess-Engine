@@ -14,8 +14,9 @@ class Engine:
         start = time.time()
         self.tt = {}
         self.nodes = 0
+        eval = 0
         
-        for depth in range(1, 1000):
+        for depth in range(1, 1001):
             eval = self.negamax(board, depth, float("-inf"), float("inf"), 0)
             
             if time.time() - start > MAX_TIME:
@@ -77,7 +78,8 @@ class Engine:
                 return 0
 
         if depth == 0:
-            return evaluate(board)
+            self.nodes -= 1 # account for duplicate
+            return self.quiescence(board, alpha, beta)
 
         best_value = float("-inf")
         best_move = None
@@ -107,3 +109,30 @@ class Engine:
         self.tt[board.zobrist] = new_entry
 
         return best_value
+
+    def quiescence(self, board: Board, alpha:float, beta:float) -> float:
+        self.nodes += 1
+        
+        static_eval = evaluate(board)
+        if static_eval >= beta:
+            return beta
+        
+        if alpha < static_eval:
+            alpha = static_eval
+            
+        for move in move_gen(board):
+            if not move.capture:
+                continue
+            
+            board.make(move)
+            score = -self.quiescence(board, -beta, -alpha)
+            board.unmake(move)
+            
+            if score >= beta:
+                return beta
+            
+            if score > alpha:
+                alpha = score
+                
+        return alpha
+                
