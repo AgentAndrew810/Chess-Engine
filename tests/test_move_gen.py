@@ -4,7 +4,7 @@ import time
 import engine
 from .helper_functions import get_testing_data, fast_perft
 
-MAX_NODES = 50000
+MAX_NODES = 500000
 
 
 class TestMoveGen(unittest.TestCase):
