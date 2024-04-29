@@ -31,7 +31,7 @@ for pos in VALID_POS:
             TARGETS[pos][p][dir] = moves
 
 
-def move_gen(board: Board):
+def move_gen(board: Board) -> list[Move]:
     king = "K" if board.white_move else "k"
     king_pos = board.board.index(king)
 
