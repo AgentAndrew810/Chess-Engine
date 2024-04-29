@@ -15,12 +15,12 @@ class Engine:
         self.tt = {}
         self.nodes = 0
         eval = 0
-        
+
         for depth in range(1, 1001):
             eval = self.negamax(board, depth, float("-inf"), float("inf"), 0)
-            
+
             if time.time() - start > MAX_TIME:
-                break        
+                break
 
         # get time taken and speed
         time_taken = time.time() - start
@@ -36,7 +36,7 @@ class Engine:
         print(f"Nodes: {self.nodes} - Time: {round(time_taken, 3)}s - Speed: {round(speed)}nps - Depth: {depth} - Eval: {eval_output}")
 
         return self.tt.get(board.zobrist, {"move": None})["move"]
-    
+
     def move_value(self, move: Move) -> int:
         if move.prom:
             return 1
@@ -64,6 +64,12 @@ class Engine:
         moves = move_gen(board)
         moves = sorted(moves, key=lambda x: self.move_value(x))
 
+        # move the best move to the front of the list for more cutoffs
+        if tt_entry is not None:
+            best = tt_entry["move"]
+            moves.pop(moves.index(best))
+            moves.insert(0, best)
+
         if len(moves) == 0:
             # determine if in check
             king = "K" if board.white_move else "k"
@@ -78,7 +84,7 @@ class Engine:
                 return 0
 
         if depth == 0:
-            self.nodes -= 1 # account for duplicate
+            self.nodes -= 1  # account for duplicate
             return self.quiescence(board, alpha, beta)
 
         best_value = float("-inf")
@@ -110,29 +116,28 @@ class Engine:
 
         return best_value
 
-    def quiescence(self, board: Board, alpha:float, beta:float) -> float:
+    def quiescence(self, board: Board, alpha: float, beta: float) -> float:
         self.nodes += 1
-        
+
         static_eval = evaluate(board)
         if static_eval >= beta:
             return beta
-        
+
         if alpha < static_eval:
             alpha = static_eval
-            
+
         for move in move_gen(board):
             if not move.capture:
                 continue
-            
+
             board.make(move)
             score = -self.quiescence(board, -beta, -alpha)
             board.unmake(move)
-            
+
             if score >= beta:
                 return beta
-            
+
             if score > alpha:
                 alpha = score
-                
+
         return alpha
-                
