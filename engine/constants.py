@@ -27,7 +27,10 @@ BQROOK = 21
 BLACK_KING = 25
 
 # the values of pieces
-PIECE_VALUES = {"P": 100, "N": 320, "B": 330, "R": 500, "Q": 900, "K": 20000}
+PIECE_VALUES = {"P": 100, "N": 320, "B": 330, "R": 500, "Q": 900, "K": 0}
+
+# how much a mate is worth (high number but not infinity)
+MATE_SCORE = 100000
 
 # all the indices that are actually on the chess board in the list
 VALID_POS = [num for start in range(21, 92, 10) for num in range(start, start + 8)]
@@ -162,8 +165,8 @@ EG_TABLES_2D = {
 
 # add black piece tables
 for p in "PRQBKN":
-    MG_TABLES_2D[p.lower()] = [row[::-1] for row in MG_TABLES_2D[p]]
-    EG_TABLES_2D[p.lower()] = [row[::-1] for row in EG_TABLES_2D[p]]
+    MG_TABLES_2D[p.lower()] = MG_TABLES_2D[p][::-1]
+    EG_TABLES_2D[p.lower()] = EG_TABLES_2D[p][::-1]
 
 # pad piece tables and make them one dimensional
 MG_TABLES, EG_TABLES = {}, {}

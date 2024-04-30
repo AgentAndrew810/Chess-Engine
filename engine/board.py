@@ -1,8 +1,9 @@
 from __future__ import annotations
+from random import getrandbits
 
 from .move import Move
 from .utils import get_pos
-from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK
+from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK, VALID_POS
 
 
 class Board:
@@ -35,6 +36,51 @@ class Board:
         self.past_ep = []
         self.past_captures = []
         self.past_cr = []
+        self.past_zobrist = []
+
+        # zobrist keys
+        self.zobrist_pieces = {}
+        self.zobrist_ep = {}
+
+        for pos in VALID_POS:
+            # pieces
+            self.zobrist_pieces[pos] = {}
+            for piece in "pPkKnNbBrRqQ":
+                self.zobrist_pieces[pos][piece] = getrandbits(64)
+
+            # ep
+            self.zobrist_ep[pos] = getrandbits(64)
+
+        # side
+        self.zobrist_side = getrandbits(64)
+
+        # castling rights
+        self.zobrist_cr = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}
+
+        self.zobrist = self.get_zobrist()
+
+    def get_zobrist(self) -> None:
+        self.zobrist = 0
+
+        for pos in VALID_POS:
+            p = self.board[pos]
+            if p not in " .":
+                self.zobrist ^= self.zobrist_pieces[pos][p]
+
+        if self.wck:
+            self.zobrist ^= self.zobrist_cr["wk"]
+        if self.wcq:
+            self.zobrist ^= self.zobrist_cr["wq"]
+        if self.bck:
+            self.zobrist ^= self.zobrist_cr["bk"]
+        if self.bcq:
+            self.zobrist ^= self.zobrist_cr["bq"]
+
+        if self.white_move:
+            self.zobrist ^= self.zobrist_side
+
+        if self.ep:
+            self.zobrist ^= self.zobrist_ep[self.ep]
 
     def make(self, move: Move) -> None:
         piece = self.board[move.pos]
@@ -46,6 +92,7 @@ class Board:
         self.past_cr.append((self.wck, self.wcq, self.bck, self.bcq))
         self.past_ep.append(self.ep)
         self.past_captures.append(target)
+        self.past_zobrist.append(self.zobrist)
 
         # if castling move the rook
         if move.castling == "K":
@@ -83,9 +130,12 @@ class Board:
         # update side to move
         self.white_move = not self.white_move
 
+        self.get_zobrist()
+
     def unmake(self, move: Move) -> None:
         self.wck, self.wcq, self.bck, self.bcq = self.past_cr.pop()
         self.ep = self.past_ep.pop()
+        self.zobrist = self.past_zobrist.pop()
         new_piece = self.past_captures.pop()
         piece = self.board[move.dest]
 

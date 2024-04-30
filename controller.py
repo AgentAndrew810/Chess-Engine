@@ -1,5 +1,4 @@
 import pygame
-import time
 
 import game
 import engine
@@ -19,12 +18,14 @@ class GameController(game.DrawnObject):
         }
 
         self.board = engine.Board()
+        self.computer = engine.Engine()
         self.board_gui = game.Board()
 
         self.held_piece = game.HeldPiece()
         self.next_moves = engine.move_gen(self.board)
         self.last_move = engine.Move(-1, -1)
 
+        self.game_over = False
         self.player_is_white = True
         self.white_pov = self.player_is_white
         self.x_offset = 0
@@ -85,19 +86,21 @@ class GameController(game.DrawnObject):
 
         self.held_piece.drop()
 
-    def back(self) -> None:
-        self.board.unmake(self.last_move)
-        self.next_moves = engine.move_gen(self.board)
-
     def make_computer_move(self) -> None:
-        start = time.time()
-        move = engine.search(self.board)
-        print(f"Time Taken: {round(time.time()-start, 3)}s")
+        move = self.computer.search(self.board)
 
         if move:
             self.board.make(move)
             self.last_move = move
+        else:
+            print("Player Won!")
+            self.game_over = True
         self.next_moves = engine.move_gen(self.board)
+        
+        if not self.game_over and len(self.next_moves) == 0:
+            print("Computer Won!")
+            self.game_over = True
+        
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(game.BLACK)
@@ -112,5 +115,5 @@ class GameController(game.DrawnObject):
             self.y_offset,
         )
 
-        for button in self.buttons.values():
-            button.draw(screen)
+        # for button in self.buttons.values():
+        #     button.draw(screen)
