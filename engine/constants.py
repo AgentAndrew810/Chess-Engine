@@ -26,9 +26,6 @@ BKROOK = 28
 BQROOK = 21
 BLACK_KING = 25
 
-# the values of pieces
-PIECE_VALUES = {"P": 100, "N": 320, "B": 330, "R": 500, "Q": 900, "K": 0}
-
 # how much a mate is worth (high number but not infinity)
 MATE_SCORE = 100000
 
@@ -163,23 +160,38 @@ EG_TABLES_2D = {
     ],
 }
 
-# add black piece tables
+# the values of pieces
+MG_VALUES = {"P": 82, "N": 337, "B": 365, "R": 477, "Q": 1025, "K": 0}
+EG_VALUES = {"P": 94, "N": 281, "B": 297, "R": 512, "Q": 936, "K": 0}
+GAME_PHASE_VALUE = {"p": 0, "P": 0, "n": 1, "N": 1, "b": 1, "B": 1, "r": 2, "R": 2, "q": 4, "Q": 4, "k": 0, "K": 0}
+
+# reverse table for the black piece (lowercase letter)
 for p in "PRQBKN":
     MG_TABLES_2D[p.lower()] = MG_TABLES_2D[p][::-1]
     EG_TABLES_2D[p.lower()] = EG_TABLES_2D[p][::-1]
 
-# pad piece tables and make them one dimensional
+# # pad piece tables and make them one dimensional
 MG_TABLES, EG_TABLES = {}, {}
-all_tables = [
-    (MG_TABLES, MG_TABLES_2D),
-    (EG_TABLES, EG_TABLES_2D),
-]
-for new_tables, old_tables in all_tables:
-    for piece, table in old_tables.items():
-        new_table = [0] * 21
-        for row in table:
-            new_table.extend(row)
-            new_table.extend([0, 0])
-        new_table.extend([0] * 19)
+for p, table in MG_TABLES_2D.items():
+    new_table = [0] * 21
+    for row in table:
+        if p.isupper():
+            new_table.extend([value + MG_VALUES[p] for value in row])
+        else:
+            new_table.extend([-value - MG_VALUES[p.upper()] for value in row])
+        new_table.extend([0] * 2)
+    new_table.extend([0] * 19)
 
-        new_tables[piece] = new_table
+    MG_TABLES[p] = new_table
+
+for p, table in EG_TABLES_2D.items():
+    new_table = [0] * 21
+    for row in table:
+        if p.isupper():
+            new_table.extend([value + EG_VALUES[p] for value in row])
+        else:
+            new_table.extend([-value - EG_VALUES[p.upper()] for value in row])
+        new_table.extend([0] * 2)
+    new_table.extend([0] * 19)
+
+    EG_TABLES[p] = new_table
