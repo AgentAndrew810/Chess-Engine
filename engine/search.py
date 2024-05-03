@@ -6,7 +6,7 @@ from .board import Board
 from .move import Move
 from .constants import MATE_SCORE
 
-MAX_TIME = 2
+MAX_TIME = 0.35
 
 
 class Engine:
@@ -18,12 +18,14 @@ class Engine:
 
         for depth in range(1, 1001):
             eval = self.negamax(board, depth, float("-inf"), float("inf"), 0)
+            
+            time_taken = time.time() - start
+            print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {eval} nps {round(self.nodes/time_taken)}")
 
-            if time.time() - start > MAX_TIME:
+            if time_taken > MAX_TIME:
                 break
 
         # get time taken and speed
-        time_taken = time.time() - start
         if time_taken == 0:
             speed = self.nodes
         else:
