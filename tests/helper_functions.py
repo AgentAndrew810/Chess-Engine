@@ -29,7 +29,7 @@ def fast_perft(board: engine.Board, depth: int) -> int:
     num = 0
     for move in engine.move_gen(board):
         board.make(move)
-        num += perft(board, depth - 1)
+        num += fast_perft(board, depth - 1)
         board.unmake(move)
 
     return num
@@ -48,7 +48,7 @@ def perft(board: engine.Board, depth: int) -> int:
     return num
 
 
-def debug_perft(board: engine.Board, depth: int) -> None:
+def debug_perft(board: engine.Board, depth: int) -> int:
     total = 0
     for move in engine.move_gen(board):
         board.make(move)
@@ -59,3 +59,4 @@ def debug_perft(board: engine.Board, depth: int) -> None:
         print(f"Move: {move} - {num}")
 
     print(f"Total Nodes: {total}")
+    return total
