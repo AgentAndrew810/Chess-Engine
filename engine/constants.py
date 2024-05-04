@@ -6,8 +6,10 @@ NE, NW, SE, SW = -9, -11, 11, 9
 
 # the offsets of each piece
 OFFSETS = {
-    "p": [S, SE, SW],
-    "P": [N, NE, NW],
+    "pra": [NE, NW],  # this is opposite for checking if a pawn checks a king by making a king a pawn
+    "Pra": [SE, SW],  # ^^^
+    "pa": [SE, SW],
+    "Pa": [NE, NW],
     "N": [N + NE, N + NW, S + SE, S + SW, E + NE, E + SE, W + NW, W + SW],
     "B": [NE, NW, SE, SW],
     "R": [N, E, S, W],
