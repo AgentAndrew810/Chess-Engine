@@ -1,29 +1,6 @@
 from .board import Board
 from .move import Move
-# from .constants import VALID_POS, N, E, S, W, OFFSETS, PROM_PIECES
-
-# define directions
-N, E, S, W = -10, 1, 10, -1
-NE, NW, SE, SW = -9, -11, 11, 9
-
-DIRECTIONS = [-10, -1, 1, 10, -11, -9, 9, 11]
-
-# the offsets of each piece
-OFFSETS = {
-    "pra": [NE, NW],  # this is opposite for checking if a pawn checks a king by making a king a pawn
-    "Pra": [SE, SW],  # ^^^
-    "pa": [SE, SW],
-    "Pa": [NE, NW],
-    "N": [N + NE, N + NW, S + SE, S + SW, E + NE, E + SE, W + NW, W + SW],
-    "B": [NE, NW, SE, SW],
-    "R": [N, E, S, W],
-    "Q": [N, NE, E, SE, S, SW, W, NW],
-    "K": [N, NE, E, SE, S, SW, W, NW],
-}
-
-# all the pieces a pawn can promote to
-PROM_PIECES = ["b", "n", "r", "q"]
-VALID_POS = [num for start in range(21, 92, 10) for num in range(start, start + 8)]
+from .constants import VALID_POS, N, E, S, W, OFFSETS, PROM_PIECES
 
 # create tables of the moves each piece can make from each position
 TARGETS = {}
@@ -316,7 +293,6 @@ def get_pins_and_checks(board: list[str], white_move: bool, king_pos: int):
                     or (ptype == "K" and dist == 0)  # king and any direction, distance of 1
                     or (ptype == "P" and dir in OFFSETS[piece + "ra"] and dist == 0)  # pawn and pawn attack direction, distance of 1
                 ):
-                    pass
                     # no piece is blocking -> in check
                     if not possible_pin:
                         checks.append((pos, dir))
