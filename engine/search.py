@@ -6,7 +6,7 @@ from .board import Board
 from .move import Move
 from .constants import MATE_SCORE
 
-MAX_TIME = 0.35
+MAX_TIME = 2
 
 
 class Engine:
@@ -14,28 +14,15 @@ class Engine:
         start = time.time()
         self.tt = {}
         self.nodes = 0
-        eval = 0
 
         for depth in range(1, 1001):
             eval = self.negamax(board, depth, float("-inf"), float("inf"), 0)
-            
+
             time_taken = time.time() - start
             print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {eval} nps {round(self.nodes/time_taken)}")
 
             if time_taken > MAX_TIME:
                 break
-
-        # get time taken and speed
-        if time_taken == 0:
-            speed = self.nodes
-        else:
-            speed = self.nodes / time_taken
-
-        # format eval
-        eval = eval if board.white_move else -eval  # switch from perspective of engine to perspective of white
-        eval_output = f"+{eval}" if eval >= 0 else str(eval)  # add positive and negative signs + convert to string
-
-        print(f"Nodes: {self.nodes} - Time: {round(time_taken, 3)}s - Speed: {round(speed)}nps - Depth: {depth} - Eval: {eval_output}")
 
         return self.tt.get(board.zobrist, {"move": None})["move"]
 
