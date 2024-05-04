@@ -1,6 +1,6 @@
 import time
 
-from .move_gen import move_gen, get_pins_and_checks
+from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
@@ -63,10 +63,10 @@ class Engine:
             # determine if in check
             king = "K" if board.white_move else "k"
             king_pos = board.board.index(king)
-            in_check, _, _ = get_pins_and_checks(board.board, board.white_move, king_pos)
+            checked = in_check(board.board, board.white_move, king_pos)
 
             # if in check with no moves -> checkmate -> return super low score
-            if in_check:
+            if checked:
                 return -MATE_SCORE + ply
             # not in check with no moves -> stalemate -> draw
             else:
