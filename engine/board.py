@@ -3,7 +3,7 @@ from random import getrandbits
 
 from .move import Move
 from .utils import get_pos
-from .constants import DEFAULT_FEN, E, W, WKROOK, WQROOK, BKROOK, BQROOK, VALID_POS
+from .constants import DEFAULT_FEN, SE, SW, E, W, WKROOK, WQROOK, BKROOK, BQROOK, VALID_POS
 
 
 class Board:
@@ -37,7 +37,10 @@ class Board:
         self.past_captures = []
         self.past_cr = []
         self.past_zobrist = []
-
+        
+        self.zobrist_init()
+        
+    def zobrist_init(self) -> None:
         # zobrist keys
         self.zobrist_pieces = {}
         self.zobrist_ep = {}
@@ -88,33 +91,41 @@ class Board:
 
         # make the move
         self.board[move.pos] = "."
-        self.board[move.dest] = move.prom if move.prom else piece
+        self.board[move.dest] = (move.prom.upper() if self.white_move else move.prom) if move.prom else piece
         self.past_cr.append((self.wck, self.wcq, self.bck, self.bcq))
         self.past_ep.append(self.ep)
         self.past_captures.append(target)
         self.past_zobrist.append(self.zobrist)
-
-        # if castling move the rook
-        if move.castling == "K":
-            self.board[move.pos + E] = self.board[move.pos + E * 3]
-            self.board[move.pos + E * 3] = "."
-
-        elif move.castling == "Q":
-            self.board[move.pos + W] = self.board[move.pos + W * 4]
-            self.board[move.pos + W * 4] = "."
-
-        # if en passant remove attacked piece
-        if move.ep:
-            self.board[move.ep] = "."
-
-        # update en passant square (based on pawn double move)
-        self.ep = (move.pos + move.dest) // 2 if move.double else 0
-
-        # update castling rights and king_location if king moved
-        if piece == "K":
-            self.wck, self.wcq = False, False
-        elif piece == "k":
-            self.bck, self.bcq = False, False
+        
+        # if piece moved was a king
+        if piece.upper() == "K":
+            # move rook (castling) if the king moved two squares                
+            if move.dest-move.pos == 2:
+                self.board[move.pos + E] = self.board[move.pos + E * 3]
+                self.board[move.pos + E * 3] = "."
+            elif move.dest-move.pos == -2:
+                self.board[move.pos + W] = self.board[move.pos + W * 4]
+                self.board[move.pos + W * 4] = "."
+                
+            # update castling rights if king moved
+            if piece == "K":
+                self.wck, self.wcq = False, False
+            else:
+                self.bck, self.bcq = False, False
+                
+        # if piece moved was a pawn
+        if piece.upper() == "P":
+            # if made attack move without capturing a piece -> en passant -> remove en passant piece
+            if abs(move.dest-move.pos) in (SE, SW) and target == ".":
+                self.board[self.ep] = "."
+               
+            # if made double move -> update en passant square 
+            if abs(move.dest-move.pos) == 20:
+                self.ep = move.dest
+            else:
+                self.ep = 0
+        else:
+            self.ep = 0
 
         # check if move.pos is where rooks should be (no need to check if they are rooks)
         # since if it isn't the rooks castling rights will be gone anyways
@@ -136,7 +147,7 @@ class Board:
         self.wck, self.wcq, self.bck, self.bcq = self.past_cr.pop()
         self.ep = self.past_ep.pop()
         self.zobrist = self.past_zobrist.pop()
-        new_piece = self.past_captures.pop()
+        target = self.past_captures.pop()
         piece = self.board[move.dest]
 
         # update side to move
@@ -144,21 +155,21 @@ class Board:
 
         # move the pieces back
         self.board[move.pos] = piece
-        self.board[move.dest] = new_piece
+        self.board[move.dest] = target
 
         # undo promotion
         if move.prom:
             self.board[move.pos] = "P" if self.white_move else "p"
-
-        # undo castling
-        elif move.castling == "K":
-            self.board[move.pos + E * 3] = self.board[move.pos + E]
-            self.board[move.pos + E] = "."
-
-        elif move.castling == "Q":
-            self.board[move.pos + W * 4] = self.board[move.pos + W]
-            self.board[move.pos + W] = "."
-
-        # add piece taken by en passant back
-        if move.ep:
-            self.board[move.ep] = "p" if self.white_move else "P"
+            
+        # undo rook move if castling        
+        if piece.upper() == "K":
+            if move.dest-move.pos == 2:
+                self.board[move.pos + E * 3] = self.board[move.pos + E]
+                self.board[move.pos + E] = "."
+            elif move.dest-move.pos == -2:
+                self.board[move.pos + W * 4] = self.board[move.pos + W]
+                self.board[move.pos + W] = "."
+                
+        # if made attack move without capturing a piece -> en passant -> add back en passant piece
+        if piece.upper() == "P" and abs(move.dest-move.pos) in (SE, SW) and target == ".":
+            self.board[self.ep] = "p" if self.white_move else "P"

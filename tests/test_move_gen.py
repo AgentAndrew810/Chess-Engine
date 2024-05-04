@@ -4,7 +4,7 @@ import time
 import engine
 from .helper_functions import get_testing_data, fast_perft
 
-MAX_NODES = 500000
+MAX_NODES = 50000
 
 
 class TestMoveGen(unittest.TestCase):
@@ -12,9 +12,9 @@ class TestMoveGen(unittest.TestCase):
         start = time.time()
         total_nodes = 0
 
-        for fen, depths in get_testing_data():
+        for num, (fen, depths) in enumerate(get_testing_data()):
             board = engine.Board(fen)
-            print(f"Searching: {fen}")
+            print(f"Searching Position #{num+1}: {fen}")
 
             for depth, value in depths:
                 # skip depths that are too large

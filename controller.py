@@ -73,8 +73,7 @@ class GameController(game.DrawnObject):
         for move in self.next_moves:
             if (self.held_piece.pos, dest) == (move.pos, move.dest):
                 # set the promotion to queen since thats the one the player will want
-                if move.prom:
-                    move.prom = "Q" if self.player_is_white else "q"
+                move.prom = "q" if move.prom else ""
 
                 # make the move
                 self.board.make(move)
