@@ -10,13 +10,13 @@ for pos in VALID_POS:
     # white pawn
     TARGETS[pos]["P"] = [pos + N] if pos + N in VALID_POS else []
     if pos // 10 == 8:  # if on first rank
-        TARGETS[pos]["P"] = [pos + N, pos + N * 2]
+        TARGETS[pos]["P"] += [pos + N * 2]
     TARGETS[pos]["Pa"] = {dir: pos + dir for dir in OFFSETS["Pa"] if pos + dir in VALID_POS}
 
     # black pawn
     TARGETS[pos]["p"] = [pos + S] if pos + S in VALID_POS else []
     if pos // 10 == 3:  # if on first rank
-        TARGETS[pos]["p"] += [pos + S * 2] if pos + S * 2 in VALID_POS else []
+        TARGETS[pos]["p"] += [pos + S * 2]
     TARGETS[pos]["pa"] = {dir: pos + dir for dir in OFFSETS["pa"] if pos + dir in VALID_POS}
 
     # king and knight

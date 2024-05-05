@@ -4,24 +4,45 @@ from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
-from .constants import MATE_SCORE
-
-MAX_TIME = 2
-
+from .constants import MATE_SCORE, MG_VALUES
 
 class Engine:
-    def search(self, board: Board) -> Move | None:
-        start = time.time()
+    def search(self, board: Board, options:dict[str, int] = {}) -> Move | None:
+        alpha = -MATE_SCORE - 1
+        beta = MATE_SCORE + 1
+        window = MG_VALUES["P"]*2
+
         self.tt = {}
         self.nodes = 0
+        start = time.time()
+        
+        remaining_time = options.get("wtime") if board.white_move else options.get("btime")
+        
+        if remaining_time is not None:
+            max_time = remaining_time/1000/30
+        else:
+            max_time = options.get("movetime")
+            max_time = 0.5 if max_time is None else max_time
 
-        for depth in range(1, 1001):
-            eval = self.negamax(board, depth, float("-inf"), float("inf"), 0)
+        # search the position with a depth of 1
+        value = self.negamax(board, 1, alpha, beta, 0)
+        time_taken = max(time.time() - start, 0.0001)
+        print(f"info depth 1 time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
 
-            time_taken = time.time() - start
-            print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {eval} nps {round(self.nodes/time_taken)}")
+        # iterative deepening until time limit is reached
+        for depth in range(2, 1001):
+            alpha, beta = value - window, value + window
+            value = self.negamax(board, depth, alpha, beta, 0)
 
-            if time_taken > MAX_TIME:
+            # if value was outside alpha or beta, research with full window
+            if value >= beta or value <= alpha:
+                value = self.negamax(board, depth, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
+
+            time_taken = max(time.time() - start, 0.0001)
+            print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
+
+            # exit search if time ran out
+            if time_taken > max_time:
                 break
 
         return self.tt.get(board.zobrist, {"move": None})["move"]
