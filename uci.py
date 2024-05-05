@@ -11,6 +11,18 @@ def get_move(move_str: str) -> Move:
     
     return move
 
+def process_go_command(parts: list[str]) -> dict[str,int]:
+    options = {}
+    
+    i = 0
+    while i < len(parts):
+        option = parts[i]
+        if option not in ["searchmoves", "ponder", "infinite"]:
+            options[option] = int(parts[i+1])
+            i += 1
+        i += 1
+
+    return options
 
 while True:
     command = input()
@@ -36,8 +48,9 @@ while True:
                 board.make(get_move(move))
                 
     elif args[0] == "go":
+        options = process_go_command(args[1:])
         computer = Engine()
-        move = computer.search(board)
+        move = computer.search(board, options)
         print("bestmove", move)
      
                
