@@ -6,24 +6,23 @@ from .board import Board
 from .move import Move
 from .constants import MATE_SCORE, MG_VALUES
 
-MAX_TIME = 0.25
-
-MOVE_VALUE = {}
-for wp in "PNBRQ":
-    for bp in "pnbrq":
-        MOVE_VALUE[wp][bp] = MG_VALUES[wp]-MG_VALUES[bp.upper()]
-        MOVE_VALUE[bp][wp] = MG_VALUES[bp.upper()]
-
-
 class Engine:
-    def search(self, board: Board) -> Move | None:
+    def search(self, board: Board, options:dict[str, int] = {}) -> Move | None:
         alpha = -MATE_SCORE - 1
         beta = MATE_SCORE + 1
-        window = MG_VALUES["P"]
+        window = MG_VALUES["P"]*2
 
-        start = time.time()
         self.tt = {}
         self.nodes = 0
+        start = time.time()
+        
+        remaining_time = options.get("wtime") if board.white_move else options.get("btime")
+        
+        if remaining_time is not None:
+            max_time = remaining_time/1000/30
+        else:
+            max_time = options.get("movetime")
+            max_time = 0.5 if max_time is None else max_time
 
         # search the position with a depth of 1
         value = self.negamax(board, 1, alpha, beta, 0)
@@ -37,13 +36,13 @@ class Engine:
 
             # if value was outside alpha or beta, research with full window
             if value >= beta or value <= alpha:
-                print("research")
                 value = self.negamax(board, depth, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
 
             time_taken = max(time.time() - start, 0.0001)
             print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
 
-            if time_taken > MAX_TIME:
+            # exit search if time ran out
+            if time_taken > max_time:
                 break
 
         return self.tt.get(board.zobrist, {"move": None})["move"]
