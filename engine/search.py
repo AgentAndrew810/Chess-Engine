@@ -4,13 +4,13 @@ from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
-from .constants import MATE_SCORE, MG_VALUES
+from .constants import MATE_SCORE
 
 class Engine:
     def search(self, board: Board, options:dict[str, int] = {}) -> Move | None:
         alpha = -MATE_SCORE - 1
         beta = MATE_SCORE + 1
-        window = MG_VALUES["P"]*2
+        window = 200
 
         self.tt = {}
         self.nodes = 0
@@ -49,8 +49,6 @@ class Engine:
 
     def move_value(self, move: Move) -> int:
         if move.prom:
-            return 1
-        elif move.capture:
             return 1
         return 2
 
@@ -136,10 +134,7 @@ class Engine:
         if alpha < static_eval:
             alpha = static_eval
 
-        for move in move_gen(board):
-            if not move.capture:
-                continue
-
+        for move in move_gen(board, True):
             board.make(move)
             score = -self.quiescence(board, -beta, -alpha)
             board.unmake(move)
