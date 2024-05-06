@@ -4,33 +4,30 @@ from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
-from .constants import MATE_SCORE
+from .constants import MATE_SCORE, MVV_LVA
+
 
 class Engine:
-    def search(self, board: Board, options:dict[str, int] = {}) -> Move | None:
+    def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
         alpha = -MATE_SCORE - 1
         beta = MATE_SCORE + 1
-        window = 200
+        window = 100
+        value = 0
 
         self.tt = {}
         self.nodes = 0
         start = time.time()
-        
+
         remaining_time = options.get("wtime") if board.white_move else options.get("btime")
-        
+
         if remaining_time is not None:
-            max_time = remaining_time/1000/30
+            max_time = remaining_time / 1000 / 30
         else:
             max_time = options.get("movetime")
             max_time = 0.5 if max_time is None else max_time
 
-        # search the position with a depth of 1
-        value = self.negamax(board, 1, alpha, beta, 0)
-        time_taken = max(time.time() - start, 0.0001)
-        print(f"info depth 1 time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
-
         # iterative deepening until time limit is reached
-        for depth in range(2, 1001):
+        for depth in range(1, 1001):
             alpha, beta = value - window, value + window
             value = self.negamax(board, depth, alpha, beta, 0)
 
@@ -38,7 +35,7 @@ class Engine:
             if value >= beta or value <= alpha:
                 value = self.negamax(board, depth, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
 
-            time_taken = max(time.time() - start, 0.0001)
+            time_taken = max(time.time() - start, 0.001)
             print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
 
             # exit search if time ran out
@@ -47,12 +44,7 @@ class Engine:
 
         return self.tt.get(board.zobrist, {"move": None})["move"]
 
-    def move_value(self, move: Move) -> int:
-        if move.prom:
-            return 1
-        return 2
-
-    def negamax(self, board: Board, depth: int, alpha: float, beta: float, ply: int) -> float:
+    def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int) -> int:
         alpha_orig = alpha
         self.nodes += 1
 
@@ -70,7 +62,7 @@ class Engine:
 
         # get and sort moves
         moves = move_gen(board)
-        moves = sorted(moves, key=lambda x: self.move_value(x))
+        moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
 
         # move the best move to the front of the list for more cutoffs
         if tt_entry is not None:
@@ -95,7 +87,7 @@ class Engine:
             self.nodes -= 1  # account for duplicate
             return self.quiescence(board, alpha, beta)
 
-        best_value = float("-inf")
+        best_value = -MATE_SCORE - 1
         best_move = None
 
         for move in moves:
@@ -124,7 +116,7 @@ class Engine:
 
         return best_value
 
-    def quiescence(self, board: Board, alpha: float, beta: float) -> float:
+    def quiescence(self, board: Board, alpha: int, beta: int) -> int:
         self.nodes += 1
 
         static_eval = evaluate(board)
@@ -134,7 +126,11 @@ class Engine:
         if alpha < static_eval:
             alpha = static_eval
 
-        for move in move_gen(board, True):
+        # generate moves and sort
+        moves = move_gen(board, True)
+        moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
+
+        for move in moves:
             board.make(move)
             score = -self.quiescence(board, -beta, -alpha)
             board.unmake(move)
