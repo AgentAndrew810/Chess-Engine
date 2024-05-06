@@ -9,8 +9,8 @@ NE, NW, SE, SW = -9, -11, 11, 9
 OFFSETS = {
     "pra": [NE, NW],  # this is opposite for checking if a pawn checks a king by making a king a pawn
     "Pra": [SE, SW],  # ^^^
-    "pa": [SE, SW], # pawn attack moves
-    "Pa": [NE, NW], # ^^^
+    "pa": [SE, SW],  # pawn attack moves
+    "Pa": [NE, NW],  # ^^^
     "N": [N + NE, N + NW, S + SE, S + SW, E + NE, E + SE, W + NW, W + SW],
     "B": [NE, NW, SE, SW],
     "R": [N, E, S, W],
@@ -41,6 +41,20 @@ GAME_PHASE_VALUE = {"p": 0, "P": 0, "n": 1, "N": 1, "b": 1, "B": 1, "r": 2, "R":
 
 # all the indices that are actually on the chess board in the list
 VALID_POS = [num for start in range(21, 92, 10) for num in range(start, start + 8)]
+
+MVV_LVA = {
+    "q": {"K": 50, "Q": 51, "R": 52, "B": 53, "N": 54, "P": 55},
+    "r": {"K": 40, "Q": 41, "R": 42, "B": 43, "N": 44, "P": 45},
+    "b": {"K": 30, "Q": 31, "R": 32, "B": 33, "N": 34, "P": 35},
+    "n": {"K": 20, "Q": 21, "R": 22, "B": 23, "N": 24, "P": 25},
+    "p": {"K": 10, "Q": 11, "R": 12, "B": 13, "N": 14, "P": 15},
+    "Q": {"k": 50, "q": 51, "r": 52, "b": 53, "n": 54, "p": 55},
+    "R": {"k": 40, "q": 41, "r": 42, "b": 43, "n": 44, "p": 45},
+    "B": {"k": 30, "q": 31, "r": 32, "b": 33, "n": 34, "p": 35},
+    "N": {"k": 20, "q": 21, "r": 22, "b": 23, "n": 24, "p": 25},
+    "P": {"k": 10, "q": 11, "r": 12, "b": 13, "n": 14, "p": 15},
+    ".": {"K": 0, "Q": 0, "R": 0, "B": 0, "N": 0, "P": 0, "k": 0, "q": 0, "r": 0, "b": 0, "n": 0, "p": 0},
+}
 
 # piece tables in middlegame
 MG_TABLES_2D = {
