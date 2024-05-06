@@ -3,7 +3,7 @@ from .constants import VALID_POS, GAME_PHASE_VALUE
 from .precalculated_data import MG_TABLES, EG_TABLES
 
 
-def evaluate(board: Board) -> float:
+def evaluate(board: Board) -> int:
     game_phase_value = 0
     mg_value = 0
     eg_value = 0
