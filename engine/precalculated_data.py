@@ -1,4 +1,4 @@
-from .constants import N, E, S, W, OFFSETS, VALID_POS, PROM_PIECES
+from .constants import N, S, OFFSETS, VALID_POS, PROM_PIECES
 from .constants import MG_VALUES, MG_TABLES_2D, EG_VALUES, EG_TABLES_2D
 from .move import Move
 
