@@ -1,5 +1,6 @@
 from .board import Board
-from .constants import VALID_POS, MG_TABLES, EG_TABLES, GAME_PHASE_VALUE
+from .constants import VALID_POS, GAME_PHASE_VALUE
+from .precalculated_data import MG_TABLES, EG_TABLES
 
 
 def evaluate(board: Board) -> float:
