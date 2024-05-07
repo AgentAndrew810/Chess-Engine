@@ -29,11 +29,11 @@ class TestHashing(unittest.TestCase):
 
         self.assertEqual(key, board.hash)
 
-    # def test_simple(self) -> None:
-    #     board = engine.Board()
-    #     moves1 = ["d2d4", "d7d5", "g1f3", "g8f6"]
-    #     moves2 = ["g1f3", "g8f6", "d2d4", "d7d5"]
-    #     self.check_equal_hash(board, moves1, moves2)
+    def test_simple(self) -> None:
+        board = engine.Board()
+        moves1 = ["d2d4", "d7d5", "g1f3", "g8f6"]
+        moves2 = ["g1f3", "g8f6", "d2d4", "d7d5"]
+        self.check_equal_hash(board, moves1, moves2)
 
     def test_promotion(self) -> None:
         board = engine.Board("8/2k2P2/3Q4/8/8/8/8/7K b - - 0 1")
