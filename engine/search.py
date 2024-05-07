@@ -42,13 +42,13 @@ class Engine:
             if time_taken > max_time:
                 break
 
-        return self.tt.get(board.zobrist, {"move": None})["move"]
+        return self.tt.get(board.hash, {"move": None})["move"]
 
     def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int) -> int:
         alpha_orig = alpha
         self.nodes += 1
 
-        tt_entry = self.tt.get(board.zobrist)
+        tt_entry = self.tt.get(board.hash)
         if tt_entry is not None and tt_entry["depth"] >= depth:
             if tt_entry["flag"] == "exact":
                 return tt_entry["value"]
@@ -112,7 +112,7 @@ class Engine:
             new_entry["flag"] = "lower"
         else:
             new_entry["flag"] = "exact"
-        self.tt[board.zobrist] = new_entry
+        self.tt[board.hash] = new_entry
 
         return best_value
 
