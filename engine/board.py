@@ -47,32 +47,24 @@ class Board:
         self.zobrist_ep = {}
 
         for pos in VALID_POS:
-            # pieces
             self.zobrist_pieces[pos] = {}
             for piece in "pPkKnNbBrRqQ":
-                self.zobrist_pieces[pos][piece] = getrandbits(64)
+                self.zobrist_pieces[pos][piece] = getrandbits(64)  # position and piece
 
-            # ep
-            self.zobrist_ep[pos] = getrandbits(64)
+            self.zobrist_ep[pos] = getrandbits(64)  # ep
 
-        # side
-        self.zobrist_side = getrandbits(64)
-
-        # castling rights
-        self.zobrist_cr = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}
+        self.zobrist_side = getrandbits(64)  # side
+        self.zobrist_cr = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}  # castling rights
 
         self.hash = 0
 
-        # self.hash = self.get_zobrist()
-
-    def get_zobrist(self) -> None:
-        self.hash = 0
-
+        # add hash of every piece
         for pos in VALID_POS:
             p = self.board[pos]
             if p not in " .":
                 self.hash ^= self.zobrist_pieces[pos][p]
 
+        # add hash of castling rights
         if self.wck:
             self.hash ^= self.zobrist_cr["wk"]
         if self.wcq:
@@ -82,9 +74,11 @@ class Board:
         if self.bcq:
             self.hash ^= self.zobrist_cr["bq"]
 
+        # add hash if white move
         if self.white_move:
             self.hash ^= self.zobrist_side
 
+        # add hash of ep square
         if self.ep:
             self.hash ^= self.zobrist_ep[self.ep]
 
@@ -93,7 +87,7 @@ class Board:
         piece = self.board[move.pos]
         target = self.board[move.dest]
         offset = move.dest - move.pos
-
+        
         # store past information
         self.past_cr.append((self.wck, self.wcq, self.bck, self.bcq))
         self.past_ep.append(self.ep)
@@ -143,8 +137,20 @@ class Board:
 
             # update castling rights if king moved
             if piece == "K":
+                # update hash
+                if self.wck:
+                    self.hash ^= self.zobrist_cr["wk"]
+                if self.wcq:
+                    self.hash ^= self.zobrist_cr["wq"]
+
                 self.wck, self.wcq = False, False
             else:
+                # update hash
+                if self.bck:
+                    self.hash ^= self.zobrist_cr["bk"]
+                if self.bcq:
+                    self.hash ^= self.zobrist_cr["bq"]
+
                 self.bck, self.bcq = False, False
 
         # if made en passant move
@@ -174,19 +180,25 @@ class Board:
         # check if move.pos is where rooks should be (no need to check if they are rooks)
         # since if it isn't the rooks castling rights will be gone anyways
         if move.pos == WKROOK:
+            if self.wck:
+                self.hash ^= self.zobrist_cr["wk"]
             self.wck = False
         elif move.pos == WQROOK:
+            if self.wcq:
+                self.hash ^= self.zobrist_cr["wq"]
             self.wcq = False
         elif move.pos == BKROOK:
+            if self.bck:
+                self.hash ^= self.zobrist_cr["bk"]
             self.bck = False
         elif move.pos == BQROOK:
+            if self.bcq:
+                self.hash ^= self.zobrist_cr["bq"]
             self.bcq = False
 
         # update side to move
         self.white_move = not self.white_move
         self.hash ^= self.zobrist_side
-
-        #self.get_zobrist()
 
     def unmake(self, move: Move) -> None:
         self.wck, self.wcq, self.bck, self.bcq = self.past_cr.pop()
