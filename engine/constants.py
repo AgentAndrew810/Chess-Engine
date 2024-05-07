@@ -1,3 +1,4 @@
+# the fen for the starting position
 DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 # define directions
@@ -8,8 +9,8 @@ NE, NW, SE, SW = -9, -11, 11, 9
 OFFSETS = {
     "pra": [NE, NW],  # this is opposite for checking if a pawn checks a king by making a king a pawn
     "Pra": [SE, SW],  # ^^^
-    "pa": [SE, SW],
-    "Pa": [NE, NW],
+    "pa": [SE, SW],  # pawn attack moves
+    "Pa": [NE, NW],  # ^^^
     "N": [N + NE, N + NW, S + SE, S + SW, E + NE, E + SE, W + NW, W + SW],
     "B": [NE, NW, SE, SW],
     "R": [N, E, S, W],
@@ -31,8 +32,29 @@ BLACK_KING = 25
 # how much a mate is worth (high number but not infinity)
 MATE_SCORE = 100000
 
+# the values of pieces
+MG_VALUES = {"P": 82, "N": 337, "B": 365, "R": 477, "Q": 1025, "K": 0}
+EG_VALUES = {"P": 94, "N": 281, "B": 297, "R": 512, "Q": 936, "K": 0}
+
+# how much weight each piece has towards going to end game phase
+GAME_PHASE_VALUE = {"p": 0, "P": 0, "n": 1, "N": 1, "b": 1, "B": 1, "r": 2, "R": 2, "q": 4, "Q": 4, "k": 0, "K": 0}
+
 # all the indices that are actually on the chess board in the list
 VALID_POS = [num for start in range(21, 92, 10) for num in range(start, start + 8)]
+
+MVV_LVA = {
+    "q": {"K": 50, "Q": 51, "R": 52, "B": 53, "N": 54, "P": 55},
+    "r": {"K": 40, "Q": 41, "R": 42, "B": 43, "N": 44, "P": 45},
+    "b": {"K": 30, "Q": 31, "R": 32, "B": 33, "N": 34, "P": 35},
+    "n": {"K": 20, "Q": 21, "R": 22, "B": 23, "N": 24, "P": 25},
+    "p": {"K": 10, "Q": 11, "R": 12, "B": 13, "N": 14, "P": 15},
+    "Q": {"k": 50, "q": 51, "r": 52, "b": 53, "n": 54, "p": 55},
+    "R": {"k": 40, "q": 41, "r": 42, "b": 43, "n": 44, "p": 45},
+    "B": {"k": 30, "q": 31, "r": 32, "b": 33, "n": 34, "p": 35},
+    "N": {"k": 20, "q": 21, "r": 22, "b": 23, "n": 24, "p": 25},
+    "P": {"k": 10, "q": 11, "r": 12, "b": 13, "n": 14, "p": 15},
+    ".": {"K": 0, "Q": 0, "R": 0, "B": 0, "N": 0, "P": 0, "k": 0, "q": 0, "r": 0, "b": 0, "n": 0, "p": 0},
+}
 
 # piece tables in middlegame
 MG_TABLES_2D = {
@@ -161,39 +183,3 @@ EG_TABLES_2D = {
         [-53, -34, -21, -11, -28, -14, -24, -43],
     ],
 }
-
-# the values of pieces
-MG_VALUES = {"P": 82, "N": 337, "B": 365, "R": 477, "Q": 1025, "K": 0}
-EG_VALUES = {"P": 94, "N": 281, "B": 297, "R": 512, "Q": 936, "K": 0}
-GAME_PHASE_VALUE = {"p": 0, "P": 0, "n": 1, "N": 1, "b": 1, "B": 1, "r": 2, "R": 2, "q": 4, "Q": 4, "k": 0, "K": 0}
-
-# reverse table for the black piece (lowercase letter)
-for p in "PRQBKN":
-    MG_TABLES_2D[p.lower()] = MG_TABLES_2D[p][::-1]
-    EG_TABLES_2D[p.lower()] = EG_TABLES_2D[p][::-1]
-
-# # pad piece tables and make them one dimensional
-MG_TABLES, EG_TABLES = {}, {}
-for p, table in MG_TABLES_2D.items():
-    new_table = [0] * 21
-    for row in table:
-        if p.isupper():
-            new_table.extend([value + MG_VALUES[p] for value in row])
-        else:
-            new_table.extend([-value - MG_VALUES[p.upper()] for value in row])
-        new_table.extend([0] * 2)
-    new_table.extend([0] * 19)
-
-    MG_TABLES[p] = new_table
-
-for p, table in EG_TABLES_2D.items():
-    new_table = [0] * 21
-    for row in table:
-        if p.isupper():
-            new_table.extend([value + EG_VALUES[p] for value in row])
-        else:
-            new_table.extend([-value - EG_VALUES[p.upper()] for value in row])
-        new_table.extend([0] * 2)
-    new_table.extend([0] * 19)
-
-    EG_TABLES[p] = new_table

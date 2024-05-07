@@ -27,7 +27,7 @@ class GameController(game.DrawnObject):
 
         self.game_over = False
         self.player_is_white = True
-        self.white_pov = self.player_is_white
+        self.white_pov = True
         self.x_offset = 0
         self.y_offset = 0
 
@@ -95,11 +95,10 @@ class GameController(game.DrawnObject):
             print("Player Won!")
             self.game_over = True
         self.next_moves = engine.move_gen(self.board)
-        
+
         if not self.game_over and len(self.next_moves) == 0:
             print("Computer Won!")
             self.game_over = True
-        
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill(game.BLACK)

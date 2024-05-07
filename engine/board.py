@@ -3,7 +3,8 @@ from random import getrandbits
 
 from .move import Move
 from .utils import get_pos
-from .constants import DEFAULT_FEN, SE, SW, E, W, WKROOK, WQROOK, BKROOK, BQROOK, VALID_POS
+from .constants import N, E, S, W, NE, NW, SE, SW
+from .constants import DEFAULT_FEN, WKROOK, WQROOK, BKROOK, BQROOK, VALID_POS
 
 
 class Board:
@@ -37,9 +38,9 @@ class Board:
         self.past_captures = []
         self.past_cr = []
         self.past_zobrist = []
-        
+
         self.zobrist_init()
-        
+
     def zobrist_init(self) -> None:
         # zobrist keys
         self.zobrist_pieces = {}
@@ -88,6 +89,7 @@ class Board:
     def make(self, move: Move) -> None:
         piece = self.board[move.pos]
         target = self.board[move.dest]
+        offset = move.dest - move.pos
 
         # make the move
         self.board[move.pos] = "."
@@ -96,31 +98,33 @@ class Board:
         self.past_ep.append(self.ep)
         self.past_captures.append(target)
         self.past_zobrist.append(self.zobrist)
-        
+
         # if piece moved was a king
         if piece.upper() == "K":
-            # move rook (castling) if the king moved two squares                
-            if move.dest-move.pos == 2:
+            # if the king moved two squares move rook (castling) 
+            if offset == 2:
                 self.board[move.pos + E] = self.board[move.pos + E * 3]
                 self.board[move.pos + E * 3] = "."
-            elif move.dest-move.pos == -2:
+            elif offset == -2:
                 self.board[move.pos + W] = self.board[move.pos + W * 4]
                 self.board[move.pos + W * 4] = "."
-                
+
             # update castling rights if king moved
             if piece == "K":
                 self.wck, self.wcq = False, False
             else:
                 self.bck, self.bcq = False, False
-                
+
+            self.ep = 0
+
         # if piece moved was a pawn
-        if piece.upper() == "P":
+        elif piece.upper() == "P":
             # if made attack move without capturing a piece -> en passant -> remove en passant piece
-            if abs(move.dest-move.pos) in (SE, SW) and target == ".":
+            if offset in (NE, NW, SE, SW) and target == ".":
                 self.board[self.ep] = "."
-               
-            # if made double move -> update en passant square 
-            if abs(move.dest-move.pos) == 20:
+
+            # if made double move -> update en passant square
+            if offset in (N * 2, S * 2):
                 self.ep = move.dest
             else:
                 self.ep = 0
@@ -147,8 +151,10 @@ class Board:
         self.wck, self.wcq, self.bck, self.bcq = self.past_cr.pop()
         self.ep = self.past_ep.pop()
         self.zobrist = self.past_zobrist.pop()
+        
         target = self.past_captures.pop()
         piece = self.board[move.dest]
+        offset = move.dest - move.pos
 
         # update side to move
         self.white_move = not self.white_move
@@ -160,16 +166,17 @@ class Board:
         # undo promotion
         if move.prom:
             self.board[move.pos] = "P" if self.white_move else "p"
-            
-        # undo rook move if castling        
+
+        # undo rook move if castling
         if piece.upper() == "K":
-            if move.dest-move.pos == 2:
+            if offset == 2:
                 self.board[move.pos + E * 3] = self.board[move.pos + E]
                 self.board[move.pos + E] = "."
-            elif move.dest-move.pos == -2:
+            elif offset == -2:
                 self.board[move.pos + W * 4] = self.board[move.pos + W]
                 self.board[move.pos + W] = "."
                 
-        # if made attack move without capturing a piece -> en passant -> add back en passant piece
-        if piece.upper() == "P" and abs(move.dest-move.pos) in (SE, SW) and target == ".":
-            self.board[self.ep] = "p" if self.white_move else "P"
+        elif piece.upper() == "P":
+            # if made attack move without capturing a piece -> en passant -> add back en passant piece
+            if offset in (NE, NW, SE, SW) and target == ".":
+                self.board[self.ep] = "p" if self.white_move else "P"
