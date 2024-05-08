@@ -22,7 +22,7 @@ class Engine:
         remaining_time = options.get("wtime", 2000) if board.white_move else options.get("btime", 2000)
         increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)
         moves_to_go = max(options.get("movestogo", 25), 5)
-        max_time = (remaining_time/moves_to_go+increment)/1000
+        max_time = (remaining_time/moves_to_go+increment)/1000/2
 
         # iterative deepening until time limit is reached
         for depth in range(1, 1001):
