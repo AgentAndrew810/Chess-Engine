@@ -9,35 +9,41 @@ from .constants import MATE_SCORE, MVV_LVA
 
 class Engine:
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
-        alpha = -MATE_SCORE - 1
-        beta = MATE_SCORE + 1
         window = 100
-        value = 0
 
+        self.stopped = False
         self.tt = {}
         self.nodes = 0
-        start = time.time()
+        self.start = time.time()
 
         # time calculaton
-        remaining_time = options.get("wtime", 2000) if board.white_move else options.get("btime", 2000)
+        remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
         increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)
-        moves_to_go = max(options.get("movestogo", 25), 5)
-        max_time = (remaining_time/moves_to_go+increment)/1000/2
+        moves_to_go = options.get("movestogo", 30)
+        self.max_time = (remaining_time / moves_to_go + increment) / 1000
+
+        # search with an initial depth of 1
+        value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
+        best_value = value
+        time_taken = max(time.time() - self.start, 0.001)
+        print(f"info depth 1 time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
 
         # iterative deepening until time limit is reached
-        for depth in range(1, 1001):
+        for depth in range(2, 1001):
             alpha, beta = value - window, value + window
             value = self.negamax(board, depth, alpha, beta, 0)
 
             # if value was outside alpha or beta, research with full window
-            if value >= beta or value <= alpha:
+            if (value >= beta or value <= alpha) and not self.stopped:
                 value = self.negamax(board, depth, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
 
-            time_taken = max(time.time() - start, 0.001)
-            print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
+            if not self.stopped:
+                best_value = value
 
-            # exit search if time ran out
-            if time_taken > max_time:
+            time_taken = max(time.time() - self.start, 0.001)
+            print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {best_value} nps {round(self.nodes/time_taken)} ")
+
+            if self.stopped:
                 break
 
         return self.tt.get(board.hash, {"move": None})["move"]
@@ -45,6 +51,13 @@ class Engine:
     def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int) -> int:
         alpha_orig = alpha
         self.nodes += 1
+
+        if self.stopped:
+            return 0
+
+        if time.time() - self.start > self.max_time:
+            self.stopped = True
+            return 0
 
         tt_entry = self.tt.get(board.hash)
         if tt_entry is not None and tt_entry["depth"] >= depth:
@@ -92,6 +105,9 @@ class Engine:
             board.make(move)
             value = -self.negamax(board, depth - 1, -beta, -alpha, ply + 1)
             board.unmake(move)
+
+            if self.stopped:
+                return 0
 
             if value > best_value:
                 best_value = value
