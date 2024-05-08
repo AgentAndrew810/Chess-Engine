@@ -7,21 +7,15 @@ def get_move(move_str: str) -> Move:
     
     # add promotion
     if len(move_str) > 4:
-        move.prom = move_str
+        move.prom = move_str[4:]
     
     return move
 
 def process_go_command(parts: list[str]) -> dict[str,int]:
     options = {}
-    
-    i = 0
-    while i < len(parts):
-        option = parts[i]
-        if option not in ["searchmoves", "ponder", "infinite"]:
-            options[option] = int(parts[i+1])
-            i += 1
-        i += 1
-
+    for pos, key in enumerate(parts):
+        if key in ("wtime", "btime", "winc", "binc", "movestogo"):
+            options[key] = int(parts[pos+1])
     return options
 
 while True:
@@ -30,7 +24,7 @@ while True:
     
     if args[0] == "uci":
         print("id name Chess Club 7")
-        print("id author Andrew")
+        print("id author AgentAndrew")
         print("uciok")
         
     elif args[0] == "isready":
