@@ -9,12 +9,12 @@ from .constants import MATE_SCORE, MVV_LVA, EG_VALUES
 
 class Engine:
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
-        window = EG_VALUES["P"] / 2  # half of pawn
+        window = EG_VALUES["P"] // 2  # half of pawn
 
         self.stopped = False
-        self.tt = {}
         self.nodes = 0
         self.start = time.time()
+        self.tt = {}
 
         # time calculaton
         remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
@@ -54,7 +54,6 @@ class Engine:
 
     def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int) -> int:
         alpha_orig = alpha
-        self.nodes += 1
 
         if self.stopped:
             return 0
@@ -62,6 +61,8 @@ class Engine:
         if time.time() - self.start > self.max_time:
             self.stopped = True
             return 0
+
+        self.nodes += 1
 
         # transposition table
         tt_entry = self.tt.get(board.hash)
