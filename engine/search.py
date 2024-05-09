@@ -4,49 +4,67 @@ from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
-from .constants import MATE_SCORE, MVV_LVA
+from .constants import MATE_SCORE, MVV_LVA, EG_VALUES
 
 
 class Engine:
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
-        alpha = -MATE_SCORE - 1
-        beta = MATE_SCORE + 1
-        window = 100
-        value = 0
+        window = EG_VALUES["P"] / 2  # half of pawn
 
+        self.stopped = False
         self.tt = {}
         self.nodes = 0
-        start = time.time()
-        
+        self.start = time.time()
+
         # time calculaton
-        remaining_time = options.get("wtime", 2000) if board.white_move else options.get("btime", 2000)
-        increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)
-        moves_to_go = max(options.get("movestogo", 25), 5)
-        max_time = (remaining_time/moves_to_go+increment)/1000
+        remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
+        increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)  # get the increment
+        moves_to_go = max(options.get("movestogo", 30), 10)  # get moves till next time control
+        move_time = min(
+            remaining_time / moves_to_go + increment, remaining_time
+        )  # calculate time to move, if it is more than we have set it to how much we have left
+        self.max_time = move_time / 1000 - 0.1  # convert to seconds and remove 1/10 of second to make sure it responds in time
+
+        # search with an initial depth of 1
+        value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
+        best_value = value
+        time_taken = max(time.time() - self.start, 0.001)
+        print(f"info depth 1 time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
 
         # iterative deepening until time limit is reached
-        for depth in range(1, 1001):
+        for depth in range(2, 1001):
             alpha, beta = value - window, value + window
             value = self.negamax(board, depth, alpha, beta, 0)
 
             # if value was outside alpha or beta, research with full window
-            if value >= beta or value <= alpha:
+            if (value >= beta or value <= alpha) and not self.stopped:
                 value = self.negamax(board, depth, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
 
-            time_taken = max(time.time() - start, 0.001)
-            print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
+            # get the value from the search if it wasn't cancelled (otherwise it would be 0)
+            if not self.stopped:
+                best_value = value
 
-            # exit search if time ran out
-            if time_taken > max_time:
+            time_taken = max(time.time() - self.start, 0.001)
+            print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {best_value} nps {round(self.nodes/time_taken)} ")
+
+            if self.stopped:
                 break
 
-        return self.tt.get(board.zobrist, {"move": None})["move"]
+        return self.tt.get(board.hash, {"move": None})["move"]
 
     def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int) -> int:
         alpha_orig = alpha
         self.nodes += 1
 
-        tt_entry = self.tt.get(board.zobrist)
+        if self.stopped:
+            return 0
+
+        if time.time() - self.start > self.max_time:
+            self.stopped = True
+            return 0
+
+        # transposition table
+        tt_entry = self.tt.get(board.hash)
         if tt_entry is not None and tt_entry["depth"] >= depth:
             if tt_entry["flag"] == "exact":
                 return tt_entry["value"]
@@ -93,6 +111,9 @@ class Engine:
             value = -self.negamax(board, depth - 1, -beta, -alpha, ply + 1)
             board.unmake(move)
 
+            if self.stopped:
+                return 0
+
             if value > best_value:
                 best_value = value
                 best_move = move
@@ -110,7 +131,7 @@ class Engine:
             new_entry["flag"] = "lower"
         else:
             new_entry["flag"] = "exact"
-        self.tt[board.zobrist] = new_entry
+        self.tt[board.hash] = new_entry
 
         return best_value
 
@@ -121,8 +142,7 @@ class Engine:
         if static_eval >= beta:
             return beta
 
-        if alpha < static_eval:
-            alpha = static_eval
+        alpha = max(alpha, static_eval)
 
         # generate moves and sort
         moves = move_gen(board, True)
@@ -136,7 +156,6 @@ class Engine:
             if score >= beta:
                 return beta
 
-            if score > alpha:
-                alpha = score
+            alpha = max(alpha, score)
 
         return alpha
