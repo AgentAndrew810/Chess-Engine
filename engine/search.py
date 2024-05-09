@@ -4,12 +4,12 @@ from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
-from .constants import MATE_SCORE, MVV_LVA
+from .constants import MATE_SCORE, MVV_LVA, EG_VALUES
 
 
 class Engine:
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
-        window = 100
+        window = EG_VALUES["P"] / 2  # half of pawn
 
         self.stopped = False
         self.tt = {}
@@ -18,9 +18,12 @@ class Engine:
 
         # time calculaton
         remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
-        increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)
-        moves_to_go = options.get("movestogo", 30)
-        self.max_time = (remaining_time / moves_to_go + increment) / 1000
+        increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)  # get the increment
+        moves_to_go = max(options.get("movestogo", 30), 10)  # get moves till next time control
+        move_time = min(
+            remaining_time / moves_to_go + increment, remaining_time
+        )  # calculate time to move, if it is more than we have set it to how much we have left
+        self.max_time = move_time / 1000 - 0.1  # convert to seconds and remove 1/10 of second to make sure it responds in time
 
         # search with an initial depth of 1
         value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
@@ -37,6 +40,7 @@ class Engine:
             if (value >= beta or value <= alpha) and not self.stopped:
                 value = self.negamax(board, depth, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
 
+            # get the value from the search if it wasn't cancelled (otherwise it would be 0)
             if not self.stopped:
                 best_value = value
 
@@ -59,6 +63,7 @@ class Engine:
             self.stopped = True
             return 0
 
+        # transposition table
         tt_entry = self.tt.get(board.hash)
         if tt_entry is not None and tt_entry["depth"] >= depth:
             if tt_entry["flag"] == "exact":
@@ -137,8 +142,7 @@ class Engine:
         if static_eval >= beta:
             return beta
 
-        if alpha < static_eval:
-            alpha = static_eval
+        alpha = max(alpha, static_eval)
 
         # generate moves and sort
         moves = move_gen(board, True)
@@ -152,7 +156,6 @@ class Engine:
             if score >= beta:
                 return beta
 
-            if score > alpha:
-                alpha = score
+            alpha = max(alpha, score)
 
         return alpha
