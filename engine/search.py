@@ -55,9 +55,11 @@ class Engine:
     def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int) -> int:
         alpha_orig = alpha
 
+        # if search has been cancelled return 0
         if self.stopped:
             return 0
 
+        # if used more than  max time stop search and return 0
         if time.time() - self.start > self.max_time:
             self.stopped = True
             return 0
@@ -79,16 +81,21 @@ class Engine:
 
         # get all legal moves
         moves = move_gen(board)
-        
+
         # determine if in check
         king = "K" if board.white_move else "k"
         king_pos = board.board.index(king)
         checked = in_check(board.board, board.white_move, king_pos)
-        
+
         # check extension
         if checked:
             depth += 1
 
+        # determine if threefold repetion
+        if board.past_zobrist.count(board.hash) >= 2:
+            return 0
+
+        # determine if checkmate or stalemate
         if len(moves) == 0:
             # if in check with no moves -> checkmate -> return super low score
             if checked:
@@ -100,10 +107,10 @@ class Engine:
         if depth == 0:
             self.nodes -= 1  # account for duplicate
             return self.quiescence(board, alpha, beta)
-        
+
         # sort moves with MVV LVA
         moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
-        
+
         # move the best move to the front of the list for more cutoffs
         if tt_entry is not None:
             best = tt_entry["move"]
@@ -116,14 +123,13 @@ class Engine:
 
         # loop through all legal moves
         for move in moves:
-                
             board.make(move)
             value = -self.negamax(board, depth - 1, -beta, -alpha, ply + 1)
             board.unmake(move)
 
             if self.stopped and ply != 0:
                 return 0
-            
+
             if value > best_value:
                 best_value = value
                 best_move = move
