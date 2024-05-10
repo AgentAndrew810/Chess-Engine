@@ -77,22 +77,19 @@ class Engine:
             if alpha >= beta:
                 return tt_entry["value"]
 
-        # get and sort moves
+        # get all legal moves
         moves = move_gen(board)
-        moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
-
-        # move the best move to the front of the list for more cutoffs
-        if tt_entry is not None:
-            best = tt_entry["move"]
-            moves.pop(moves.index(best))
-            moves.insert(0, best)
+        
+        # determine if in check
+        king = "K" if board.white_move else "k"
+        king_pos = board.board.index(king)
+        checked = in_check(board.board, board.white_move, king_pos)
+        
+        # check extension
+        if checked:
+            depth += 1
 
         if len(moves) == 0:
-            # determine if in check
-            king = "K" if board.white_move else "k"
-            king_pos = board.board.index(king)
-            checked = in_check(board.board, board.white_move, king_pos)
-
             # if in check with no moves -> checkmate -> return super low score
             if checked:
                 return -MATE_SCORE + ply
@@ -103,18 +100,30 @@ class Engine:
         if depth == 0:
             self.nodes -= 1  # account for duplicate
             return self.quiescence(board, alpha, beta)
+        
+        # sort moves with MVV LVA
+        moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
+        
+        # move the best move to the front of the list for more cutoffs
+        if tt_entry is not None:
+            best = tt_entry["move"]
+            moves.pop(moves.index(best))
+            moves.insert(0, best)
 
+        # set initial values
         best_value = -MATE_SCORE - 1
         best_move = None
 
+        # loop through all legal moves
         for move in moves:
+                
             board.make(move)
             value = -self.negamax(board, depth - 1, -beta, -alpha, ply + 1)
             board.unmake(move)
 
-            if self.stopped:
+            if self.stopped and ply != 0:
                 return 0
-
+            
             if value > best_value:
                 best_value = value
                 best_move = move
