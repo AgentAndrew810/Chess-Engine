@@ -92,6 +92,7 @@ class Engine:
             depth += 1
 
         # determine if threefold repetion
+        # if the current hash is in the past hash's at least twice
         if board.past_zobrist.count(board.hash) >= 2:
             return 0
 
@@ -111,7 +112,7 @@ class Engine:
         # sort moves with MVV LVA
         moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
 
-        # move the best move to the front of the list for more cutoffs
+        # move the best move from the transposition table to the front of the list for more cutoffs
         if tt_entry is not None:
             best = tt_entry["move"]
             moves.pop(moves.index(best))
@@ -127,9 +128,12 @@ class Engine:
             value = -self.negamax(board, depth - 1, -beta, -alpha, ply + 1)
             board.unmake(move)
 
+            # return if the search got cancelled
+            # don't return if on the root node since a best move needs to be found incase a depth search of 1 takes too long
             if self.stopped and ply != 0:
                 return 0
 
+            # if a new best value was found, update the best_value and best_move
             if value > best_value:
                 best_value = value
                 best_move = move
@@ -139,7 +143,7 @@ class Engine:
             if alpha >= beta:
                 break
 
-        # store in transposition table
+        # store results in transposition table
         new_entry = {"depth": depth, "value": best_value, "move": best_move}
         if best_value <= alpha_orig:
             new_entry["flag"] = "upper"
@@ -160,7 +164,7 @@ class Engine:
 
         alpha = max(alpha, static_eval)
 
-        # generate moves and sort
+        # generate moves and sort with MVV LVA
         moves = move_gen(board, True)
         moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
 
