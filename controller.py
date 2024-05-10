@@ -79,6 +79,10 @@ class GameController(game.DrawnObject):
                 self.board.make(move)
                 self.last_move = move
                 self.next_moves = engine.move_gen(self.board)
+                
+                if self.board.past_zobrist.count(self.board.hash) >= 2:
+                    print("Draw by 3 fold repetition!")
+                    self.game_over = True
 
                 # this is to make sure other moves aren't run (since there are 4 promotions)
                 break
@@ -88,16 +92,22 @@ class GameController(game.DrawnObject):
     def make_computer_move(self) -> None:
         move = self.computer.search(self.board)
 
-        if move:
+        if move is not None:
             self.board.make(move)
             self.last_move = move
-        else:
-            print("Player Won!")
-            self.game_over = True
-        self.next_moves = engine.move_gen(self.board)
 
-        if not self.game_over and len(self.next_moves) == 0:
-            print("Computer Won!")
+            self.next_moves = engine.move_gen(self.board)
+
+            if len(self.next_moves) == 0:
+                print("Computer won by checkmate!")
+                self.game_over = True
+
+        else:
+            print("Player won by checkmate!")
+            self.game_over = True
+
+        if self.board.past_zobrist.count(self.board.hash) >= 2:
+            print("Draw by 3 fold repetition!")
             self.game_over = True
 
     def draw(self, screen: pygame.surface.Surface) -> None:
