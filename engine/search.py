@@ -55,9 +55,11 @@ class Engine:
     def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int) -> int:
         alpha_orig = alpha
 
+        # if search has been cancelled return 0
         if self.stopped:
             return 0
 
+        # if used more than  max time stop search and return 0
         if time.time() - self.start > self.max_time:
             self.stopped = True
             return 0
@@ -79,16 +81,22 @@ class Engine:
 
         # get all legal moves
         moves = move_gen(board)
-        
+
         # determine if in check
         king = "K" if board.white_move else "k"
         king_pos = board.board.index(king)
         checked = in_check(board.board, board.white_move, king_pos)
-        
+
         # check extension
         if checked:
             depth += 1
 
+        # determine if threefold repetion
+        # if the current hash is in the past hash's at least twice
+        if board.past_zobrist.count(board.hash) >= 2:
+            return 0
+
+        # determine if checkmate or stalemate
         if len(moves) == 0:
             # if in check with no moves -> checkmate -> return super low score
             if checked:
@@ -100,11 +108,11 @@ class Engine:
         if depth == 0:
             self.nodes -= 1  # account for duplicate
             return self.quiescence(board, alpha, beta)
-        
+
         # sort moves with MVV LVA
         moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
-        
-        # move the best move to the front of the list for more cutoffs
+
+        # move the best move from the transposition table to the front of the list for more cutoffs
         if tt_entry is not None:
             best = tt_entry["move"]
             moves.pop(moves.index(best))
@@ -116,14 +124,16 @@ class Engine:
 
         # loop through all legal moves
         for move in moves:
-                
             board.make(move)
             value = -self.negamax(board, depth - 1, -beta, -alpha, ply + 1)
             board.unmake(move)
 
+            # return if the search got cancelled
+            # don't return if on the root node since a best move needs to be found incase a depth search of 1 takes too long
             if self.stopped and ply != 0:
                 return 0
-            
+
+            # if a new best value was found, update the best_value and best_move
             if value > best_value:
                 best_value = value
                 best_move = move
@@ -133,7 +143,7 @@ class Engine:
             if alpha >= beta:
                 break
 
-        # store in transposition table
+        # store results in transposition table
         new_entry = {"depth": depth, "value": best_value, "move": best_move}
         if best_value <= alpha_orig:
             new_entry["flag"] = "upper"
@@ -154,7 +164,7 @@ class Engine:
 
         alpha = max(alpha, static_eval)
 
-        # generate moves and sort
+        # generate moves and sort with MVV LVA
         moves = move_gen(board, True)
         moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
 
