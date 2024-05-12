@@ -3,10 +3,9 @@ from .move import Move
 from .constants import VALID_POS, N, E, S, W, OFFSETS
 from .precalculated_data import MOVE_TABLES, LINE_OF_SIGHT, LINE_OF_SIGHT_KNIGHT
 
-def move_gen(board: Board, captures_only: bool = False) -> list[Move]:
-    king = "K" if board.white_move else "k"
-    king_pos = board.board.index(king)
 
+def move_gen(board: Board, captures_only: bool = False) -> list[Move]:
+    king_pos = board.white_king_pos if board.white_move else board.black_king_pos
     pins, checks = get_pins_and_checks(board.board, board.white_move, king_pos)
 
     if len(checks) == 1:
@@ -32,7 +31,7 @@ def move_gen(board: Board, captures_only: bool = False) -> list[Move]:
 
         # filer out any move that isn't valid
         moves = [move for move in moves if move.dest in valid_squares]
-        
+
         # add king and en passant moves
         moves.extend(en_passant_moves(board, king_pos))
         if captures_only:
@@ -48,7 +47,7 @@ def move_gen(board: Board, captures_only: bool = False) -> list[Move]:
         if not captures_only:
             moves.extend(get_king_moves(board, king_pos))
             rook = "R" if board.white_move else "r"
-            
+
             # add king-side castling moves
             if board.white_move and board.wck or not board.white_move and board.bck:
                 if all(board.board[king_pos + E * i] == "." for i in range(1, 3)):
@@ -97,16 +96,17 @@ def get_king_moves(board: Board, king_pos: int):
     board.board[king_pos] = king
     return moves
 
+
 def get_king_captures(board: Board, king_pos: int):
     moves = []
     king = board.board[king_pos]
-    
+
     # remove the king (must do this so sliding piece will go through it)
     board.board[king_pos] = "."
-    
+
     for move in MOVE_TABLES[king_pos]["K"]:
         target = board.board[move.dest]
-        
+
         # if blank square or friendly piece continue
         if target == "." or target.isupper() == board.white_move:
             continue
@@ -116,8 +116,8 @@ def get_king_captures(board: Board, king_pos: int):
             continue
 
         moves.append(move)
-        
-     # add king back
+
+    # add king back
     board.board[king_pos] = king
     return moves
 
@@ -125,7 +125,7 @@ def get_king_captures(board: Board, king_pos: int):
 def en_passant_moves(board: Board, king_pos: int):
     moves = []
 
-    if board.ep:
+    if board.ep != 0:
         friendly_pawn = "P" if board.white_move else "p"
         pawn_forward_dir = N if board.white_move else S
 
@@ -169,17 +169,17 @@ def get_all_moves(board: Board, pins):
             # pawn forward moves
             for move in MOVE_TABLES[pos][p]:
                 target = board.board[move.dest]
-                
+
                 if target == ".":
                     if not is_pinned or pin_dir in (N, S):
                         moves.append(move)
                 else:
-                    break # this is needed so that if there is a pawn double move it will be skipped (double pawn move can't jump over piece)
-            
-            for dir, p_moves in MOVE_TABLES[pos][p+"a"].items():
+                    break  # this is needed so that if there is a pawn double move it will be skipped (double pawn move can't jump over piece)
+
+            for dir, p_moves in MOVE_TABLES[pos][p + "a"].items():
                 for move in p_moves:
                     target = board.board[move.dest]
-                    
+
                     if target != "." and p.isupper() != target.isupper():
                         if not is_pinned or pin_dir in (dir, -dir):
                             moves.append(move)
@@ -201,18 +201,19 @@ def get_all_moves(board: Board, pins):
                         # if enemy piece add the move
                         if p.isupper() != target.isupper():
                             moves.append(move)
-                        break # if friendly or enemy exit the p_moves loop (exiting all moves in this direction)
+                        break  # if friendly or enemy exit the p_moves loop (exiting all moves in this direction)
 
         elif p.upper() == "N":
             # add all moves the knight can make if it isn't pinned
             if not is_pinned:
                 for move in MOVE_TABLES[pos][p.upper()]:
                     target = board.board[move.dest]
-                    
+
                     # add the move if target is blank square or opposing colour
                     if target == "." or p.isupper() != target.isupper():
                         moves.append(move)
     return moves
+
 
 def get_all_captures(board: Board, pins):
     moves = []
@@ -231,11 +232,11 @@ def get_all_captures(board: Board, pins):
                 is_pinned = True
                 pin_dir = pin[1]
 
-        if p.upper() == "P":          
-            for dir, p_moves in MOVE_TABLES[pos][p+"a"].items():
+        if p.upper() == "P":
+            for dir, p_moves in MOVE_TABLES[pos][p + "a"].items():
                 for move in p_moves:
                     target = board.board[move.dest]
-                    
+
                     if target != "." and p.isupper() != target.isupper():
                         if not is_pinned or pin_dir in (dir, -dir):
                             moves.append(move)
@@ -249,19 +250,19 @@ def get_all_captures(board: Board, pins):
                 # loop through every position in those moves
                 for move in p_moves:
                     target = board.board[move.dest]
-                    
+
                     if target != ".":
                         # if enemy piece add the move
                         if p.isupper() != target.isupper():
                             moves.append(move)
-                        break # if friendly or enemy exit the p_moves loop (exiting all moves in this direction)
+                        break  # if friendly or enemy exit the p_moves loop (exiting all moves in this direction)
 
         elif p.upper() == "N":
             # add all moves the knight can make if it isn't pinned
             if not is_pinned:
                 for move in MOVE_TABLES[pos][p.upper()]:
                     target = board.board[move.dest]
-                    
+
                     # add the move if attacking enemy
                     if target != "." and p.isupper() != target.isupper():
                         moves.append(move)
@@ -294,10 +295,10 @@ def in_check(board: list[str], white_move: bool, king_pos: int):
             else:
                 # enemy piece not giving check
                 break
-        
+
     for pos in LINE_OF_SIGHT_KNIGHT[king_pos]:
         piece = board[pos]
-        
+
         if piece.upper() == "N" and piece.isupper() != white_move:
             return True
 
@@ -346,10 +347,10 @@ def get_pins_and_checks(board: list[str], white_move: bool, king_pos: int):
                 else:
                     # not giving check or pin
                     break
-                
+
     for pos in LINE_OF_SIGHT_KNIGHT[king_pos]:
         piece = board[pos]
-        
+
         if piece.upper() == "N" and piece.isupper() != white_move:
             checks.append((pos, dir))
 
