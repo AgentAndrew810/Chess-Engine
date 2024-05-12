@@ -6,6 +6,10 @@ from .board import Board
 from .move import Move
 from .constants import MATE_SCORE, MVV_LVA, EG_VALUES
 
+UPPERBOUND = 1
+EXACT = 0
+LOWERBOUND = -1
+
 
 class Engine:
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
@@ -25,42 +29,41 @@ class Engine:
         )  # calculate time to move, if it is more than we have set it to how much we have left
         self.max_time = move_time / 1000 - 0.1  # convert to seconds and remove 1/10 of second to make sure it responds in time
 
-        # search with an initial depth of 1
-        value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
-        best_value = value
-        time_taken = max(time.time() - self.start, 0.001)
-        print(f"info depth 1 time {round(time_taken*1000)} nodes {self.nodes} score cp {value} nps {round(self.nodes/time_taken)}")
+        self.max_time = 3.5
+
+        # start initial search with a depth of 1
+        last_value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1)
+        self.print_info(last_value, 1)
 
         # iterative deepening until time limit is reached
         for depth in range(2, 1001):
-            alpha, beta = value - window, value + window
+            alpha, beta = last_value - window, last_value + window
             value = self.negamax(board, depth, alpha, beta, 0)
 
             # if value was outside alpha or beta, research with full window
             if (value >= beta or value <= alpha) and not self.stopped:
-                value = self.negamax(board, depth, -MATE_SCORE - 1, MATE_SCORE + 1, 0)
+                value = self.negamax(board, depth, -MATE_SCORE - 1, MATE_SCORE + 1)
 
-            # get the value from the search if it wasn't cancelled (otherwise it would be 0)
+            # update last_value if the search was not cancelled, otherwise the score would always be 0 on the cancelled depth
             if not self.stopped:
-                best_value = value
+                last_value = value
 
-            time_taken = max(time.time() - self.start, 0.001)
-            print(f"info depth {depth} time {round(time_taken*1000)} nodes {self.nodes} score cp {best_value} nps {round(self.nodes/time_taken)} ")
+            # print output
+            self.print_info(last_value, depth)
 
+            # if the search was cancelled exit loop
             if self.stopped:
                 break
 
-        return self.tt.get(board.hash, {"move": None})["move"]
+        # return the best move
+        tt_entry = self.tt.get(board.hash, None)
+        return tt_entry[2] if tt_entry is not None else None
 
-    def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int) -> int:
+    def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int = 0) -> int:
         alpha_orig = alpha
 
-        # if search has been cancelled return 0
-        if self.stopped:
-            return 0
-
-        # if used more than  max time stop search and return 0
-        if time.time() - self.start > self.max_time:
+        # if used more than the max time stop search and return 0
+        if time.time() - self.start >= self.max_time:
             self.stopped = True
             return 0
 
@@ -68,23 +71,22 @@ class Engine:
 
         # transposition table
         tt_entry = self.tt.get(board.hash)
-        if tt_entry is not None and tt_entry["depth"] >= depth:
-            if tt_entry["flag"] == "exact":
-                return tt_entry["value"]
-            elif tt_entry["flag"] == "lower":
-                alpha = max(alpha, tt_entry["value"])
-            elif tt_entry["flag"] == "upper":
-                beta = min(beta, tt_entry["value"])
+        if tt_entry is not None and tt_entry[0] >= depth:
+            if tt_entry[3] == EXACT:
+                return tt_entry[1]
+            elif tt_entry[3] == LOWERBOUND:
+                alpha = max(alpha, tt_entry[1])
+            elif tt_entry[3] == UPPERBOUND:
+                beta = min(beta, tt_entry[1])
 
             if alpha >= beta:
-                return tt_entry["value"]
+                return tt_entry[1]
 
         # get all legal moves
         moves = move_gen(board)
 
         # determine if in check
-        king = "K" if board.white_move else "k"
-        king_pos = board.board.index(king)
+        king_pos = board.white_king_pos if board.white_move else board.black_king_pos
         checked = in_check(board.board, board.white_move, king_pos)
 
         # check extension
@@ -93,12 +95,13 @@ class Engine:
 
         # determine if threefold repetion
         # if the current hash is in the past hash's at least twice
-        if board.past_zobrist.count(board.hash) >= 2:
+        if board.zobrist_key_history.count(board.hash) >= 2:
             return 0
 
         # determine if checkmate or stalemate
         if len(moves) == 0:
             # if in check with no moves -> checkmate -> return super low score
+            # add ply so the engine perfers more direct (less moves) checkmates
             if checked:
                 return -MATE_SCORE + ply
             # not in check with no moves -> stalemate -> draw
@@ -114,9 +117,8 @@ class Engine:
 
         # move the best move from the transposition table to the front of the list for more cutoffs
         if tt_entry is not None:
-            best = tt_entry["move"]
-            moves.pop(moves.index(best))
-            moves.insert(0, best)
+            moves.remove(tt_entry[2])
+            moves.insert(0, tt_entry[2])
 
         # set initial values
         best_value = -MATE_SCORE - 1
@@ -144,14 +146,12 @@ class Engine:
                 break
 
         # store results in transposition table
-        new_entry = {"depth": depth, "value": best_value, "move": best_move}
         if best_value <= alpha_orig:
-            new_entry["flag"] = "upper"
+            self.tt[board.hash] = (depth, value, best_move, UPPERBOUND)
         elif best_value >= beta:
-            new_entry["flag"] = "lower"
+            self.tt[board.hash] = (depth, value, best_move, LOWERBOUND)
         else:
-            new_entry["flag"] = "exact"
-        self.tt[board.hash] = new_entry
+            self.tt[board.hash] = (depth, value, best_move, EXACT)
 
         return best_value
 
@@ -179,3 +179,10 @@ class Engine:
             alpha = max(alpha, score)
 
         return alpha
+
+    def print_info(self, value: int, depth: int) -> None:
+        time_taken = max(time.time() - self.start, 0.001)
+        nps = round(self.nodes / time_taken)
+        time_taken = round(time_taken * 1000)
+
+        print(f"info depth {depth} time {time_taken} nodes {self.nodes} score cp {value} nps {nps}")
