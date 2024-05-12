@@ -4,7 +4,7 @@ from random import getrandbits
 from .move import Move
 from .utils import get_pos
 from .constants import N, E, S, W, NE, NW, SE, SW
-from .constants import DEFAULT_FEN, WKROOK, WQROOK, BKROOK, BQROOK, VALID_POS
+from .constants import DEFAULT_FEN, WKROOK, WQROOK, BKROOK, BQROOK, VALID_POS, WHITE_PIECES, BLACK_PIECES
 
 
 class Board:
@@ -44,6 +44,10 @@ class Board:
         # extra info for unmaking moves
         self.history = []
         self.zobrist_key_history = []
+
+        # determine ally and enemy pieces
+        self.ally_pieces = WHITE_PIECES if self.white_move else BLACK_PIECES
+        self.enemy_pieces = BLACK_PIECES if self.white_move else WHITE_PIECES
 
         self.zobrist_init()
 
@@ -206,6 +210,9 @@ class Board:
         self.white_move = not self.white_move
         self.hash ^= self.zobrist_side
 
+        # swap ally and enemy pieces
+        self.ally_pieces, self.enemy_pieces = self.enemy_pieces, self.ally_pieces
+
     def unmake(self, move: Move) -> None:
         target, self.ep, self.white_king_pos, self.black_king_pos, self.wck, self.wcq, self.bck, self.bcq = self.history.pop()
         self.hash = self.zobrist_key_history.pop()
@@ -215,6 +222,7 @@ class Board:
 
         # update side to move
         self.white_move = not self.white_move
+        self.ally_pieces, self.enemy_pieces = self.enemy_pieces, self.ally_pieces
 
         # move the pieces back
         self.board[move.pos] = piece
