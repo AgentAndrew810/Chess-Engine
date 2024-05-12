@@ -79,8 +79,8 @@ class GameController(game.DrawnObject):
                 self.board.make(move)
                 self.last_move = move
                 self.next_moves = engine.move_gen(self.board)
-                
-                if self.board.past_zobrist.count(self.board.hash) >= 2:
+
+                if self.board.zobrist_key_history.count(self.board.hash) >= 2:
                     print("Draw by 3 fold repetition!")
                     self.game_over = True
 
@@ -106,7 +106,7 @@ class GameController(game.DrawnObject):
             print("Player won by checkmate!")
             self.game_over = True
 
-        if self.board.past_zobrist.count(self.board.hash) >= 2:
+        if self.board.zobrist_key_history.count(self.board.hash) >= 2:
             print("Draw by 3 fold repetition!")
             self.game_over = True
 
