@@ -20,6 +20,7 @@ class Board:
                 self.board.extend([" "] * 2)
             else:
                 self.board.append(char)
+
         self.board.extend([" "] * 21)
 
         # get all additional stats
@@ -33,11 +34,16 @@ class Board:
         else:
             self.ep = 0
 
+        # determine position of kings
+        for pos in VALID_POS:
+            if self.board[pos] == "K":
+                self.white_king_pos = pos
+            elif self.board[pos] == "k":
+                self.black_king_pos = pos
+
         # extra info for unmaking moves
-        self.past_ep = []
-        self.past_captures = []
-        self.past_cr = []
-        self.past_zobrist = []
+        self.history = []
+        self.zobrist_key_history = []
 
         self.zobrist_init()
 
@@ -53,7 +59,7 @@ class Board:
 
             self.zobrist_ep[pos] = getrandbits(64)  # ep
 
-        self.zobrist_side = getrandbits(64)  # side
+        self.zobrist_side = getrandbits(64)  # side to move
         self.zobrist_cr = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}  # castling rights
 
         self.hash = 0
@@ -87,12 +93,10 @@ class Board:
         piece = self.board[move.pos]
         target = self.board[move.dest]
         offset = move.dest - move.pos
-        
+
         # store past information
-        self.past_cr.append((self.wck, self.wcq, self.bck, self.bcq))
-        self.past_ep.append(self.ep)
-        self.past_captures.append(target)
-        self.past_zobrist.append(self.hash)
+        self.history.append((target, self.ep, self.white_king_pos, self.black_king_pos, self.wck, self.wcq, self.bck, self.bcq))
+        self.zobrist_key_history.append(self.hash)
 
         # make the move on the board
         self.board[move.pos] = "."
@@ -140,18 +144,25 @@ class Board:
                 # update hash
                 if self.wck:
                     self.hash ^= self.zobrist_cr["wk"]
+                    self.wck = False
                 if self.wcq:
                     self.hash ^= self.zobrist_cr["wq"]
+                    self.wcq = False
 
-                self.wck, self.wcq = False, False
+                # update location
+                self.white_king_pos = move.dest
+
             else:
                 # update hash
                 if self.bck:
                     self.hash ^= self.zobrist_cr["bk"]
+                    self.bck = False
                 if self.bcq:
                     self.hash ^= self.zobrist_cr["bq"]
+                    self.bcq = False
 
-                self.bck, self.bcq = False, False
+                # update location
+                self.black_king_pos = move.dest
 
         # if made en passant move
         # based on if pawn made attack move without capturing a piece
@@ -174,26 +185,21 @@ class Board:
             # update hash
             if self.ep != 0:
                 self.hash ^= self.zobrist_ep[self.ep]  # if a non-zero en passant square, we have to remove the old one
-
-            self.ep = 0
+                self.ep = 0
 
         # check if move.pos is where rooks should be (no need to check if they are rooks)
         # since if it isn't the rooks castling rights will be gone anyways
-        if move.pos == WKROOK:
-            if self.wck:
-                self.hash ^= self.zobrist_cr["wk"]
+        if move.pos == WKROOK and self.wck:
+            self.hash ^= self.zobrist_cr["wk"]
             self.wck = False
-        elif move.pos == WQROOK:
-            if self.wcq:
-                self.hash ^= self.zobrist_cr["wq"]
+        elif move.pos == WQROOK and self.wcq:
+            self.hash ^= self.zobrist_cr["wq"]
             self.wcq = False
-        elif move.pos == BKROOK:
-            if self.bck:
-                self.hash ^= self.zobrist_cr["bk"]
+        elif move.pos == BKROOK and self.bck:
+            self.hash ^= self.zobrist_cr["bk"]
             self.bck = False
-        elif move.pos == BQROOK:
-            if self.bcq:
-                self.hash ^= self.zobrist_cr["bq"]
+        elif move.pos == BQROOK and self.bcq:
+            self.hash ^= self.zobrist_cr["bq"]
             self.bcq = False
 
         # update side to move
@@ -201,11 +207,9 @@ class Board:
         self.hash ^= self.zobrist_side
 
     def unmake(self, move: Move) -> None:
-        self.wck, self.wcq, self.bck, self.bcq = self.past_cr.pop()
-        self.ep = self.past_ep.pop()
-        self.hash = self.past_zobrist.pop()
+        target, self.ep, self.white_king_pos, self.black_king_pos, self.wck, self.wcq, self.bck, self.bcq = self.history.pop()
+        self.hash = self.zobrist_key_history.pop()
 
-        target = self.past_captures.pop()
         piece = self.board[move.dest]
         offset = move.dest - move.pos
 
@@ -217,7 +221,7 @@ class Board:
         self.board[move.dest] = target
 
         # undo promotion
-        if move.prom:
+        if move.prom != "":
             self.board[move.pos] = "P" if self.white_move else "p"
 
         # undo rook move if castling
