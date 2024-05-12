@@ -18,6 +18,10 @@ OFFSETS = {
     "K": [N, NE, E, SE, S, SW, W, NW],
 }
 
+# define pieces
+WHITE_PIECES = "PNBRQK"
+BLACK_PIECES = "pnbrqk"
+
 # all the pieces a pawn can promote to
 PROM_PIECES = ["b", "n", "r", "q"]
 

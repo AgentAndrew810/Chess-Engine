@@ -85,7 +85,7 @@ class Engine:
 
         # determine if in check
         king_pos = board.white_king_pos if board.white_move else board.black_king_pos
-        checked = in_check(board.board, board.white_move, king_pos)
+        checked = in_check(board, king_pos)
 
         # check extension
         if checked:

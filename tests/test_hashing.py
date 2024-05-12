@@ -15,7 +15,7 @@ def get_move(move_str: str) -> engine.Move:
 
 
 class TestHashing(unittest.TestCase):
-    def check_equal_hash(self, board: engine.Board, moves1: list[str], moves2: list[str]) -> bool:
+    def check_equal_hash(self, board: engine.Board, moves1: list[str], moves2: list[str]) -> None:
         for move in moves1:
             board.make(get_move(move))
 
