@@ -29,8 +29,6 @@ class Engine:
         )  # calculate time to move, if it is more than we have set it to how much we have left
         self.max_time = move_time / 1000 - 0.1  # convert to seconds and remove 1/10 of second to make sure it responds in time
 
-        self.max_time = 3.5
-
         # start initial search with a depth of 1
         last_value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1)
         self.print_info(last_value, 1)
@@ -131,8 +129,7 @@ class Engine:
             board.unmake(move)
 
             # return if the search got cancelled
-            # don't return if on the root node since a best move needs to be found incase a depth search of 1 takes too long
-            if self.stopped and ply != 0:
+            if self.stopped:
                 return 0
 
             # if a new best value was found, update the best_value and best_move
