@@ -4,7 +4,7 @@ from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
 from .move import Move
-from .constants import MATE_SCORE, MVV_LVA, EG_VALUES
+from .constants import MATE_SCORE, MVV_LVA, HALF_PAWN
 
 UPPERBOUND = 1
 EXACT = 0
@@ -13,8 +13,6 @@ LOWERBOUND = -1
 
 class Engine:
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
-        window = EG_VALUES["P"] // 2  # half of pawn
-
         self.stopped = False
         self.nodes = 0
         self.start = time.time()
@@ -35,7 +33,7 @@ class Engine:
 
         # iterative deepening until time limit is reached
         for depth in range(2, 1001):
-            alpha, beta = last_value - window, last_value + window
+            alpha, beta = last_value - HALF_PAWN, last_value + HALF_PAWN
             value = self.negamax(board, depth, alpha, beta, 0)
 
             # if value was outside alpha or beta, research with full window
@@ -114,6 +112,7 @@ class Engine:
         moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
 
         # move the best move from the transposition table to the front of the list for more cutoffs
+        # this is the best move that was found last iteration of iterative deepening
         if tt_entry is not None:
             moves.remove(tt_entry[2])
             moves.insert(0, tt_entry[2])
