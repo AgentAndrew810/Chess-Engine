@@ -78,3 +78,20 @@ for pos in VALID_POS:
     # add line of sight for all directions and for knight
     LINE_OF_SIGHT[pos] = {dir: [move.dest for move in MOVE_TABLES[pos]["Q"][dir]] for dir in OFFSETS["Q"]}
     LINE_OF_SIGHT_KNIGHT[pos] = [move.dest for move in MOVE_TABLES[pos]["N"]]
+
+PAWN_FILES = {}
+ADJ_PAWN_FILES = {}
+
+for square in VALID_POS:
+    PAWN_FILES[square] = []
+    ADJ_PAWN_FILES[square] = []
+
+    for pos in VALID_POS:
+        if pos == square:  # skip same square
+            continue
+
+        if pos % 10 == square % 10:  # if on the same file
+            PAWN_FILES[square].append(pos)
+
+        if pos % 10 in ((square - 1) % 10, (square + 1) % 10):  # if on adjacent file
+            ADJ_PAWN_FILES[square].append(pos)
