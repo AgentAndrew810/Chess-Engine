@@ -79,19 +79,41 @@ for pos in VALID_POS:
     LINE_OF_SIGHT[pos] = {dir: [move.dest for move in MOVE_TABLES[pos]["Q"][dir]] for dir in OFFSETS["Q"]}
     LINE_OF_SIGHT_KNIGHT[pos] = [move.dest for move in MOVE_TABLES[pos]["N"]]
 
-PAWN_FILES = {}
 ADJ_PAWN_FILES = {}
 
 for square in VALID_POS:
-    PAWN_FILES[square] = []
     ADJ_PAWN_FILES[square] = []
 
     for pos in VALID_POS:
         if pos == square:  # skip same square
             continue
 
-        if pos % 10 == square % 10:  # if on the same file
-            PAWN_FILES[square].append(pos)
-
         if pos % 10 in ((square - 1) % 10, (square + 1) % 10):  # if on adjacent file
             ADJ_PAWN_FILES[square].append(pos)
+
+PASSED_PAWNS = {}
+
+for sq in VALID_POS:
+    PASSED_PAWNS[sq] = {"P": [], "p": []}
+
+    for pos in VALID_POS:
+        if pos // 10 not in (2, 9):  # pawns can't be on either of these ranks
+            if pos % 10 in ((sq - 1) % 10, sq % 10, (sq + 1) % 10):  # if pawn is in the same file or adjacent file
+                # if position rank is smaller add it to white
+                if (pos // 10) < (sq // 10):
+                    PASSED_PAWNS[sq]["P"].append(pos)
+
+                # if position rank is greater add it to black
+                if (pos // 10) > (sq // 10):
+                    PASSED_PAWNS[sq]["p"].append(pos)
+
+PASSED_PAWN_VALUE = {}
+
+for sq in VALID_POS:
+    if sq // 10 in (2, 9):
+        continue
+
+    w_dist = sq // 10 - 2
+    b_dist = 9 - sq // 10
+
+    PASSED_PAWN_VALUE[sq] = {"P": round(MG_VALUES["P"] / w_dist), "p": round(-MG_VALUES["P"] / b_dist)}
