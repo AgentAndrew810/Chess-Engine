@@ -81,15 +81,18 @@ for pos in VALID_POS:
 
 ADJ_PAWN_FILES = {}
 
-for square in VALID_POS:
-    ADJ_PAWN_FILES[square] = []
+for sq in VALID_POS:
+    ADJ_PAWN_FILES[sq] = []
 
     for pos in VALID_POS:
-        if pos == square:  # skip same square
+        if pos == sq:  # skip same square
             continue
 
-        if pos % 10 in ((square - 1) % 10, (square + 1) % 10):  # if on adjacent file
-            ADJ_PAWN_FILES[square].append(pos)
+        if pos // 10 in (2, 9):  # pawns can't be on either of these ranks
+            continue
+
+        if pos % 10 in ((sq - 1) % 10, (sq + 1) % 10):  # if on adjacent file
+            ADJ_PAWN_FILES[sq].append(pos)
 
 PASSED_PAWNS = {}
 
