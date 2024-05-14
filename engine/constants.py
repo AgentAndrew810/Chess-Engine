@@ -39,7 +39,10 @@ MATE_SCORE = 100000
 # the values of pieces
 MG_VALUES = {"P": 82, "N": 337, "B": 365, "R": 477, "Q": 1025, "K": 0}
 EG_VALUES = {"P": 94, "N": 281, "B": 297, "R": 512, "Q": 936, "K": 0}
-HALF_PAWN = MG_VALUES["P"] // 2
+PAWN_VALUE = MG_VALUES["P"]
+HALF_PAWN = PAWN_VALUE // 2
+
+ISOLATED_PAWN_VALUE = {"P": -round(PAWN_VALUE / 8), "p": round(PAWN_VALUE / 8)}
 
 # how much weight each piece has towards going to end game phase
 GAME_PHASE_VALUE = {"p": 0, "P": 0, "n": 1, "N": 1, "b": 1, "B": 1, "r": 2, "R": 2, "q": 4, "Q": 4, "k": 0, "K": 0}
