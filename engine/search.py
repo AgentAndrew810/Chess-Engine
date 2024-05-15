@@ -10,7 +10,7 @@ UPPERBOUND = 1
 EXACT = 0
 LOWERBOUND = -1
 
-MAX_PLY = 120
+MAX_PLY = 1000
 
 
 class Engine:
@@ -21,7 +21,9 @@ class Engine:
         self.nodes = 0
         self.start = time.time()
         self.tt = {}
-        self.killer_moves = [[0, 0] for _ in range(MAX_PLY + 1)]
+
+        self.first_killers: list[Move | None] = [None for _ in range(MAX_PLY + 1)]
+        self.second_killers: list[Move | None] = [None for _ in range(MAX_PLY + 1)]
 
         # time calculaton
         remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
@@ -115,13 +117,16 @@ class Engine:
             return self.quiescence(board, alpha, beta)
 
         # sort moves with MVV LVA
-        moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
+        moves = sorted(moves, key=lambda move: self.move_value(board, move, ply), reverse=True)
 
         # move the best move from the tt to the front
         # searching this move first will lead to more cutoffs
         if tt_entry is not None:
-            moves.remove(tt_entry[2])
-            moves.insert(0, tt_entry[2])
+            hash_move = tt_entry[2]
+            moves.remove(hash_move)
+            moves.insert(0, hash_move)
+        else:
+            hash_move = None
 
         # set initial values
         best_value = -MATE_SCORE - 1
@@ -144,7 +149,19 @@ class Engine:
 
             alpha = max(alpha, value)
 
+            # cutoff
             if alpha >= beta:
+                # store the move in first_killers if it is not a capture move
+                if board.board[move.dest] == ".":
+                    # if there is no killer move stored, then store it
+                    if self.first_killers[ply] is None:
+                        self.first_killers[ply] = move
+
+                    # if there is a killer move stored, make sure it isn't the same move
+                    elif move != self.first_killers[ply]:
+                        self.second_killers[ply] = self.first_killers[ply]
+                        self.first_killers[ply] = move
+
                 break
 
         # store results in transposition table
@@ -154,7 +171,6 @@ class Engine:
             self.tt[board.hash] = (depth, value, best_move, LOWERBOUND)
         else:
             self.tt[board.hash] = (depth, value, best_move, EXACT)
-
         return best_value
 
     def quiescence(self, board: Board, alpha: int, beta: int) -> int:
@@ -188,3 +204,21 @@ class Engine:
         time_taken = round(time_taken * 1000)
 
         print(f"info depth {depth} time {time_taken} nodes {self.nodes} score cp {value} nps {nps}")
+
+    def move_value(self, board: Board, move: Move, ply: int) -> int:
+        # if the move is a capture, score it with MVV LVA
+        if board.board[move.dest] != ".":
+            return MVV_LVA[board.board[move.dest]][board.board[move.pos]]
+        else:
+            # if it is the first killer move
+            if self.first_killers[ply] is not None:
+                if move == self.first_killers[ply]:
+                    return 2
+
+            # if it is the second killer move
+            if self.second_killers[ply] is not None:
+                if move == self.second_killers[ply]:
+                    return 1
+
+            # not a capture or killer move
+            return 0
