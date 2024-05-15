@@ -10,6 +10,8 @@ UPPERBOUND = 1
 EXACT = 0
 LOWERBOUND = -1
 
+MAX_PLY = 120
+
 
 class Engine:
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
@@ -19,6 +21,7 @@ class Engine:
         self.nodes = 0
         self.start = time.time()
         self.tt = {}
+        self.killer_moves = [[0, 0] for _ in range(MAX_PLY + 1)]
 
         # time calculaton
         remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
@@ -34,7 +37,7 @@ class Engine:
         self.print_info(last_value, 1)
 
         # iterative deepening until time limit is reached
-        for depth in range(2, 1001):
+        for depth in range(2, MAX_PLY + 1):
             alpha, beta = last_value - window, last_value + window
             value = self.negamax(board, depth, alpha, beta, 0)
 
@@ -88,10 +91,11 @@ class Engine:
         checked = in_check(board, king_pos)
 
         # check extension
+        # if the king is in_check, increase depth, this enhances search so that we are only evaluating quiet positions + positions in check usually have really low branching factors
         if checked:
             depth += 1
 
-        # determine if threefold repetion
+        # determine if threefold repetion -> draw
         # if the current hash is in the past hash's at least twice
         if board.zobrist_key_history.count(board.hash) >= 2:
             return 0
@@ -113,7 +117,8 @@ class Engine:
         # sort moves with MVV LVA
         moves = sorted(moves, key=lambda move: MVV_LVA[board.board[move.dest]][board.board[move.pos]], reverse=True)
 
-        # move the best move from the transposition table to the front of the list for more cutoffs
+        # move the best move from the tt to the front
+        # searching this move first will lead to more cutoffs
         if tt_entry is not None:
             moves.remove(tt_entry[2])
             moves.insert(0, tt_entry[2])
