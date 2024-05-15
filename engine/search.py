@@ -24,6 +24,7 @@ class Engine:
 
         self.first_killers: list[Move | None] = [None for _ in range(MAX_PLY + 1)]
         self.second_killers: list[Move | None] = [None for _ in range(MAX_PLY + 1)]
+        self.history_moves = [[[0, 0] for _ in range(120)] for _ in range(120)]  # indexed with [move.pos][move.dest][white_to_move]
 
         # time calculaton
         remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
@@ -151,7 +152,7 @@ class Engine:
 
             # cutoff
             if alpha >= beta:
-                # store the move in first_killers if it is not a capture move
+                # if the move is not a capture move
                 if board.board[move.dest] == ".":
                     # if there is no killer move stored, then store it
                     if self.first_killers[ply] is None:
@@ -159,8 +160,12 @@ class Engine:
 
                     # if there is a killer move stored, make sure it isn't the same move
                     elif move != self.first_killers[ply]:
+                        # make the second killer move the first killer move, then add the new move
                         self.second_killers[ply] = self.first_killers[ply]
                         self.first_killers[ply] = move
+
+                    # history heuristic
+                    self.history_moves[move.pos][move.dest][board.white_move] += depth * depth
 
                 break
 
@@ -205,20 +210,20 @@ class Engine:
 
         print(f"info depth {depth} time {time_taken} nodes {self.nodes} score cp {value} nps {nps}")
 
-    def move_value(self, board: Board, move: Move, ply: int) -> int:
+    def move_value(self, board: Board, move: Move, ply: int) -> tuple[int, int]:
         # if the move is a capture, score it with MVV LVA
         if board.board[move.dest] != ".":
-            return MVV_LVA[board.board[move.dest]][board.board[move.pos]]
+            return (3, MVV_LVA[board.board[move.dest]][board.board[move.pos]])
         else:
             # if it is the first killer move
             if self.first_killers[ply] is not None:
                 if move == self.first_killers[ply]:
-                    return 2
+                    return (2, 0)
 
             # if it is the second killer move
             if self.second_killers[ply] is not None:
                 if move == self.second_killers[ply]:
-                    return 1
+                    return (1, 0)
 
-            # not a capture or killer move
-            return 0
+            # return history value
+            return (0, self.history_moves[move.pos][move.dest][board.white_move])
