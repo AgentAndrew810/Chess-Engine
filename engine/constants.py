@@ -46,6 +46,9 @@ GAME_PHASE_VALUE = {"p": 0, "P": 0, "n": 1, "N": 1, "b": 1, "B": 1, "r": 2, "R":
 # all the indices that are actually on the chess board in the list
 VALID_POS = [num for start in range(21, 92, 10) for num in range(start, start + 8)]
 
+# values for each move, indexed by [victim][attacker]
+# order is as follows Most Valuable Victim -> Least Valuable Victim
+# if 2+ pieces can capture a Victim then those moves are sorted by Least Valuable Attacker -> Most Valuable Attacker
 MVV_LVA = {
     "q": {"K": 50, "Q": 51, "R": 52, "B": 53, "N": 54, "P": 55},
     "r": {"K": 40, "Q": 41, "R": 42, "B": 43, "N": 44, "P": 45},
