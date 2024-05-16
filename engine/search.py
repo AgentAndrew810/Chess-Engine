@@ -12,6 +12,8 @@ LOWERBOUND = -1
 
 MAX_PLY = 1000
 
+BLANK_MOVE = Move(-1, -1)
+
 
 class Engine:
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
@@ -22,8 +24,8 @@ class Engine:
         self.start = time.time()
         self.tt = {}
 
-        self.first_killers: list[Move | None] = [None for _ in range(MAX_PLY + 1)]
-        self.second_killers: list[Move | None] = [None for _ in range(MAX_PLY + 1)]
+        self.first_killers = [BLANK_MOVE for _ in range(MAX_PLY + 1)]
+        self.second_killers = [BLANK_MOVE for _ in range(MAX_PLY + 1)]
         self.history_moves = [[[0, 0] for _ in range(120)] for _ in range(120)]  # indexed with [move.pos][move.dest][white_to_move]
 
         # time calculaton
@@ -127,7 +129,7 @@ class Engine:
             moves.remove(hash_move)
             moves.insert(0, hash_move)
         else:
-            hash_move = None
+            hash_move = BLANK_MOVE
 
         # set initial values
         best_value = -MATE_SCORE - 1
@@ -154,13 +156,8 @@ class Engine:
             if alpha >= beta:
                 # if the move is not a capture move
                 if board.board[move.dest] == ".":
-                    # if there is no killer move stored, then store it
-                    if self.first_killers[ply] is None:
-                        self.first_killers[ply] = move
-
-                    # if there is a killer move stored, make sure it isn't the same move
-                    elif move != self.first_killers[ply]:
-                        # make the second killer move the first killer move, then add the new move
+                    # if there is no killer move or a different killer move, and the move is not the has move, store the move as a killer move
+                    if move != self.first_killers[ply] and move != hash_move:
                         self.second_killers[ply] = self.first_killers[ply]
                         self.first_killers[ply] = move
 
@@ -210,20 +207,19 @@ class Engine:
 
         print(f"info depth {depth} time {time_taken} nodes {self.nodes} score cp {value} nps {nps}")
 
-    def move_value(self, board: Board, move: Move, ply: int) -> tuple[int, int]:
+    def move_value(self, board: Board, move: Move, ply: int) -> int:
         # if the move is a capture, score it with MVV LVA
         if board.board[move.dest] != ".":
-            return (3, MVV_LVA[board.board[move.dest]][board.board[move.pos]])
+            return 100000 + MVV_LVA[board.board[move.dest]][board.board[move.pos]]
+
+        # if the move is the first killer move
+        elif move == self.first_killers[ply]:
+            return 90000
+
+        # if the move is the second killer move
+        elif move == self.second_killers[ply]:
+            return 80000
+
+        # return history value
         else:
-            # if it is the first killer move
-            if self.first_killers[ply] is not None:
-                if move == self.first_killers[ply]:
-                    return (2, 0)
-
-            # if it is the second killer move
-            if self.second_killers[ply] is not None:
-                if move == self.second_killers[ply]:
-                    return (1, 0)
-
-            # return history value
-            return (0, self.history_moves[move.pos][move.dest][board.white_move])
+            return self.history_moves[move.pos][move.dest][board.white_move]
