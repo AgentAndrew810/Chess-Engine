@@ -213,6 +213,33 @@ class Board:
         # swap ally and enemy pieces
         self.ally_pieces, self.enemy_pieces = self.enemy_pieces, self.ally_pieces
 
+    def make_null_move(self) -> None:
+        # store past information
+        self.history.append(("", self.ep, self.white_king_pos, self.black_king_pos, self.wck, self.wcq, self.bck, self.bcq))
+        self.zobrist_key_history.append(self.hash)
+
+        # update side to move
+        self.white_move = not self.white_move
+        self.hash ^= self.zobrist_side
+
+        # remove en passant square
+        if self.ep != 0:
+            self.hash ^= self.zobrist_ep[self.ep]  # if a non-zero en passant square, we have to remove the old one
+            self.ep = 0
+
+        # swap ally and enemy pieces
+        self.ally_pieces, self.enemy_pieces = self.enemy_pieces, self.ally_pieces
+
+    def unmake_null_move(self) -> None:
+        _, self.ep, self.white_king_pos, self.black_king_pos, self.wck, self.wcq, self.bck, self.bcq = self.history.pop()
+        self.hash = self.zobrist_key_history.pop()
+
+        # update side to move
+        self.white_move = not self.white_move
+
+        # swap ally and enemy pieces
+        self.ally_pieces, self.enemy_pieces = self.enemy_pieces, self.ally_pieces
+
     def unmake(self, move: Move) -> None:
         target, self.ep, self.white_king_pos, self.black_king_pos, self.wck, self.wcq, self.bck, self.bcq = self.history.pop()
         self.hash = self.zobrist_key_history.pop()
