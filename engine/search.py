@@ -3,7 +3,7 @@ import time
 from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
-from .move import Move
+from .move import Move, BLANK_MOVE
 from .constants import MATE_SCORE, MVV_LVA, EG_VALUES
 
 UPPERBOUND = 1
@@ -12,11 +12,9 @@ LOWERBOUND = -1
 
 MAX_PLY = 1000
 
-BLANK_MOVE = Move(-1, -1)
-
 
 class Engine:
-    def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
+    def search(self, board: Board, options: dict[str, int] = {}) -> Move:
         window = EG_VALUES["P"] // 2  # half of pawn
 
         self.stopped = False
@@ -63,8 +61,8 @@ class Engine:
                 break
 
         # return the best move
-        tt_entry = self.tt.get(board.hash, None)
-        return tt_entry[2] if tt_entry is not None else None
+        tt_entry = self.tt.get(board.hash)
+        return tt_entry[2] if tt_entry is not None else BLANK_MOVE
 
     def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int = 0, null_move_allowed: bool = True) -> int:
         alpha_orig = alpha
@@ -140,7 +138,7 @@ class Engine:
 
         # set initial values
         best_value = -MATE_SCORE - 1
-        best_move = None
+        best_move = BLANK_MOVE
 
         # loop through all legal moves
         for move in moves:
@@ -163,7 +161,7 @@ class Engine:
             if alpha >= beta:
                 # if the move is not a capture move
                 if board.board[move.dest] == ".":
-                    # if there is no killer move or a different killer move, and the move is not the has move, store the move as a killer move
+                    # if a different killer mvoe is stored and the move is not the hash move, store the move as a killer
                     if move != self.first_killers[ply] and move != hash_move:
                         self.second_killers[ply] = self.first_killers[ply]
                         self.first_killers[ply] = move
