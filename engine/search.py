@@ -97,7 +97,7 @@ class Engine:
         moves = move_gen(board)
 
         # determine if in check
-        king_pos = board.white_king_pos if board.white_move else board.black_king_pos
+        king_pos = board.wk_pos if board.white_move else board.bk_pos
         checked = in_check(board, king_pos)
 
         # check extension
