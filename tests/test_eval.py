@@ -10,7 +10,7 @@ class TestEval(unittest.TestCase):
         for fen, _ in get_testing_data():
             board = engine.Board(fen)
             eval = engine.evaluate(board)
-            board.white_move = not board.white_move
+            board.make_null_move()
             self.assertEqual(-eval, engine.evaluate(board))
 
     def test_starting_eval(self) -> None:
