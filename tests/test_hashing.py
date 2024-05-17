@@ -15,28 +15,28 @@ def get_move(move_str: str) -> engine.Move:
 
 
 class TestHashing(unittest.TestCase):
-    def check_equal_hash(self, board: engine.Board, moves1: list[str], moves2: list[str]) -> None:
-        for move in moves1:
-            board.make(get_move(move))
-
-        key = board.hash
-
-        for move in reversed(moves1):
-            board.unmake(get_move(move))
-
-        for move in reversed(moves2):
-            board.make(get_move(move))
-
-        self.assertEqual(key, board.hash)
-
-    def test_simple(self) -> None:
-        board = engine.Board()
-        moves1 = ["d2d4", "d7d5", "g1f3", "g8f6"]
-        moves2 = ["g1f3", "g8f6", "d2d4", "d7d5"]
-        self.check_equal_hash(board, moves1, moves2)
-
     def test_promotion(self) -> None:
-        board = engine.Board("8/2k2P2/3Q4/8/8/8/8/7K b - - 0 1")
-        moves1 = ["c7d6", "f7f8q", "d6d7", "f8d6"]
-        moves2 = []
-        self.check_equal_hash(board, moves1, moves2)
+        board = engine.Board("7K/P7/8/8/8/8/8/7k w - - 0 1")
+        board.make(get_move("a7a8"))
+        self.assertEqual(board.hash, board.get_hash())
+
+    def test_castling(self) -> None:
+        board = engine.Board("4k3/8/8/8/8/8/8/4K2R w K - 1 1")
+        board.make(get_move("e1g1"))
+        self.assertEqual(board.hash, board.get_hash())
+
+    def test_ep(self) -> None:
+        board = engine.Board("7k/2p5/8/1P6/8/8/8/7K b - - 1 1")
+        board.make(get_move("c7c5"))
+        board.make(get_move("b5c6"))
+        self.assertEqual(board.hash, board.get_hash())
+
+    def test_double(self) -> None:
+        board = engine.Board("7k/8/8/8/8/8/1P6/7K w - - 1 1")
+        board.make(get_move("b2b4"))
+        self.assertEqual(board.hash, board.get_hash())
+
+    def test_capture(self) -> None:
+        board = engine.Board("7k/8/8/8/8/8/1q6/Q6K w - - 1 1")
+        board.make(get_move("a1b2"))
+        self.assertEqual(board.hash, board.get_hash())
