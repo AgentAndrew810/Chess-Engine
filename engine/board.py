@@ -49,7 +49,9 @@ class Board:
         self.ally_pieces = WHITE_PIECES if self.white_move else BLACK_PIECES
         self.enemy_pieces = BLACK_PIECES if self.white_move else WHITE_PIECES
 
+        # determine all zobrist values, and get the inital hash of the position
         self.zobrist_init()
+        self.hash = self.get_hash()
 
     def zobrist_init(self) -> None:
         # zobrist keys
@@ -66,31 +68,34 @@ class Board:
         self.zobrist_side = getrandbits(64)  # side to move
         self.zobrist_cr = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}  # castling rights
 
-        self.hash = 0
+    def get_hash(self) -> int:
+        hash_value = 0
 
         # add hash of every piece
         for pos in VALID_POS:
             p = self.board[pos]
             if p not in " .":
-                self.hash ^= self.zobrist_pieces[pos][p]
+                hash_value ^= self.zobrist_pieces[pos][p]
 
         # add hash of castling rights
         if self.wck:
-            self.hash ^= self.zobrist_cr["wk"]
+            hash_value ^= self.zobrist_cr["wk"]
         if self.wcq:
-            self.hash ^= self.zobrist_cr["wq"]
+            hash_value ^= self.zobrist_cr["wq"]
         if self.bck:
-            self.hash ^= self.zobrist_cr["bk"]
+            hash_value ^= self.zobrist_cr["bk"]
         if self.bcq:
-            self.hash ^= self.zobrist_cr["bq"]
+            hash_value ^= self.zobrist_cr["bq"]
 
         # add hash if white move
         if self.white_move:
-            self.hash ^= self.zobrist_side
+            hash_value ^= self.zobrist_side
 
         # add hash of ep square
-        if self.ep:
-            self.hash ^= self.zobrist_ep[self.ep]
+        if self.ep != 0:
+            hash_value ^= self.zobrist_ep[self.ep]
+
+        return hash_value
 
     def make(self, move: Move) -> None:
         # get information
