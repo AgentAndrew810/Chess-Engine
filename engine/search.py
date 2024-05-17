@@ -16,9 +16,6 @@ BLANK_MOVE = Move(-1, -1)
 
 
 class Engine:
-    def __init__(self) -> None:
-        self.tt = {}
-
     def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
         window = EG_VALUES["P"] // 2  # half of pawn
 
@@ -26,9 +23,7 @@ class Engine:
         self.nodes = 0
         self.start = time.time()
 
-        # clear transposition table if it is too big
-        if len(self.tt) > 250000:
-            self.tt.clear()
+        self.tt = {}
 
         self.first_killers = [BLANK_MOVE for _ in range(MAX_PLY + 1)]
         self.second_killers = [BLANK_MOVE for _ in range(MAX_PLY + 1)]
@@ -37,11 +32,11 @@ class Engine:
         # time calculaton
         remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
         increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)  # get the increment
-        moves_to_go = max(options.get("movestogo", 30), 10)  # get moves till next time control
+        moves_to_go = max(options.get("movestogo", 30), 5)  # get moves till next time control
         move_time = min(
             remaining_time / moves_to_go + increment, remaining_time
         )  # calculate time to move, if it is more than we have set it to how much we have left
-        self.max_time = move_time / 1000 - 0.1  # convert to seconds and remove 1/10 of second to make sure it responds in time
+        self.max_time = move_time / 1000 - 0.05  # convert to seconds and remove part of a second to make sure it responds in time
 
         # start initial search with a depth of 1
         last_value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1)
@@ -179,13 +174,12 @@ class Engine:
                 break
 
         # store results in transposition table
-        if tt_entry is None or depth > tt_entry[0]:
-            if best_value <= alpha_orig:
-                self.tt[board.hash] = (depth, best_value, best_move, UPPERBOUND)
-            elif best_value >= beta:
-                self.tt[board.hash] = (depth, best_value, best_move, LOWERBOUND)
-            else:
-                self.tt[board.hash] = (depth, best_value, best_move, EXACT)
+        if best_value <= alpha_orig:
+            self.tt[board.hash] = (depth, best_value, best_move, UPPERBOUND)
+        elif best_value >= beta:
+            self.tt[board.hash] = (depth, best_value, best_move, LOWERBOUND)
+        else:
+            self.tt[board.hash] = (depth, best_value, best_move, EXACT)
 
         return best_value
 
