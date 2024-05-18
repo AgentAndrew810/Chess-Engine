@@ -8,15 +8,6 @@ class GameController(game.DrawnObject):
     def __init__(self) -> None:
         super().__init__()
 
-        x = self.x_padd + self.board_size + self.padd
-        y = self.y_padd
-
-        self.buttons = {
-            "back": game.Button(x, y + self.square_size * 2, game.GREY),
-            "flip": game.Button(x, y + self.square_size * 3, game.PURPLE),
-            "quit": game.Button(x, y + self.square_size * 4, game.RED),
-        }
-
         self.board = engine.Board()
         self.computer = engine.Engine()
         self.board_gui = game.Board()
@@ -36,20 +27,19 @@ class GameController(game.DrawnObject):
         return self.player_is_white == self.board.white_move
 
     def outside_board(self, x: int, y: int) -> bool:
-        if not (self.x_padd < x < self.x_padd + self.board_size):
-            return True
-        elif not (self.y_padd < y < self.y_padd + self.board_size):
-            return True
+        if self.board_start_x < x < self.board_end_x:
+            if self.board_start_y < y < self.y_padd + self.board_end_y:
+                return False
 
-        return False
+        return True
 
     def grab_piece(self, x: int, y: int) -> None:
         if self.outside_board(x, y):
             return
 
         # get the rank and file grabbed and their offsets
-        rank, self.y_offset = divmod(y - self.y_padd, self.square_size)
-        file, self.x_offset = divmod(x - self.x_padd, self.square_size)
+        rank, self.y_offset = divmod(y - self.board_start_y, self.square_size)
+        file, self.x_offset = divmod(x - self.board_start_x, self.square_size)
 
         # get the pos and piece
         pos = game.get_pos(rank, file, self.white_pov)
@@ -64,8 +54,8 @@ class GameController(game.DrawnObject):
             return
 
         # get the rank and file
-        rank = (y - self.y_padd) // self.square_size
-        file = (x - self.x_padd) // self.square_size
+        rank = (y - self.board_start_y) // self.square_size
+        file = (x - self.board_start_x) // self.square_size
 
         # if valid move
         dest = game.get_pos(rank, file, self.white_pov)
@@ -122,6 +112,3 @@ class GameController(game.DrawnObject):
             self.x_offset,
             self.y_offset,
         )
-
-        # for button in self.buttons.values():
-        #     button.draw(screen)
