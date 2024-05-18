@@ -10,17 +10,25 @@ class GameController(game.DrawnObject):
 
         self.board = engine.Board()
         self.computer = engine.Engine()
+
         self.board_gui = game.Board()
+        self.panel = game.Panel()
 
         self.held_piece = game.HeldPiece()
         self.next_moves = engine.move_gen(self.board)
-        self.last_move = engine.Move(-1, -1)
+        self.last_move = engine.BLANK_MOVE
+
+        self.update()
 
         self.game_over = False
         self.player_is_white = True
         self.white_pov = True
         self.x_offset = 0
         self.y_offset = 0
+
+    def update(self) -> None:
+        self.background_image = pygame.image.load("assets/background.png")
+        self.background_image = pygame.transform.smoothscale(self.background_image, (self.screen_width, self.screen_height))
 
     @property
     def player_turn(self) -> bool:
@@ -101,7 +109,7 @@ class GameController(game.DrawnObject):
             self.game_over = True
 
     def draw(self, screen: pygame.surface.Surface) -> None:
-        screen.fill(game.BLACK)
+        screen.blit(self.background_image, (0, 0))
 
         self.board_gui.draw(
             screen,
@@ -112,3 +120,5 @@ class GameController(game.DrawnObject):
             self.x_offset,
             self.y_offset,
         )
+
+        self.panel.draw(screen)
