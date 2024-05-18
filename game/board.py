@@ -4,7 +4,7 @@ import engine
 from .utils import get_pos
 from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
-from .constants import WHITE, BLUE, PINK, DARK_PINK
+from .constants import LIGHT, DARK, PINK, DARK_PINK
 
 
 class Board(DrawnObject):
@@ -13,14 +13,31 @@ class Board(DrawnObject):
         self.update()
 
     def update(self) -> None:
-        # reload and resize image on window size changes
-        self.load_images()
+        # load each piece where the key is the char stored in the board
+        self.images = {
+            "P": pygame.image.load("assets/white-pawn.png"),
+            "N": pygame.image.load("assets/white-knight.png"),
+            "B": pygame.image.load("assets/white-bishop.png"),
+            "R": pygame.image.load("assets/white-rook.png"),
+            "Q": pygame.image.load("assets/white-queen.png"),
+            "K": pygame.image.load("assets/white-king.png"),
+            "p": pygame.image.load("assets/black-pawn.png"),
+            "n": pygame.image.load("assets/black-knight.png"),
+            "b": pygame.image.load("assets/black-bishop.png"),
+            "r": pygame.image.load("assets/black-rook.png"),
+            "q": pygame.image.load("assets/black-queen.png"),
+            "k": pygame.image.load("assets/black-king.png"),
+        }
+
+        # resize each image to square_size
+        for name, image in self.images.items():
+            self.images[name] = pygame.transform.smoothscale(image, (self.piece_size, self.piece_size))
 
     def get_x(self, col: int | float) -> int:
-        return round(self.x_padd + self.square_size * col)
+        return round(self.board_start_x + self.square_size * col)
 
     def get_y(self, row: int | float) -> int:
-        return round(self.y_padd + self.square_size * row)
+        return round(self.board_start_y + self.square_size * row)
 
     def draw(
         self,
@@ -40,7 +57,7 @@ class Board(DrawnObject):
 
                 # draw background square
                 if piece not in " ":
-                    colour = WHITE if (rank + file) % 2 == 0 else BLUE
+                    colour = LIGHT if (rank + file) % 2 == 0 else DARK
 
                     # colour the squares involved in the past move
                     if pos in (last_move.pos, last_move.dest):
@@ -103,27 +120,6 @@ class Board(DrawnObject):
         pygame.draw.rect(
             screen,
             (0, 0, 0),
-            (self.x_padd, self.y_padd, self.board_size, self.board_size),
+            (self.board_start_x, self.board_start_y, self.board_size, self.board_size),
             self.line_size,
         )
-
-    def load_images(self) -> None:
-        # load each piece where the key is the char stored in the board
-        self.images = {
-            "P": pygame.image.load("assets/white-pawn.png"),
-            "N": pygame.image.load("assets/white-knight.png"),
-            "B": pygame.image.load("assets/white-bishop.png"),
-            "R": pygame.image.load("assets/white-rook.png"),
-            "Q": pygame.image.load("assets/white-queen.png"),
-            "K": pygame.image.load("assets/white-king.png"),
-            "p": pygame.image.load("assets/black-pawn.png"),
-            "n": pygame.image.load("assets/black-knight.png"),
-            "b": pygame.image.load("assets/black-bishop.png"),
-            "r": pygame.image.load("assets/black-rook.png"),
-            "q": pygame.image.load("assets/black-queen.png"),
-            "k": pygame.image.load("assets/black-king.png"),
-        }
-
-        # resize each image to square_size
-        for name, image in self.images.items():
-            self.images[name] = pygame.transform.smoothscale(image, (self.piece_size, self.piece_size))
