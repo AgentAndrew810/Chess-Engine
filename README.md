@@ -11,4 +11,5 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 - Add different gamemodes (play a friend, play engine, visualize battle)
 
 ## Credit
-- All Chess Piece Images are from [Dbenbenn](https://commons.wikimedia.org/wiki/User:Dbenbenn) - Released under Public Domain
+- All Chess Piece Images are from [Dbenbenn on Wikimedia Commons](https://commons.wikimedia.org/wiki/User:Dbenbenn)
+- Black Background is from [Unsplash](https://unsplash.com/photos/a-black-and-white-photo-of-water-and-sand-_GH9LwhlSO4)
