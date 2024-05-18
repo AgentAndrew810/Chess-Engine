@@ -37,9 +37,9 @@ class Board:
         # determine position of kings
         for pos in VALID_POS:
             if self.board[pos] == "K":
-                self.white_king_pos = pos
+                self.wk_pos = pos
             elif self.board[pos] == "k":
-                self.black_king_pos = pos
+                self.bk_pos = pos
 
         # extra info for unmaking moves
         self.history = []
@@ -49,7 +49,9 @@ class Board:
         self.ally_pieces = WHITE_PIECES if self.white_move else BLACK_PIECES
         self.enemy_pieces = BLACK_PIECES if self.white_move else WHITE_PIECES
 
+        # determine all zobrist values, and get the inital hash of the position
         self.zobrist_init()
+        self.hash = self.get_hash()
 
     def zobrist_init(self) -> None:
         # zobrist keys
@@ -66,31 +68,34 @@ class Board:
         self.zobrist_side = getrandbits(64)  # side to move
         self.zobrist_cr = {"wk": getrandbits(64), "wq": getrandbits(64), "bk": getrandbits(64), "bq": getrandbits(64)}  # castling rights
 
-        self.hash = 0
+    def get_hash(self) -> int:
+        hash_value = 0
 
         # add hash of every piece
         for pos in VALID_POS:
             p = self.board[pos]
             if p not in " .":
-                self.hash ^= self.zobrist_pieces[pos][p]
+                hash_value ^= self.zobrist_pieces[pos][p]
 
         # add hash of castling rights
         if self.wck:
-            self.hash ^= self.zobrist_cr["wk"]
+            hash_value ^= self.zobrist_cr["wk"]
         if self.wcq:
-            self.hash ^= self.zobrist_cr["wq"]
+            hash_value ^= self.zobrist_cr["wq"]
         if self.bck:
-            self.hash ^= self.zobrist_cr["bk"]
+            hash_value ^= self.zobrist_cr["bk"]
         if self.bcq:
-            self.hash ^= self.zobrist_cr["bq"]
+            hash_value ^= self.zobrist_cr["bq"]
 
         # add hash if white move
         if self.white_move:
-            self.hash ^= self.zobrist_side
+            hash_value ^= self.zobrist_side
 
         # add hash of ep square
-        if self.ep:
-            self.hash ^= self.zobrist_ep[self.ep]
+        if self.ep != 0:
+            hash_value ^= self.zobrist_ep[self.ep]
+
+        return hash_value
 
     def make(self, move: Move) -> None:
         # get information
@@ -99,7 +104,7 @@ class Board:
         offset = move.dest - move.pos
 
         # store past information
-        self.history.append((target, self.ep, self.white_king_pos, self.black_king_pos, self.wck, self.wcq, self.bck, self.bcq))
+        self.history.append((target, self.ep, self.wk_pos, self.bk_pos, self.wck, self.wcq, self.bck, self.bcq))
         self.zobrist_key_history.append(self.hash)
 
         # make the move on the board
@@ -154,7 +159,7 @@ class Board:
                     self.wcq = False
 
                 # update location
-                self.white_king_pos = move.dest
+                self.wk_pos = move.dest
 
             else:
                 # update hash
@@ -166,7 +171,7 @@ class Board:
                     self.bcq = False
 
                 # update location
-                self.black_king_pos = move.dest
+                self.bk_pos = move.dest
 
         # if made en passant move
         # based on if pawn made attack move without capturing a piece
@@ -213,8 +218,35 @@ class Board:
         # swap ally and enemy pieces
         self.ally_pieces, self.enemy_pieces = self.enemy_pieces, self.ally_pieces
 
+    def make_null_move(self) -> None:
+        # store past information
+        self.history.append(("", self.ep, self.wk_pos, self.bk_pos, self.wck, self.wcq, self.bck, self.bcq))
+        self.zobrist_key_history.append(self.hash)
+
+        # update side to move
+        self.white_move = not self.white_move
+        self.hash ^= self.zobrist_side
+
+        # remove en passant square
+        if self.ep != 0:
+            self.hash ^= self.zobrist_ep[self.ep]  # if a non-zero en passant square, we have to remove the old one
+            self.ep = 0
+
+        # swap ally and enemy pieces
+        self.ally_pieces, self.enemy_pieces = self.enemy_pieces, self.ally_pieces
+
+    def unmake_null_move(self) -> None:
+        _, self.ep, self.wk_pos, self.bk_pos, self.wck, self.wcq, self.bck, self.bcq = self.history.pop()
+        self.hash = self.zobrist_key_history.pop()
+
+        # update side to move
+        self.white_move = not self.white_move
+
+        # swap ally and enemy pieces
+        self.ally_pieces, self.enemy_pieces = self.enemy_pieces, self.ally_pieces
+
     def unmake(self, move: Move) -> None:
-        target, self.ep, self.white_king_pos, self.black_king_pos, self.wck, self.wcq, self.bck, self.bcq = self.history.pop()
+        target, self.ep, self.wk_pos, self.bk_pos, self.wck, self.wcq, self.bck, self.bcq = self.history.pop()
         self.hash = self.zobrist_key_history.pop()
 
         piece = self.board[move.dest]

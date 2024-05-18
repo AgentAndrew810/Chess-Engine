@@ -92,7 +92,7 @@ class GameController(game.DrawnObject):
     def make_computer_move(self) -> None:
         move = self.computer.search(self.board)
 
-        if move is not None:
+        if move is not engine.BLANK_MOVE:
             self.board.make(move)
             self.last_move = move
 

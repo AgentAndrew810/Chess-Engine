@@ -5,7 +5,7 @@ from .precalculated_data import MOVE_TABLES, LINE_OF_SIGHT, LINE_OF_SIGHT_KNIGHT
 
 
 def move_gen(board: Board, captures_only: bool = False) -> list[Move]:
-    king_pos = board.white_king_pos if board.white_move else board.black_king_pos
+    king_pos = board.wk_pos if board.white_move else board.bk_pos
     pins, checks = get_pins_and_checks(board, king_pos)
 
     if len(checks) == 0:
@@ -55,7 +55,7 @@ def move_gen(board: Board, captures_only: bool = False) -> list[Move]:
 
         # filer out any move that isn't valid
         moves = [move for move in moves if move.dest in valid_squares]
-        
+
     else:
         moves = []
 

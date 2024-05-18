@@ -3,7 +3,7 @@ import time
 from .move_gen import move_gen, in_check
 from .evaluate import evaluate
 from .board import Board
-from .move import Move
+from .move import Move, BLANK_MOVE
 from .constants import MATE_SCORE, MVV_LVA, EG_VALUES
 
 UPPERBOUND = 1
@@ -12,16 +12,15 @@ LOWERBOUND = -1
 
 MAX_PLY = 1000
 
-BLANK_MOVE = Move(-1, -1)
-
 
 class Engine:
-    def search(self, board: Board, options: dict[str, int] = {}) -> Move | None:
+    def search(self, board: Board, options: dict[str, int] = {}) -> Move:
         window = EG_VALUES["P"] // 2  # half of pawn
 
         self.stopped = False
         self.nodes = 0
         self.start = time.time()
+
         self.tt = {}
 
         self.first_killers = [BLANK_MOVE for _ in range(MAX_PLY + 1)]
@@ -31,11 +30,11 @@ class Engine:
         # time calculaton
         remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
         increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)  # get the increment
-        moves_to_go = max(options.get("movestogo", 30), 10)  # get moves till next time control
+        moves_to_go = max(options.get("movestogo", 30), 5)  # get moves till next time control
         move_time = min(
             remaining_time / moves_to_go + increment, remaining_time
         )  # calculate time to move, if it is more than we have set it to how much we have left
-        self.max_time = move_time / 1000 - 0.1  # convert to seconds and remove 1/10 of second to make sure it responds in time
+        self.max_time = move_time / 1000 - 0.05  # convert to seconds and remove part of a second to make sure it responds in time
 
         # start initial search with a depth of 1
         last_value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1)
@@ -62,10 +61,10 @@ class Engine:
                 break
 
         # return the best move
-        tt_entry = self.tt.get(board.hash, None)
-        return tt_entry[2] if tt_entry is not None else None
+        tt_entry = self.tt.get(board.hash)
+        return tt_entry[2] if tt_entry is not None else BLANK_MOVE
 
-    def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int = 0) -> int:
+    def negamax(self, board: Board, depth: int, alpha: int, beta: int, ply: int = 0, null_move_allowed: bool = True) -> int:
         alpha_orig = alpha
 
         # if used more than the max time stop search and return 0
@@ -77,28 +76,43 @@ class Engine:
 
         # transposition table
         tt_entry = self.tt.get(board.hash)
-        if tt_entry is not None and tt_entry[0] >= depth:
-            if tt_entry[3] == EXACT:
-                return tt_entry[1]
-            elif tt_entry[3] == LOWERBOUND:
-                alpha = max(alpha, tt_entry[1])
-            elif tt_entry[3] == UPPERBOUND:
-                beta = min(beta, tt_entry[1])
+        if tt_entry is not None:
+            if tt_entry[0] >= depth:
+                if tt_entry[3] == EXACT:
+                    return tt_entry[1]
+                elif tt_entry[3] == LOWERBOUND:
+                    alpha = max(alpha, tt_entry[1])
+                elif tt_entry[3] == UPPERBOUND:
+                    beta = min(beta, tt_entry[1])
 
-            if alpha >= beta:
-                return tt_entry[1]
+                if alpha >= beta:
+                    return tt_entry[1]
+
+            hash_move = tt_entry[2]
+
+        else:
+            hash_move = BLANK_MOVE
 
         # get all legal moves
         moves = move_gen(board)
 
         # determine if in check
-        king_pos = board.white_king_pos if board.white_move else board.black_king_pos
+        king_pos = board.wk_pos if board.white_move else board.bk_pos
         checked = in_check(board, king_pos)
 
         # check extension
         # if the king is in_check, increase depth, this enhances search so that we are only evaluating quiet positions + positions in check usually have really low branching factors
         if checked:
             depth += 1
+
+        # null move pruning
+        if null_move_allowed and not checked and ply != 0 and depth >= 4:
+            board.make_null_move()
+            best_value = -self.negamax(board, depth - 4, -beta, -beta + 1, False)
+            board.unmake_null_move()
+
+            if best_value >= beta:
+                return beta
 
         # determine if threefold repetion -> draw
         # if the current hash is in the past hash's at least twice
@@ -119,21 +133,12 @@ class Engine:
             self.nodes -= 1  # account for duplicate
             return self.quiescence(board, alpha, beta)
 
-        # sort moves with MVV LVA
-        moves = sorted(moves, key=lambda move: self.move_value(board, move, ply), reverse=True)
-
-        # move the best move from the tt to the front
-        # searching this move first will lead to more cutoffs
-        if tt_entry is not None:
-            hash_move = tt_entry[2]
-            moves.remove(hash_move)
-            moves.insert(0, hash_move)
-        else:
-            hash_move = BLANK_MOVE
+        # sort moves based on the move value function
+        moves = sorted(moves, key=lambda move: self.move_value(board, hash_move, move, ply), reverse=True)
 
         # set initial values
         best_value = -MATE_SCORE - 1
-        best_move = None
+        best_move = BLANK_MOVE
 
         # loop through all legal moves
         for move in moves:
@@ -156,7 +161,7 @@ class Engine:
             if alpha >= beta:
                 # if the move is not a capture move
                 if board.board[move.dest] == ".":
-                    # if there is no killer move or a different killer move, and the move is not the has move, store the move as a killer move
+                    # if a different killer mvoe is stored and the move is not the hash move, store the move as a killer
                     if move != self.first_killers[ply] and move != hash_move:
                         self.second_killers[ply] = self.first_killers[ply]
                         self.first_killers[ply] = move
@@ -168,11 +173,12 @@ class Engine:
 
         # store results in transposition table
         if best_value <= alpha_orig:
-            self.tt[board.hash] = (depth, value, best_move, UPPERBOUND)
+            self.tt[board.hash] = (depth, best_value, best_move, UPPERBOUND)
         elif best_value >= beta:
-            self.tt[board.hash] = (depth, value, best_move, LOWERBOUND)
+            self.tt[board.hash] = (depth, best_value, best_move, LOWERBOUND)
         else:
-            self.tt[board.hash] = (depth, value, best_move, EXACT)
+            self.tt[board.hash] = (depth, best_value, best_move, EXACT)
+
         return best_value
 
     def quiescence(self, board: Board, alpha: int, beta: int) -> int:
@@ -207,18 +213,22 @@ class Engine:
 
         print(f"info depth {depth} time {time_taken} nodes {self.nodes} score cp {value} nps {nps}")
 
-    def move_value(self, board: Board, move: Move, ply: int) -> int:
+    def move_value(self, board: Board, hash_move: Move, move: Move, ply: int) -> int:
+        # if the move is the hash move, score it #1
+        if move == hash_move:
+            return 100000
+
         # if the move is a capture, score it with MVV LVA
-        if board.board[move.dest] != ".":
-            return 100000 + MVV_LVA[board.board[move.dest]][board.board[move.pos]]
+        elif board.board[move.dest] != ".":
+            return 90000 + MVV_LVA[board.board[move.dest]][board.board[move.pos]]
 
         # if the move is the first killer move
         elif move == self.first_killers[ply]:
-            return 90000
+            return 80000
 
         # if the move is the second killer move
         elif move == self.second_killers[ply]:
-            return 80000
+            return 70000
 
         # return history value
         else:

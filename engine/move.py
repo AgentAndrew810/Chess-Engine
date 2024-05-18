@@ -14,3 +14,6 @@ class Move:
 
     def __repr__(self) -> str:
         return get_square(self.pos) + get_square(self.dest) + self.prom
+
+
+BLANK_MOVE = Move(-1, -1)
