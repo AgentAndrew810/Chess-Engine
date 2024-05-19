@@ -26,7 +26,7 @@ class Panel(DrawnObject):
         self.black_clock_size = (panel_width // 2, self.unit)
 
         self.moves_pos = (panel_x, panel_y + round(self.unit * 1.75))
-        self.moves_size = (panel_width, round(self.unit * 5.75))
+        self.moves_size = (panel_width, round(self.unit * 5.5))
 
     def draw(self, screen: pygame.surface.Surface, board: Board, past_moves: list[Move]) -> None:
         draw_transparent_object(screen, BLACK, self.info_pos, self.info_size, 200)
