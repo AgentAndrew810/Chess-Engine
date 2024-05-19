@@ -16,7 +16,7 @@ class GameController(game.DrawnObject):
 
         self.held_piece = game.HeldPiece()
         self.next_moves = engine.move_gen(self.board)
-        self.last_move = engine.BLANK_MOVE
+        self.past_moves = [engine.BLANK_MOVE]
 
         self.update()
 
@@ -75,7 +75,7 @@ class GameController(game.DrawnObject):
 
                 # make the move
                 self.board.make(move)
-                self.last_move = move
+                self.past_moves.append(move)
                 self.next_moves = engine.move_gen(self.board)
 
                 if self.board.zobrist_key_history.count(self.board.hash) >= 2:
@@ -92,8 +92,7 @@ class GameController(game.DrawnObject):
 
         if move is not engine.BLANK_MOVE:
             self.board.make(move)
-            self.last_move = move
-
+            self.past_moves.append(move)
             self.next_moves = engine.move_gen(self.board)
 
             if len(self.next_moves) == 0:
@@ -116,9 +115,9 @@ class GameController(game.DrawnObject):
             self.board,
             self.white_pov,
             self.held_piece,
-            self.last_move,
+            self.past_moves[-1],
             self.x_offset,
             self.y_offset,
         )
 
-        self.panel.draw(screen)
+        self.panel.draw(screen, self.board, self.past_moves)
