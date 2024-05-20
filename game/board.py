@@ -13,6 +13,10 @@ class Board(DrawnObject):
         self.update()
 
     def update(self) -> None:
+        # determine variables
+        self.line_size = round(self.unit / 20)
+        self.piece_size = self.unit - self.line_size * 2
+
         # load each piece where the key is the char stored in the board
         self.images = {
             "P": pygame.image.load("assets/white-pawn.png"),
@@ -29,15 +33,15 @@ class Board(DrawnObject):
             "k": pygame.image.load("assets/black-king.png"),
         }
 
-        # resize each image to square_size
+        # resize each image to piece size
         for name, image in self.images.items():
             self.images[name] = pygame.transform.smoothscale(image, (self.piece_size, self.piece_size))
 
     def get_x(self, col: int | float) -> int:
-        return round(self.board_start_x + self.square_size * col)
+        return round(self.x_padd + self.unit * col)
 
     def get_y(self, row: int | float) -> int:
-        return round(self.board_start_y + self.square_size * row)
+        return round(self.y_padd + self.unit * row)
 
     def draw(
         self,
@@ -71,12 +75,7 @@ class Board(DrawnObject):
                     pygame.draw.rect(
                         screen,
                         colour,
-                        (
-                            self.get_x(file),
-                            self.get_y(rank),
-                            self.square_size,
-                            self.square_size,
-                        ),
+                        (self.get_x(file), self.get_y(rank), self.unit, self.unit),
                     )
 
                 # draw the piece
@@ -116,10 +115,10 @@ class Board(DrawnObject):
             x, y = pygame.mouse.get_pos()
             screen.blit(self.images[held_piece.piece], (x - x_offset, y - y_offset))
 
-        # draw board border
-        pygame.draw.rect(
-            screen,
-            (0, 0, 0),
-            (self.board_start_x, self.board_start_y, self.board_size, self.board_size),
-            self.line_size,
-        )
+        # # draw board border
+        # pygame.draw.rect(
+        #     screen,
+        #     (0, 0, 0),
+        #     (self.board_start_x, self.board_start_y, self.board_size, self.board_size),
+        #     self.line_size,
+        # )
