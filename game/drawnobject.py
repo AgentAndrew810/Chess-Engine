@@ -1,5 +1,5 @@
-units_in_width = 14.5
-units_in_height = 11
+units_in_width = 20
+units_in_height = 12
 ratio = units_in_width / units_in_height
 
 
@@ -29,20 +29,8 @@ class DrawnObject:
 
         # calculate padding
         # if width or height is too big, the other dimension gets more padding
-        cls.x_padd = cls.unit // 2 + (screen_width - width) // 2
-        cls.y_padd = cls.unit // 2 + (screen_height - height) // 2
-
-        # determine chess board sizes
-        cls.square_size = cls.unit
-        cls.board_size = cls.unit * 8
-        cls.profile_icon_size = cls.unit
-        cls.board_start_x = cls.x_padd
-        cls.board_end_x = cls.board_start_x + cls.board_size
-        cls.board_start_y = cls.y_padd + cls.profile_icon_size
-        cls.board_end_y = cls.board_start_y + cls.board_size
-
-        cls.line_size = round(cls.unit / 20)
-        cls.piece_size = cls.square_size - cls.line_size * 2
+        cls.x_padd = cls.unit * 3 + (screen_width - width) // 2
+        cls.y_padd = cls.unit * 2 + (screen_height - height) // 2
 
         # if a child object has an update method call it
         for child in cls._instances:
