@@ -2,8 +2,7 @@ import pygame
 
 from engine import Board, Move
 from .drawnobject import DrawnObject
-from .utils import draw_transparent_object
-from .constants import WHITE, BLACK
+from .constants import DARK, DARK_GREY, GREY, WHITE
 
 
 class Panel(DrawnObject):
@@ -12,24 +11,52 @@ class Panel(DrawnObject):
         self.update()
 
     def update(self) -> None:
-        # deteremine panel sizes
-        panel_x = self.board_end_x + self.unit // 2
-        panel_y = self.board_start_y
-        panel_width = self.unit * 5
+        # size and position for the info bar
+        self.info_rect = pygame.rect.Rect(
+            (self.x_padd + self.unit * 9, self.y_padd, self.unit * 5, self.unit),
+        )
 
-        self.info_pos = (panel_x, panel_y)
-        self.info_size = (panel_width, round(self.unit * 0.75))
+        # size and position for the clocks
+        self.white_clock_rect = pygame.rect.Rect(
+            (self.x_padd + self.unit * 9, self.y_padd + self.unit, round(self.unit * 2.5), round(self.unit * 1.25))
+        )
+        self.black_clock_rect = pygame.rect.Rect(
+            (self.x_padd + round(self.unit * 11.5), self.y_padd + self.unit, round(self.unit * 2.5), round(self.unit * 1.25))
+        )
 
-        self.white_clock_pos = (panel_x, panel_y + round(self.unit * 0.75))
-        self.white_clock_size = (panel_width // 2, self.unit)
-        self.black_clock_pos = (panel_x + panel_width // 2, panel_y + round(self.unit * 0.75))
-        self.black_clock_size = (panel_width // 2, self.unit)
+        # size and position for the move list
+        self.move_rect = pygame.rect.Rect((self.x_padd + self.unit * 9, self.y_padd + round(self.unit * 2.25), self.unit * 5, self.unit * 5))
 
-        self.moves_pos = (panel_x, panel_y + round(self.unit * 1.75))
-        self.moves_size = (panel_width, round(self.unit * 5.5))
+        # size and position for the bottom bar
+        self.bottom_rect = pygame.rect.Rect(
+            (self.x_padd + self.unit * 9, self.y_padd + round(self.unit * 7.25), self.unit * 5, round(self.unit * 0.75))
+        )
 
     def draw(self, screen: pygame.surface.Surface, board: Board, past_moves: list[Move]) -> None:
-        draw_transparent_object(screen, BLACK, self.info_pos, self.info_size, 200)
-        draw_transparent_object(screen, WHITE, self.white_clock_pos, self.white_clock_size, 255)
-        draw_transparent_object(screen, BLACK, self.black_clock_pos, self.black_clock_size, 255)
-        draw_transparent_object(screen, BLACK, self.moves_pos, self.moves_size, 200)
+        self.draw_alpha_rect(screen, DARK, self.info_rect, self.unit // 10, self.unit // 10)
+        self.draw_alpha_rect(screen, WHITE, self.white_clock_rect)
+        self.draw_alpha_rect(screen, DARK_GREY, self.black_clock_rect)
+        self.draw_alpha_rect(screen, GREY, self.move_rect)
+        self.draw_alpha_rect(screen, WHITE, self.bottom_rect, 0, 0, self.unit // 10, self.unit // 10)
+
+    def draw_alpha_rect(
+        self,
+        screen: pygame.surface.Surface,
+        colour: tuple[int, int, int] | tuple[int, int, int, int],
+        rect: pygame.Rect,
+        top_left: int = 0,
+        top_right: int = 0,
+        bottom_left: int = 0,
+        bottom_right: int = 0,
+    ) -> None:
+        s = pygame.Surface(rect.size, pygame.SRCALPHA)
+        pygame.draw.rect(
+            s,
+            colour,
+            s.get_rect(),
+            border_top_left_radius=top_left,
+            border_top_right_radius=top_right,
+            border_bottom_left_radius=bottom_left,
+            border_bottom_right_radius=bottom_right,
+        )
+        screen.blit(s, rect)
