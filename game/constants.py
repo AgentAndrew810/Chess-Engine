@@ -1,21 +1,21 @@
 # the default width & height of the window
-
 FACTOR = 75
-SCREEN_WIDTH = 16 * FACTOR
+SCREEN_WIDTH = 20 * FACTOR
 SCREEN_HEIGHT = 12 * FACTOR
 
 # the minimum width / height of the window
 MIN_WIDTH = SCREEN_WIDTH // 2
 MIN_HEIGHT = SCREEN_HEIGHT // 2
 
-# colours
-BLACK = (25, 23, 20)
-WHITE = (203, 218, 225)
+# board colours
 LIGHT = (255, 255, 255)
 DARK = (25, 60, 90)
-BLUE = (119, 154, 176)
+
+# highlight colours
 PINK = (255, 105, 180)
 DARK_PINK = (204, 76, 130)
-PURPLE = (138, 43, 226)
-GREY = (128, 128, 128)
-RED = (255, 20, 60)
+
+# panel colours
+DARK_GREY = (146, 164, 178)
+GREY = (199, 210, 215, 175)
+WHITE = (255, 255, 255)
