@@ -35,8 +35,8 @@ class GameController(game.DrawnObject):
         return self.player_is_white == self.board.white_move
 
     def outside_board(self, x: int, y: int) -> bool:
-        if self.board_start_x < x < self.board_end_x:
-            if self.board_start_y < y < self.y_padd + self.board_end_y:
+        if self.x_padd < x < self.x_padd + self.unit * 8:
+            if self.y_padd < y < self.y_padd + self.unit * 8:
                 return False
 
         return True
@@ -46,8 +46,8 @@ class GameController(game.DrawnObject):
             return
 
         # get the rank and file grabbed and their offsets
-        rank, self.y_offset = divmod(y - self.board_start_y, self.square_size)
-        file, self.x_offset = divmod(x - self.board_start_x, self.square_size)
+        rank, self.y_offset = divmod(y - self.y_padd, self.unit)
+        file, self.x_offset = divmod(x - self.x_padd, self.unit)
 
         # get the pos and piece
         pos = game.get_pos(rank, file, self.white_pov)
@@ -62,8 +62,8 @@ class GameController(game.DrawnObject):
             return
 
         # get the rank and file
-        rank = (y - self.board_start_y) // self.square_size
-        file = (x - self.board_start_x) // self.square_size
+        rank = (y - self.y_padd) // self.unit
+        file = (x - self.x_padd) // self.unit
 
         # if valid move
         dest = game.get_pos(rank, file, self.white_pov)
