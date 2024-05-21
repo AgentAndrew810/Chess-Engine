@@ -12,4 +12,5 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 
 ## Credit
 - All Chess Piece Images are from [Dbenbenn on Wikimedia Commons](https://commons.wikimedia.org/wiki/User:Dbenbenn)
+- Default PFP Image is from [Lycopene579 on Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Default_pfp.jpg)
 - Black Background is from [Unsplash](https://unsplash.com/photos/a-black-and-white-photo-of-water-and-sand-_GH9LwhlSO4)

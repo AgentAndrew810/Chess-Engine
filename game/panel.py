@@ -32,12 +32,19 @@ class Panel(DrawnObject):
             (self.x_padd + self.unit * 9, self.y_padd + round(self.unit * 7.25), self.unit * 5, round(self.unit * 0.75))
         )
 
+        self.pfp_size = round(self.unit * 0.6)
+
+        self.pfp_image = pygame.image.load("assets/pfp.png")
+        self.pfp_image = pygame.transform.smoothscale(self.pfp_image, (self.pfp_size, self.pfp_size))
+
     def draw(self, screen: pygame.surface.Surface, board: Board, past_moves: list[Move]) -> None:
         self.draw_alpha_rect(screen, DARK, self.info_rect, self.unit // 10, self.unit // 10)
         self.draw_alpha_rect(screen, WHITE, self.white_clock_rect)
         self.draw_alpha_rect(screen, DARK_GREY, self.black_clock_rect)
         self.draw_alpha_rect(screen, GREY, self.move_rect)
         self.draw_alpha_rect(screen, WHITE, self.bottom_rect, 0, 0, self.unit // 10, self.unit // 10)
+
+        screen.blit(self.pfp_image, (self.unit * 3, self.unit))
 
     def draw_alpha_rect(
         self,
