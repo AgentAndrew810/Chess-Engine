@@ -31,13 +31,14 @@ class Panel(DrawnObject):
             (self.x_padd + self.unit * 9, self.y_padd + round(self.unit * 7.25), self.unit * 5, round(self.unit * 0.75))
         )
 
-        self.font = pygame.font.Font("assets/OpenSans.ttf", round(self.unit * 0.5))
+        self.clock_font = pygame.font.Font("assets/OpenSans.ttf", round(self.unit * 0.5))
+        self.info_font = pygame.font.Font("assets/OpenSans.ttf", round(self.unit * 0.36))
 
         self.pfp_size = round(self.unit * 0.6)
         self.pfp_image = pygame.image.load("assets/pfp.png")
         self.pfp_image = pygame.transform.smoothscale(self.pfp_image, (self.pfp_size, self.pfp_size))
 
-    def draw(self, screen: pygame.surface.Surface, wtime: float, btime: float) -> None:
+    def draw(self, screen: pygame.surface.Surface, wtime: float, btime: float, info: str) -> None:
         self.draw_alpha_rect(screen, DARK, self.info_rect, self.unit // 10, self.unit // 10)
         self.draw_alpha_rect(screen, WHITE, self.white_clock_rect)
         self.draw_alpha_rect(screen, DARK_GREY, self.black_clock_rect)
@@ -49,14 +50,19 @@ class Panel(DrawnObject):
         bmin, bsec = divmod(int(btime), 60)
 
         # get white clock
-        wtext = self.font.render(f"{wmin:02}:{wsec:02}", True, DARK)
+        wtext = self.clock_font.render(f"{wmin:02}:{wsec:02}", True, DARK)
         wtext_rect = wtext.get_rect(center=self.white_clock_rect.center)
         screen.blit(wtext, wtext_rect)
 
         # get black clock
-        btext = self.font.render(f"{bmin:02}:{bsec:02}", True, DARK)
+        btext = self.clock_font.render(f"{bmin:02}:{bsec:02}", True, DARK)
         btext_rect = btext.get_rect(center=self.black_clock_rect.center)
         screen.blit(btext, btext_rect)
+
+        # draw info bar
+        info_text = self.info_font.render(info, True, WHITE)
+        info_text_rect = info_text.get_rect(center=self.info_rect.center)
+        screen.blit(info_text, info_text_rect)
 
         screen.blit(self.pfp_image, (self.unit * 3, self.unit))
 
