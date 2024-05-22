@@ -1,3 +1,4 @@
+import time
 import pygame
 
 import game
@@ -17,6 +18,12 @@ class GameController(game.DrawnObject):
         self.held_piece = game.HeldPiece()
         self.next_moves = engine.move_gen(self.board)
         self.past_moves = [engine.BLANK_MOVE]
+
+        self.wtime: float = 15 * 60  # 15 minutes
+        self.btime: float = 15 * 60
+
+        self.wstart = time.time()
+        self.bstart = time.time()
 
         self.update()
 
@@ -73,14 +80,7 @@ class GameController(game.DrawnObject):
                 # set the promotion to queen since thats the one the player will want
                 move.prom = "q" if move.prom else ""
 
-                # make the move
-                self.board.make(move)
-                self.past_moves.append(move)
-                self.next_moves = engine.move_gen(self.board)
-
-                if self.board.zobrist_key_history.count(self.board.hash) >= 2:
-                    print("Draw by 3 fold repetition!")
-                    self.game_over = True
+                self.make_move(move)
 
                 # this is to make sure other moves aren't run (since there are 4 promotions)
                 break
@@ -91,21 +91,37 @@ class GameController(game.DrawnObject):
         move = self.computer.search(self.board)
 
         if move is not engine.BLANK_MOVE:
-            self.board.make(move)
-            self.past_moves.append(move)
-            self.next_moves = engine.move_gen(self.board)
+            self.make_move(move)
 
-            if len(self.next_moves) == 0:
-                print("Computer won by checkmate!")
-                self.game_over = True
+    def make_move(self, move: engine.Move) -> None:
+        self.board.make(move)
+        self.past_moves.append(move)
+        self.next_moves = engine.move_gen(self.board)
 
+        # reset last clock update times
+        if self.board.white_move:
+            self.wstart = time.time()
         else:
-            print("Player won by checkmate!")
+            self.bstart = time.time()
+
+        if len(self.next_moves) == 0:
+            if self.player_turn:
+                print("Computer won by Checkmate!")
+            else:
+                print("Player won by Checkmate!")
             self.game_over = True
 
         if self.board.zobrist_key_history.count(self.board.hash) >= 2:
             print("Draw by 3 fold repetition!")
             self.game_over = True
+
+    def update_clocks(self) -> None:
+        if self.board.white_move:
+            self.wtime -= time.time() - self.wstart
+            self.wstart = time.time()
+        else:
+            self.btime -= time.time() - self.bstart
+            self.bstart = time.time()
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.blit(self.background_image, (0, 0))
@@ -120,4 +136,4 @@ class GameController(game.DrawnObject):
             self.y_offset,
         )
 
-        self.panel.draw(screen, self.board, self.past_moves)
+        self.panel.draw(screen, self.wtime, self.btime)
