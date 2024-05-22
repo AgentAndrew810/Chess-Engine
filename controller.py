@@ -22,6 +22,8 @@ class GameController(game.DrawnObject):
         self.wtime: float = 15 * 60  # 15 minutes
         self.btime: float = 15 * 60
 
+        self.info_bar = "White to Move" if self.board.white_move else "Black to Move"
+
         self.wstart = time.time()
         self.bstart = time.time()
 
@@ -89,11 +91,13 @@ class GameController(game.DrawnObject):
 
     def make_computer_move(self) -> None:
         move = self.computer.search(self.board)
+        self.update_clocks()
 
         if move is not engine.BLANK_MOVE:
             self.make_move(move)
 
     def make_move(self, move: engine.Move) -> None:
+        # make the move on the board and calculate new information
         self.board.make(move)
         self.past_moves.append(move)
         self.next_moves = engine.move_gen(self.board)
@@ -104,27 +108,36 @@ class GameController(game.DrawnObject):
         else:
             self.bstart = time.time()
 
+        # update side to move in info bar
+        if self.board.white_move:
+            self.info_bar = "White to Move"
+        else:
+            self.info_bar = "Black to Move"
+
+        # determine if the game is over
         if len(self.next_moves) == 0:
-            if self.player_turn:
-                print("Computer won by Checkmate!")
+            if self.board.white_move:
+                self.info_bar = "Black won by Checkmate!"
             else:
-                print("Player won by Checkmate!")
+                self.info_bar = "White won by Checkmate!"
+
             self.game_over = True
 
-        if self.board.zobrist_key_history.count(self.board.hash) >= 2:
-            print("Draw by 3 fold repetition!")
+        elif self.board.zobrist_key_history.count(self.board.hash) >= 2:
+            self.info_bar = "Draw by repetition!"
             self.game_over = True
 
     def update_clocks(self) -> None:
-        if self.board.white_move:
-            self.wtime -= time.time() - self.wstart
-            self.wstart = time.time()
-        else:
-            self.btime -= time.time() - self.bstart
-            self.bstart = time.time()
+        if not self.game_over:
+            if self.board.white_move:
+                self.wtime -= time.time() - self.wstart
+                self.wstart = time.time()
+            else:
+                self.btime -= time.time() - self.bstart
+                self.bstart = time.time()
 
     def draw(self, screen: pygame.surface.Surface) -> None:
-        screen.blit(self.background_image, (0, 0))
+        # screen.blit(self.background_image, (0, 0))
 
         self.board_gui.draw(
             screen,
@@ -136,4 +149,4 @@ class GameController(game.DrawnObject):
             self.y_offset,
         )
 
-        self.panel.draw(screen, self.wtime, self.btime)
+        self.panel.draw(screen, self.wtime, self.btime, self.info_bar)
