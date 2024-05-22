@@ -1,5 +1,5 @@
 # the default width & height of the window
-FACTOR = 75
+FACTOR = 60
 SCREEN_WIDTH = 20 * FACTOR
 SCREEN_HEIGHT = 12 * FACTOR
 
