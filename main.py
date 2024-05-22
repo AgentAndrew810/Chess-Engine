@@ -40,25 +40,26 @@ def main() -> None:
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
                 DrawnObject.set_sizes(width, height)
 
-            # if not game_controller.game_over:
-            #     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            #         game_controller.grab_piece(*event.pos)
-
-            #     if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            #         game_controller.drop_piece(*event.pos)
-
             if not game_controller.game_over:
-                if game_controller.player_turn:
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        game_controller.grab_piece(*event.pos)
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    game_controller.grab_piece(*event.pos)
 
-                    if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                        game_controller.drop_piece(*event.pos)
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    game_controller.drop_piece(*event.pos)
 
-                else:
-                    game_controller.make_computer_move()
+            # if not game_controller.game_over:
+            #     if game_controller.player_turn:
+            #         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            #             game_controller.grab_piece(*event.pos)
+
+            #         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            #             game_controller.drop_piece(*event.pos)
+
+            #     else:
+            #         game_controller.make_computer_move()
 
         # draw everything to the screen
+        game_controller.update_clocks()
         game_controller.draw(screen)
         pygame.display.flip()
 
