@@ -16,6 +16,6 @@ PINK = (255, 105, 180)
 DARK_PINK = (204, 76, 130)
 
 # panel colours
-DARK_GREY = (146, 164, 178)
+DARK_GREY = (144, 162, 176)
 GREY = (199, 210, 215, 175)
 WHITE = (255, 255, 255)
