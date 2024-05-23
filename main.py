@@ -1,13 +1,7 @@
 import pygame
 
 from controller import GameController
-from game import (
-    MIN_HEIGHT,
-    MIN_WIDTH,
-    SCREEN_HEIGHT,
-    SCREEN_WIDTH,
-    DrawnObject,
-)
+from game import MIN_HEIGHT, MIN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, DrawnObject
 
 # pygame setup
 pygame.init()
