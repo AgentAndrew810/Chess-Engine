@@ -36,6 +36,15 @@ class GameController(game.DrawnObject):
         self.y_offset = 0
 
     def update(self) -> None:
+        button_height = self.y_padd + round(self.unit * 7.25)
+
+        self.buttons = {
+            "home": game.Button(self.x_padd + self.unit * 9, button_height, self.unit, round(self.unit * 0.75), "assets/home-icon.png"),
+            "flip": game.Button(self.x_padd + self.unit * 10, button_height, self.unit, round(self.unit * 0.75), "assets/flip-icon.png"),
+            "hint": game.Button(self.x_padd + self.unit * 11, button_height, self.unit, round(self.unit * 0.75), "assets/hint-icon.png"),
+            "settings": game.Button(self.x_padd + self.unit * 12, button_height, self.unit, round(self.unit * 0.75), "assets/settings-icon.png"),
+        }
+
         self.background_image = pygame.image.load("assets/background.png")
         self.background_image = pygame.transform.smoothscale(self.background_image, (self.screen_width, self.screen_height))
 
@@ -150,3 +159,6 @@ class GameController(game.DrawnObject):
         )
 
         self.panel.draw(screen, self.wtime, self.btime, self.info_bar)
+
+        for button in self.buttons.values():
+            button.draw(screen)
