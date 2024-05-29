@@ -36,13 +36,16 @@ class GameController(game.DrawnObject):
         self.y_offset = 0
 
     def update(self) -> None:
-        button_height = self.y_padd + round(self.unit * 7.25)
+        x = self.x_padd + self.unit * 9
+        y = self.y_padd + round(self.unit * 7.25)
+        height = round(self.unit * 0.75)
+        width = round(self.unit * 5 / 4)
 
         self.buttons = {
-            "home": game.Button(self.x_padd + self.unit * 9, button_height, self.unit, round(self.unit * 0.75), "assets/home-icon.png"),
-            "flip": game.Button(self.x_padd + self.unit * 10, button_height, self.unit, round(self.unit * 0.75), "assets/flip-icon.png"),
-            "hint": game.Button(self.x_padd + self.unit * 11, button_height, self.unit, round(self.unit * 0.75), "assets/hint-icon.png"),
-            "settings": game.Button(self.x_padd + self.unit * 12, button_height, self.unit, round(self.unit * 0.75), "assets/settings-icon.png"),
+            "home": game.Button(x, y, width, height, "assets/home-icon.png"),
+            "flip": game.Button(x + width, y, width, height, "assets/flip-icon.png"),
+            "hint": game.Button(x + width * 2, y, width, height, "assets/hint-icon.png"),
+            "settings": game.Button(x + width * 3, y, width, height, "assets/settings-icon.png"),
         }
 
         self.background_image = pygame.image.load("assets/background.png")
@@ -59,23 +62,28 @@ class GameController(game.DrawnObject):
 
         return True
 
-    def grab_piece(self, x: int, y: int) -> None:
-        if self.outside_board(x, y):
-            return
+    def mouse_click(self, x: int, y: int) -> None:
+        # if the grab is inside the board
+        if not self.outside_board(x, y):
+            # if it is the players turn to move
+            if self.player_turn:
+                # get the rank and file grabbed and their offsets
+                rank, self.y_offset = divmod(y - self.y_padd, self.unit)
+                file, self.x_offset = divmod(x - self.x_padd, self.unit)
 
-        # get the rank and file grabbed and their offsets
-        rank, self.y_offset = divmod(y - self.y_padd, self.unit)
-        file, self.x_offset = divmod(x - self.x_padd, self.unit)
+                # get the pos and piece
+                pos = game.get_pos(rank, file, self.white_pov)
+                piece = self.board.board[pos]
 
-        # get the pos and piece
-        pos = game.get_pos(rank, file, self.white_pov)
-        piece = self.board.board[pos]
+                # check if grabbing the correct colour
+                if piece.isalpha() and piece.isupper() == self.board.white_move:
+                    self.held_piece.grab(pos, piece, self.next_moves)
+        else:
+            # otherwise check for button presses
+            if self.buttons["flip"].is_over():
+                self.white_pov = not self.white_pov
 
-        # check if grabbing the correct colour
-        if piece.isalpha() and piece.isupper() == self.board.white_move:
-            self.held_piece.grab(pos, piece, self.next_moves)
-
-    def drop_piece(self, x: int, y: int) -> None:
+    def mouse_release(self, x: int, y: int) -> None:
         if self.outside_board(x, y):
             return
 
