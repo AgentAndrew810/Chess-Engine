@@ -39,6 +39,7 @@ class Panel(DrawnObject):
         self.pfp_image = pygame.transform.smoothscale(self.pfp_image, (self.pfp_size, self.pfp_size))
 
     def draw(self, screen: pygame.surface.Surface, wtime: float, btime: float, info: str) -> None:
+        # draw all the alpha rectangles
         self.draw_alpha_rect(screen, DARK, self.info_rect, self.unit // 10, self.unit // 10)
         self.draw_alpha_rect(screen, WHITE, self.white_clock_rect)
         self.draw_alpha_rect(screen, DARK_GREY, self.black_clock_rect)
