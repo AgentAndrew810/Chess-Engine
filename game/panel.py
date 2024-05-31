@@ -35,8 +35,7 @@ class Panel(DrawnObject):
         self.info_font = pygame.font.Font("assets/OpenSans.ttf", round(self.unit * 0.36))
 
         self.pfp_size = round(self.unit * 0.6)
-        self.pfp_image = pygame.image.load("assets/pfp.png")
-        self.pfp_image = pygame.transform.smoothscale(self.pfp_image, (self.pfp_size, self.pfp_size))
+        self.pfp_image = pygame.transform.smoothscale(pygame.image.load("assets/pfp.png"), (self.pfp_size, self.pfp_size))
 
     def draw(self, screen: pygame.surface.Surface, wtime: float, btime: float, info: str) -> None:
         # draw all the alpha rectangles
@@ -65,7 +64,9 @@ class Panel(DrawnObject):
         info_text_rect = info_text.get_rect(center=self.info_rect.center)
         screen.blit(info_text, info_text_rect)
 
-        screen.blit(self.pfp_image, (self.unit * 3, self.unit))
+        # draw profile pictures
+        screen.blit(self.pfp_image, (self.x_padd, self.unit + round(self.unit // 2) - round(self.pfp_size // 2)))
+        screen.blit(self.pfp_image, (self.x_padd, self.unit * 10 + round(self.unit // 2) - round(self.pfp_size // 2)))
 
     def draw_alpha_rect(
         self,
