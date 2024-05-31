@@ -115,10 +115,5 @@ class Board(DrawnObject):
             x, y = pygame.mouse.get_pos()
             screen.blit(self.images[held_piece.piece], (x - x_offset, y - y_offset))
 
-        # # draw board border
-        # pygame.draw.rect(
-        #     screen,
-        #     (0, 0, 0),
-        #     (self.board_start_x, self.board_start_y, self.board_size, self.board_size),
-        #     self.line_size,
-        # )
+        # draw board border
+        pygame.draw.rect(screen, (0, 0, 0), (self.x_padd, self.y_padd, self.unit * 8, self.unit * 8), self.line_size)
