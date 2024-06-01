@@ -40,7 +40,7 @@ def main() -> None:
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 game_controller.mouse_release(*event.pos)
 
-            if not game_controller.player_turn:
+            if not game_controller.menu and not game_controller.player_turn:
                 game_controller.make_computer_move()
 
         # draw everything to the screen
