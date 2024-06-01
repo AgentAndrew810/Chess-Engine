@@ -13,7 +13,7 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 ## Credit
 - Chess Pieces Images -> [Dbenbenn on Wikimedia Commons](https://commons.wikimedia.org/wiki/User:Dbenbenn)
 - Default PFP Icon -> [Lycopene579 on Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Default_pfp.jpg)
-- Black Background -> [Unsplash](https://unsplash.com/photos/a-black-and-white-photo-of-water-and-sand-_GH9LwhlSO4)
+- Black Background -> [freepik](https://www.freepik.com/free-photo/grunge-black-concrete-textured-background_17118014.htm)
 - Home Icon -> [uxwing](https://uxwing.com/home-icon/)
 - Flip Icon -> [uxwing](https://uxwing.com/convert-icon/)
 - Hint Icon -> [uxwing](https://uxwing.com/question-mark-icon/)
