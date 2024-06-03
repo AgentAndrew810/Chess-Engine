@@ -186,20 +186,26 @@ class Controller(game.DrawnObject):
         if self.game_active:
             # if the game has not ended
             if not self.game_over:
-                # update clock for the side to move
-                if self.board.white_move:
-                    self.wtime -= time.time() - self.wstart
-                    self.wstart = time.time()
-                else:
-                    self.btime -= time.time() - self.bstart
-                    self.bstart = time.time()
+                self.update_clocks()
 
                 # if it is the computer's turn to move make a move
                 if self.engine_mode and self.player_is_white != self.board.white_move:
                     move = self.computer.search(self.board)
+                    
+                    # since the move will be made without updating clocks we have to update here aswell
+                    self.update_clocks()
 
                     if move is not engine.BLANK_MOVE:
                         self.make_move(move)
+
+    def update_clocks(self) -> None:
+        # update clock for the side to move
+        if self.board.white_move:
+            self.wtime -= time.time() - self.wstart
+            self.wstart = time.time()
+        else:
+            self.btime -= time.time() - self.bstart
+            self.bstart = time.time()
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.blit(self.background_image, (0, 0))
