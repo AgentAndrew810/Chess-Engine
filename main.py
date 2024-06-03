@@ -27,7 +27,7 @@ def main() -> None:
                 return
 
             if event.type == pygame.VIDEORESIZE:
-                # choose either the current size or minimum
+                # choose either the current size or minimum size
                 width = max(event.size[0], MIN_WIDTH)
                 height = max(event.size[1], MIN_HEIGHT)
 
@@ -40,12 +40,11 @@ def main() -> None:
 
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 controller.mouse_release(*event.pos)
-
-            if controller.game_active and not controller.player_turn:
-                controller.make_computer_move()
+                
+        # update clocks and/or make computer move
+        controller.update_game()
 
         # draw everything to the screen
-        controller.update_clocks()
         controller.draw(screen)
         pygame.display.flip()
 
