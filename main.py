@@ -1,6 +1,6 @@
 import pygame
 
-from controller import GameController
+from controller import Controller
 from game import MIN_HEIGHT, MIN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, DrawnObject
 
 # pygame setup
@@ -15,7 +15,7 @@ def main() -> None:
     # setup screen and game
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
     DrawnObject.set_sizes(SCREEN_WIDTH, SCREEN_HEIGHT)
-    game_controller = GameController()
+    controller = Controller()
 
     # main loop
     while True:
@@ -35,17 +35,17 @@ def main() -> None:
                 DrawnObject.set_sizes(width, height)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                game_controller.mouse_click(*event.pos)
+                controller.mouse_click(*event.pos)
 
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                game_controller.mouse_release(*event.pos)
+                controller.mouse_release(*event.pos)
 
-            if not game_controller.menu and not game_controller.player_turn:
-                game_controller.make_computer_move()
+            if controller.game_active and not controller.player_turn:
+                controller.make_computer_move()
 
         # draw everything to the screen
-        game_controller.update_clocks()
-        game_controller.draw(screen)
+        controller.update_clocks()
+        controller.draw(screen)
         pygame.display.flip()
 
 

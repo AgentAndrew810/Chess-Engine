@@ -5,13 +5,13 @@ import game
 import engine
 
 
-class GameController(game.DrawnObject):
+class Controller(game.DrawnObject):
     def __init__(self) -> None:
         super().__init__()
 
         self.update()
 
-        self.menu = True
+        self.game_active = False
         self.game_over = False
         self.player_is_white = True
         self.white_pov = True
@@ -83,12 +83,7 @@ class GameController(game.DrawnObject):
         return True
 
     def mouse_click(self, x: int, y: int) -> None:
-        if self.menu:
-            # check for button presses
-            if self.menu_buttons["play-engine"].is_over():
-                self.menu = False
-                self.new_game()
-        else:
+        if self.game_active:
             # if the grab is inside the board
             if not self.outside_board(x, y):
                 # if it is the players turn to move
@@ -110,30 +105,37 @@ class GameController(game.DrawnObject):
                     self.white_pov = not self.white_pov
 
                 elif self.panel_buttons["home"].is_over():
-                    self.menu = True
+                    self.game_active = False
+
+        else:
+            # check for button presses
+            if self.menu_buttons["play-engine"].is_over():
+                self.game_active = True
+                self.new_game()
 
     def mouse_release(self, x: int, y: int) -> None:
-        if self.outside_board(x, y):
-            return
+        if self.game_active:
+            if self.outside_board(x, y):
+                return
 
-        # get the rank and file
-        rank = (y - self.y_padd) // self.unit
-        file = (x - self.x_padd) // self.unit
+            # get the rank and file
+            rank = (y - self.y_padd) // self.unit
+            file = (x - self.x_padd) // self.unit
 
-        # if valid move
-        dest = game.get_pos(rank, file, self.white_pov)
+            # if valid move
+            dest = game.get_pos(rank, file, self.white_pov)
 
-        for move in self.next_moves:
-            if (self.held_piece.pos, dest) == (move.pos, move.dest):
-                # set the promotion to queen since thats the one the player will want
-                move.prom = "q" if move.prom else ""
+            for move in self.next_moves:
+                if (self.held_piece.pos, dest) == (move.pos, move.dest):
+                    # set the promotion to queen since thats the one the player will want
+                    move.prom = "q" if move.prom else ""
 
-                self.make_move(move)
+                    self.make_move(move)
 
-                # this is to make sure other moves aren't run (since there are 4 promotions)
-                break
+                    # this is to make sure other moves aren't run (since there are 4 promotions)
+                    break
 
-        self.held_piece.drop()
+            self.held_piece.drop()
 
     def make_computer_move(self) -> None:
         move = self.computer.search(self.board)
@@ -174,7 +176,7 @@ class GameController(game.DrawnObject):
             self.game_over = True
 
     def update_clocks(self) -> None:
-        if not self.menu and not self.game_over:
+        if self.game_active and not self.game_over:
             if self.board.white_move:
                 self.wtime -= time.time() - self.wstart
                 self.wstart = time.time()
@@ -185,17 +187,7 @@ class GameController(game.DrawnObject):
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.blit(self.background_image, (0, 0))
 
-        if self.menu:
-            # draw title
-            logo_text = self.logo_font.render("Chess Club 7", True, game.BLUE)
-            logo_rect = logo_text.get_rect(center=(self.x_padd + self.unit * 7, self.y_padd + self.unit // 2))
-            screen.blit(logo_text, logo_rect)
-
-            # draw buttons
-            for button in self.menu_buttons.values():
-                button.draw(screen, self.button_font)
-
-        else:
+        if self.game_active:
             self.board_gui.draw(
                 screen,
                 self.board,
@@ -211,3 +203,12 @@ class GameController(game.DrawnObject):
             # draw buttons
             for button in self.panel_buttons.values():
                 button.draw(screen)
+        else:
+            # draw title
+            logo_text = self.logo_font.render("Chess Club 7", True, game.BLUE)
+            logo_rect = logo_text.get_rect(center=(self.x_padd + self.unit * 7, self.y_padd + self.unit // 2))
+            screen.blit(logo_text, logo_rect)
+
+            # draw buttons
+            for button in self.menu_buttons.values():
+                button.draw(screen, self.button_font)
