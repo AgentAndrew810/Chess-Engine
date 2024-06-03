@@ -13,6 +13,7 @@ class Controller(game.DrawnObject):
 
         self.game_active = False
         self.game_over = False
+        self.engine_mode = False
         self.quit_game = False
 
         self.player_is_white = True
@@ -90,7 +91,7 @@ class Controller(game.DrawnObject):
             # if the grab is inside the board
             if not self.outside_board(x, y):
                 # if it is the players turn to move
-                if self.player_turn:
+                if not self.engine_mode or self.player_is_white == self.board.white_move:
                     # get the rank and file grabbed and their offsets
                     rank, self.y_offset = divmod(y - self.y_padd, self.unit)
                     file, self.x_offset = divmod(x - self.x_padd, self.unit)
@@ -114,6 +115,12 @@ class Controller(game.DrawnObject):
             # check for button presses
             if self.menu_buttons["play-engine"].is_over():
                 self.game_active = True
+                self.engine_mode = True
+                self.new_game()
+
+            elif self.menu_buttons["play-friend"].is_over():
+                self.game_active = True
+                self.engine_mode = False
                 self.new_game()
 
             elif self.menu_buttons["quit"].is_over():
@@ -142,13 +149,6 @@ class Controller(game.DrawnObject):
                     break
 
             self.held_piece.drop()
-
-    def make_computer_move(self) -> None:
-        move = self.computer.search(self.board)
-        self.update_clocks()
-
-        if move is not engine.BLANK_MOVE:
-            self.make_move(move)
 
     def make_move(self, move: engine.Move) -> None:
         # make the move on the board and calculate new information
@@ -181,14 +181,25 @@ class Controller(game.DrawnObject):
             self.info_bar = "Draw by repetition!"
             self.game_over = True
 
-    def update_clocks(self) -> None:
-        if self.game_active and not self.game_over:
-            if self.board.white_move:
-                self.wtime -= time.time() - self.wstart
-                self.wstart = time.time()
-            else:
-                self.btime -= time.time() - self.bstart
-                self.bstart = time.time()
+    def update_game(self) -> None:
+        # if the game menu is active
+        if self.game_active:
+            # if the game has not ended
+            if not self.game_over:
+                # update clock for the side to move
+                if self.board.white_move:
+                    self.wtime -= time.time() - self.wstart
+                    self.wstart = time.time()
+                else:
+                    self.btime -= time.time() - self.bstart
+                    self.bstart = time.time()
+
+                # if it is the computer's turn to move make a move
+                if self.engine_mode and self.player_is_white != self.board.white_move:
+                    move = self.computer.search(self.board)
+
+                    if move is not engine.BLANK_MOVE:
+                        self.make_move(move)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.blit(self.background_image, (0, 0))
