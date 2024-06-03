@@ -13,8 +13,11 @@ class Controller(game.DrawnObject):
 
         self.game_active = False
         self.game_over = False
+        self.quit_game = False
+
         self.player_is_white = True
         self.white_pov = True
+
         self.x_offset = 0
         self.y_offset = 0
 
@@ -112,6 +115,9 @@ class Controller(game.DrawnObject):
             if self.menu_buttons["play-engine"].is_over():
                 self.game_active = True
                 self.new_game()
+
+            elif self.menu_buttons["quit"].is_over():
+                self.quit_game = True
 
     def mouse_release(self, x: int, y: int) -> None:
         if self.game_active:

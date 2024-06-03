@@ -20,8 +20,9 @@ def main() -> None:
     # main loop
     while True:
         for event in pygame.event.get():
-            # if the user hits the x button quit the application
-            if event.type == pygame.QUIT:
+            # if the user hits the x button or the quit button
+            # close and exit the program
+            if event.type == pygame.QUIT or controller.quit_game:
                 pygame.quit()
                 return
 
