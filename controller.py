@@ -156,6 +156,10 @@ class Controller(game.DrawnObject):
         self.past_moves.append(move)
         self.next_moves = engine.move_gen(self.board)
 
+        # switch to the pov of player to move if in friend mode
+        if not self.engine_mode:
+            self.white_pov = self.board.white_move
+
         # reset last clock update times
         if self.board.white_move:
             self.wstart = time.time()
@@ -191,7 +195,7 @@ class Controller(game.DrawnObject):
                 # if it is the computer's turn to move make a move
                 if self.engine_mode and self.player_is_white != self.board.white_move:
                     move = self.computer.search(self.board)
-                    
+
                     # since the move will be made without updating clocks we have to update here aswell
                     self.update_clocks()
 
