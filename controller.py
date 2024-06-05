@@ -72,7 +72,7 @@ class Controller(game.DrawnObject):
         self.background_image = pygame.image.load("assets/background.png")
         self.background_image = pygame.transform.smoothscale(self.background_image, (self.screen_width, self.screen_height))
 
-        self.logo_font = pygame.font.Font("assets/OpenSans.ttf", self.unit * 2)
+        self.logo_font = pygame.font.Font("assets/hercules.ttf", self.unit * 2)
         self.button_font = pygame.font.Font("assets/OpenSans.ttf", self.unit // 2)
 
     @property
