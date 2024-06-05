@@ -7,7 +7,7 @@ from game import MIN_HEIGHT, MIN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, DrawnObject
 pygame.init()
 
 # change the title and icon of the window
-pygame.display.set_caption("Chess")
+pygame.display.set_caption("Chess Club 7")
 pygame.display.set_icon(pygame.image.load("assets/black-queen.png"))
 
 
