@@ -72,8 +72,11 @@ class Controller(game.DrawnObject):
         self.background_image = pygame.image.load("assets/background.png")
         self.background_image = pygame.transform.smoothscale(self.background_image, (self.screen_width, self.screen_height))
 
+        self.version_size = round(self.unit / 3)
+
         self.logo_font = pygame.font.Font("assets/hercules.ttf", self.unit * 2)
         self.button_font = pygame.font.Font("assets/OpenSans.ttf", self.unit // 2)
+        self.version_font = pygame.font.Font("assets/OpenSans.ttf", self.version_size)
 
     @property
     def player_turn(self) -> bool:
@@ -235,6 +238,13 @@ class Controller(game.DrawnObject):
             logo_text = self.logo_font.render("Chess Club 7", True, game.BLUE)
             logo_rect = logo_text.get_rect(center=(self.x_padd + self.unit * 7, self.y_padd + self.unit // 2))
             screen.blit(logo_text, logo_rect)
+
+            # draw version
+            version_text = self.version_font.render(f"v.{engine.VERSION}", True, game.LIGHT_GREY)
+            version_rect = version_text.get_rect(
+                center=(self.screen_width - version_text.get_width(), self.screen_height - version_text.get_height())
+            )
+            screen.blit(version_text, version_rect)
 
             # draw buttons
             for button in self.menu_buttons.values():
