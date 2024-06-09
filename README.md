@@ -6,9 +6,10 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 - Use Move Tables for En Passant and Castling
 
 ## Todo GUI
-- Add buttons (back, quit, sound, home)
-- Add menu
-- Add different gamemodes (play a friend, play engine, visualize battle)
+- Make All Settings Buttons Work
+- Add Home Button in Settings
+- Add in Sound & Sound Slider in Settings
+- Add Copy FEN Button in Game Panel
 
 ## Credit
 - Chess Pieces Images -> [Dbenbenn on Wikimedia Commons](https://commons.wikimedia.org/wiki/User:Dbenbenn)
