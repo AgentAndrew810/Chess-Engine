@@ -107,7 +107,7 @@ class Controller(game.DrawnObject):
         # load all the fonts
         self.title_font = pygame.font.Font("assets/hercules.ttf", self.unit * 2)
         self.options_title_font = pygame.font.Font("assets/hercules.ttf", round(self.unit * 1.5))
-        self.version_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 2))
+        self.version_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 3))
         self.menu_button_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 2))
         self.settings_button_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 3))
         self.settings_title_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 2.25))
