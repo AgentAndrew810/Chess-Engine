@@ -26,52 +26,27 @@ class Controller(game.DrawnObject):
         self.x_offset = 0
         self.y_offset = 0
 
+        # categories and their radio buttons
+        self.setting_groups = {
+            "Engine Plays As": ["White", "Black"],
+            "Engine Difficulty": ["Easy", "Medium", "Hard"],
+            "Time Control": ["5 Min", "10 Min", "15 Min"],
+            "Highlight Last Move": ["Enabled", "Disabled"],
+            "Auto Flip Board": ["Enabled", "Disabled"],
+            "Promotion Type": ["Auto queen", "Manually choose"],
+            "Grab Mode": ["Drag & Drop", "Select squares"],
+        }
+
+        # temp positions for buttons
         x = self.x_padd + self.unit * 6
         y = self.y_padd + round(self.unit * 2.5)
         radius = self.unit // 4
 
-        self.settings = {
-            "engine-colour": {
-                "white": game.RadioButton((x, y), radius, "White", True),
-                "black": game.RadioButton((x + self.unit * 3, y), radius, "Black", False),
-            },
-            "engine-difficulty": {
-                "easy": game.RadioButton((x, y + self.unit), radius, "Easy", False),
-                "medium": game.RadioButton((x + self.unit * 3, y + self.unit), radius, "Medium", False),
-                "hard": game.RadioButton((x + self.unit * 6, y + self.unit), radius, "Hard", True),
-            },
-            "time": {
-                "5": game.RadioButton((x, y + self.unit * 2), radius, "5 min", False),
-                "10": game.RadioButton((x + self.unit * 3, y + self.unit * 2), radius, "10 min", True),
-                "15": game.RadioButton((x + self.unit * 6, y + self.unit * 2), radius, "15 min", False),
-            },
-            "highlight": {
-                "Enabled": game.RadioButton((x, y + self.unit * 3), radius, "Enabled", True),
-                "Disabled": game.RadioButton((x + self.unit * 3, y + self.unit * 3), radius, "Disabled", False),
-            },
-            "flip": {
-                "Enabled": game.RadioButton((x, y + self.unit * 4), radius, "Enabled", False),
-                "Disabled": game.RadioButton((x + self.unit * 3, y + self.unit * 4), radius, "Disabled", True),
-            },
-            "promotion": {
-                "queen": game.RadioButton((x, y + self.unit * 5), radius, "Auto Queen", True),
-                "choose": game.RadioButton((x + self.unit * 3, y + self.unit * 5), radius, "Manually Choose", False),
-            },
-            "grab": {
-                "drag": game.RadioButton((x, y + self.unit * 6), radius, "Drag & Drop", True),
-                "tap": game.RadioButton((x + self.unit * 3, y + self.unit * 6), radius, "Select Squares", False),
-            },
-        }
-
-        self.settings_titles = [
-            "Engine Plays As",
-            "Engine Difficulty",
-            "Time Control",
-            "Highlight Last Move",
-            "Auto Flip Board",
-            "Promotion Type",
-            "Grab Mode",
-        ]
+        self.settings = {}
+        for i, category in enumerate(self.setting_groups):
+            self.settings[category] = {}
+            for j, button in enumerate(self.setting_groups[category]):
+                self.settings[category][button] = game.RadioButton((x + self.unit * 3 * j, y + self.unit * i), radius, button, False)
 
     def new_game(self) -> None:
         # sets variables for new game
@@ -130,7 +105,8 @@ class Controller(game.DrawnObject):
         self.background_image = pygame.transform.smoothscale(self.background_image, (self.screen_width, self.screen_height))
 
         # load all the fonts
-        self.logo_font = pygame.font.Font("assets/hercules.ttf", self.unit * 2)
+        self.title_font = pygame.font.Font("assets/hercules.ttf", self.unit * 2)
+        self.options_title_font = pygame.font.Font("assets/hercules.ttf", round(self.unit * 1.5))
         self.version_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 2))
         self.menu_button_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 2))
         self.settings_button_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 3))
@@ -311,9 +287,9 @@ class Controller(game.DrawnObject):
                 button.draw(screen)
         elif self.active_window == Window.MAINMENU:
             # draw title
-            logo_text = self.logo_font.render("Chess Club 7", True, game.BLUE)
-            logo_rect = logo_text.get_rect(center=(self.x_padd + self.unit * 7, self.y_padd + self.unit // 2))
-            screen.blit(logo_text, logo_rect)
+            title_text = self.title_font.render("Chess Club 7", True, game.BLUE)
+            title_rect = title_text.get_rect(center=(self.x_padd + self.unit * 7, self.y_padd + self.unit // 2))
+            screen.blit(title_text, title_rect)
 
             # draw version
             version_text = self.version_font.render(f"v.{engine.VERSION}", True, game.LIGHT_GREY)
@@ -327,12 +303,17 @@ class Controller(game.DrawnObject):
                 button.draw(screen, self.menu_button_font)
 
         elif self.active_window == Window.SETTINGS:
+            # draw options title
+            title_text = self.options_title_font.render("Game Options", True, game.BLUE)
+            title_rect = title_text.get_rect(center=(self.x_padd + self.unit * 7, self.y_padd))
+            screen.blit(title_text, title_rect)
+
             # draw buttons
             for button_category in self.settings.values():
                 for button in button_category.values():
                     button.draw(screen, self.settings_button_font)
 
             # draw button categories
-            for i, button_category in enumerate(self.settings_titles):
+            for i, button_category in enumerate(self.setting_groups):
                 text = self.settings_title_font.render(button_category, True, game.WHITE)
                 screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + i) - text.get_height() // 2))
