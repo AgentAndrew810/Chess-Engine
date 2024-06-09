@@ -16,8 +16,6 @@ class Controller(game.DrawnObject):
     def __init__(self) -> None:
         super().__init__()
 
-        self.update()
-
         self.active_window = Window.MAINMENU
         self.game_over = False
         self.engine_mode = False
@@ -48,6 +46,8 @@ class Controller(game.DrawnObject):
             self.settings[category] = {}
             for j, button in enumerate(self.setting_groups[category]):
                 self.settings[category][button] = game.RadioButton((x + self.unit * 3 * j, y + self.unit * i), radius, button, j == 0)
+
+        self.update()
 
     def new_game(self) -> None:
         # sets variables for new game
@@ -100,6 +100,16 @@ class Controller(game.DrawnObject):
             "hint": game.Button(x + width * 2, y, width, height, "assets/hint-icon.png"),
             "settings": game.Button(x + width * 3, y, width, height, "assets/settings-icon.png"),
         }
+
+        # determine position and sizes of settings buttons
+        x = self.x_padd + self.unit * 6
+        y = self.y_padd + round(self.unit * 2.5)
+        radius = self.unit // 4
+
+        # resize settings buttons
+        for i, category in enumerate(self.setting_groups):
+            for j, button in enumerate(self.setting_groups[category]):
+                self.settings[category][button].resize((x + self.unit * 3 * j, y + self.unit * i), radius)
 
         # load the background image
         self.background_image = pygame.image.load("assets/background.png")
