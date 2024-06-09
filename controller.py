@@ -1,8 +1,15 @@
 import time
 import pygame
+from enum import Enum
 
 import game
 import engine
+
+
+class Window(Enum):
+    GAME = 1
+    SETTINGS = 2
+    MAINMENU = 3
 
 
 class Controller(game.DrawnObject):
@@ -11,19 +18,66 @@ class Controller(game.DrawnObject):
 
         self.update()
 
-        self.game_active = False
+        self.active_window = Window.MAINMENU
         self.game_over = False
         self.engine_mode = False
         self.quit_game = False
 
-        self.player_is_white = True
-        self.white_pov = True
-
         self.x_offset = 0
         self.y_offset = 0
 
+        x = self.x_padd + self.unit * 6
+        y = self.y_padd + round(self.unit * 2.5)
+        radius = self.unit // 4
+
+        self.settings = {
+            "engine-colour": {
+                "white": game.RadioButton((x, y), radius, "White", True),
+                "black": game.RadioButton((x + self.unit * 3, y), radius, "Black", False),
+            },
+            "engine-difficulty": {
+                "easy": game.RadioButton((x, y + self.unit), radius, "Easy", False),
+                "medium": game.RadioButton((x + self.unit * 3, y + self.unit), radius, "Medium", False),
+                "hard": game.RadioButton((x + self.unit * 6, y + self.unit), radius, "Hard", True),
+            },
+            "time": {
+                "5": game.RadioButton((x, y + self.unit * 2), radius, "5 min", False),
+                "10": game.RadioButton((x + self.unit * 3, y + self.unit * 2), radius, "10 min", True),
+                "15": game.RadioButton((x + self.unit * 6, y + self.unit * 2), radius, "15 min", False),
+            },
+            "highlight": {
+                "Enabled": game.RadioButton((x, y + self.unit * 3), radius, "Enabled", True),
+                "Disabled": game.RadioButton((x + self.unit * 3, y + self.unit * 3), radius, "Disabled", False),
+            },
+            "flip": {
+                "Enabled": game.RadioButton((x, y + self.unit * 4), radius, "Enabled", False),
+                "Disabled": game.RadioButton((x + self.unit * 3, y + self.unit * 4), radius, "Disabled", True),
+            },
+            "promotion": {
+                "queen": game.RadioButton((x, y + self.unit * 5), radius, "Auto Queen", True),
+                "choose": game.RadioButton((x + self.unit * 3, y + self.unit * 5), radius, "Manually Choose", False),
+            },
+            "grab": {
+                "drag": game.RadioButton((x, y + self.unit * 6), radius, "Drag & Drop", True),
+                "tap": game.RadioButton((x + self.unit * 3, y + self.unit * 6), radius, "Select Squares", False),
+            },
+        }
+
+        self.settings_titles = [
+            "Engine Plays As",
+            "Engine Difficulty",
+            "Time Control",
+            "Highlight Last Move",
+            "Auto Flip Board",
+            "Promotion Type",
+            "Grab Mode",
+        ]
+
     def new_game(self) -> None:
         # sets variables for new game
+        self.player_is_white = True
+        self.white_pov = self.player_is_white
+
         self.board = engine.Board()
         self.computer = engine.Engine()
 
@@ -49,6 +103,7 @@ class Controller(game.DrawnObject):
         width = self.unit * 6
         height = self.unit
 
+        # all of the menu screen buttons
         self.menu_buttons = {
             "play-engine": game.MenuButton(x, y, width, height, "Play Engine", game.BLUE),
             "play-friend": game.MenuButton(x, y + round(self.unit * 1.25), width, height, "Play Friend", game.BLUE),
@@ -62,6 +117,7 @@ class Controller(game.DrawnObject):
         height = round(self.unit * 0.75)
         width = round(self.unit * 5 / 4)
 
+        # all of the buttons on the panel
         self.panel_buttons = {
             "home": game.Button(x, y, width, height, "assets/home-icon.png"),
             "flip": game.Button(x + width, y, width, height, "assets/flip-icon.png"),
@@ -69,14 +125,16 @@ class Controller(game.DrawnObject):
             "settings": game.Button(x + width * 3, y, width, height, "assets/settings-icon.png"),
         }
 
+        # load the background image
         self.background_image = pygame.image.load("assets/background.png")
         self.background_image = pygame.transform.smoothscale(self.background_image, (self.screen_width, self.screen_height))
 
-        self.version_size = round(self.unit / 3)
-
+        # load all the fonts
         self.logo_font = pygame.font.Font("assets/hercules.ttf", self.unit * 2)
-        self.button_font = pygame.font.Font("assets/OpenSans.ttf", self.unit // 2)
-        self.version_font = pygame.font.Font("assets/OpenSans.ttf", self.version_size)
+        self.version_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 2))
+        self.menu_button_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 2))
+        self.settings_button_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 3))
+        self.settings_title_font = pygame.font.Font("assets/Inter.ttf", round(self.unit / 2.25))
 
     @property
     def player_turn(self) -> bool:
@@ -90,7 +148,7 @@ class Controller(game.DrawnObject):
         return True
 
     def mouse_click(self, x: int, y: int) -> None:
-        if self.game_active:
+        if self.active_window == Window.GAME:
             # if the grab is inside the board
             if not self.outside_board(x, y):
                 # if it is the players turn to move
@@ -112,25 +170,43 @@ class Controller(game.DrawnObject):
                     self.white_pov = not self.white_pov
 
                 elif self.panel_buttons["home"].is_over():
-                    self.game_active = False
+                    self.active_window = Window.MAINMENU
 
-        else:
+                elif self.panel_buttons["settings"].is_over():
+                    self.active_window = Window.SETTINGS
+
+        elif self.active_window == Window.MAINMENU:
             # check for button presses
             if self.menu_buttons["play-engine"].is_over():
-                self.game_active = True
+                self.active_window = Window.GAME
                 self.engine_mode = True
                 self.new_game()
 
             elif self.menu_buttons["play-friend"].is_over():
-                self.game_active = True
+                self.active_window = Window.GAME
                 self.engine_mode = False
                 self.new_game()
+
+            elif self.menu_buttons["settings"].is_over():
+                self.active_window = Window.SETTINGS
 
             elif self.menu_buttons["quit"].is_over():
                 self.quit_game = True
 
+        elif self.active_window == Window.SETTINGS:
+            # check for button presses
+            for button_category in self.settings.values():
+                for button in button_category.values():
+                    if button.is_over():
+                        # disable every other button in category
+                        for button2 in button_category.values():
+                            button2.enabled = False
+                        # enable button
+                        button.enabled = True
+                        break
+
     def mouse_release(self, x: int, y: int) -> None:
-        if self.game_active:
+        if self.active_window == Window.GAME:
             if self.outside_board(x, y):
                 return
 
@@ -190,7 +266,7 @@ class Controller(game.DrawnObject):
 
     def update_game(self) -> None:
         # if the game menu is active
-        if self.game_active:
+        if self.active_window == Window.GAME:
             # if the game has not ended
             if not self.game_over:
                 self.update_clocks()
@@ -217,7 +293,7 @@ class Controller(game.DrawnObject):
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.blit(self.background_image, (0, 0))
 
-        if self.game_active:
+        if self.active_window == Window.GAME:
             self.board_gui.draw(
                 screen,
                 self.board,
@@ -233,7 +309,7 @@ class Controller(game.DrawnObject):
             # draw buttons
             for button in self.panel_buttons.values():
                 button.draw(screen)
-        else:
+        elif self.active_window == Window.MAINMENU:
             # draw title
             logo_text = self.logo_font.render("Chess Club 7", True, game.BLUE)
             logo_rect = logo_text.get_rect(center=(self.x_padd + self.unit * 7, self.y_padd + self.unit // 2))
@@ -248,4 +324,15 @@ class Controller(game.DrawnObject):
 
             # draw buttons
             for button in self.menu_buttons.values():
-                button.draw(screen, self.button_font)
+                button.draw(screen, self.menu_button_font)
+
+        elif self.active_window == Window.SETTINGS:
+            # draw buttons
+            for button_category in self.settings.values():
+                for button in button_category.values():
+                    button.draw(screen, self.settings_button_font)
+
+            # draw button categories
+            for i, button_category in enumerate(self.settings_titles):
+                text = self.settings_title_font.render(button_category, True, game.WHITE)
+                screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + i) - text.get_height() // 2))
