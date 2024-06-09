@@ -33,7 +33,7 @@ class Controller(game.DrawnObject):
             "Time Control": ["5 Min", "10 Min", "15 Min"],
             "Highlight Last Move": ["Enabled", "Disabled"],
             "Auto Flip Board": ["Enabled", "Disabled"],
-            "Promotion Type": ["Auto queen", "Manually choose"],
+            "Promotion Type": ["Auto Queen", "Manually choose"],
             "Grab Mode": ["Drag & Drop", "Select squares"],
         }
 
@@ -42,11 +42,12 @@ class Controller(game.DrawnObject):
         y = self.y_padd + round(self.unit * 2.5)
         radius = self.unit // 4
 
+        # add settings buttons
         self.settings = {}
         for i, category in enumerate(self.setting_groups):
             self.settings[category] = {}
             for j, button in enumerate(self.setting_groups[category]):
-                self.settings[category][button] = game.RadioButton((x + self.unit * 3 * j, y + self.unit * i), radius, button, False)
+                self.settings[category][button] = game.RadioButton((x + self.unit * 3 * j, y + self.unit * i), radius, button, j == 0)
 
     def new_game(self) -> None:
         # sets variables for new game
