@@ -34,4 +34,4 @@ class RadioButton:
 
         # draw text after button
         text = font.render(self.text, True, WHITE)
-        screen.blit(text, (self.center[0] + round(self.radius * 1.5), self.center[1] - text.get_height() // 2))
+        screen.blit(text, (self.center[0] + round(self.radius * 1.75), self.center[1] - text.get_height() // 2))
