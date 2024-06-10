@@ -7,6 +7,13 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 
 ## Todo GUI
 - Make All Settings Buttons Work
+    - Engine Plays As
+    - Engine Difficulty
+    - Time Control
+    - Highlight Last Move
+    - Auto Flip Board
+    - Promotion Type
+    - Grab Mode
 - Add Home Button in Settings
 - Add in Sound & Sound Slider in Settings
 - Add Copy FEN Button in Game Panel
