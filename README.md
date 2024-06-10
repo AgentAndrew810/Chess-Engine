@@ -14,7 +14,6 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
     - Auto Flip Board
     - Promotion Type
     - Grab Mode
-- Add Home Button in Settings
 - Add in Sound & Sound Slider in Settings
 - Add Copy FEN Button in Game Panel
 
@@ -26,3 +25,4 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 - Flip Icon -> [uxwing](https://uxwing.com/convert-icon/)
 - Hint Icon -> [uxwing](https://uxwing.com/question-mark-icon/)
 - Settings Icon -> [uxwing](https://uxwing.com/setting-icon/)
+- Back Icon -> [uxwing](https://uxwing.com/reply-arrow-icon/)
