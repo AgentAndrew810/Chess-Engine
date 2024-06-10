@@ -1,15 +1,25 @@
 import time
 import pygame
-from enum import Enum
+from enum import IntEnum
 
 import game
 import engine
 
 
-class Window(Enum):
+class Window(IntEnum):
     GAME = 1
     SETTINGS = 2
     MAINMENU = 3
+
+
+class Settings(IntEnum):
+    ENGINE_COLOUR = 0
+    ENGINE_DIFFICULTY = 1
+    TIME_CONTROL = 2
+    HIGHLIGHT_MOVES = 3
+    AUTO_FLIP = 4
+    PROM_TYPE = 5
+    GRAB_MODE = 6
 
 
 class Controller(game.DrawnObject):
@@ -25,15 +35,24 @@ class Controller(game.DrawnObject):
         self.x_offset = 0
         self.y_offset = 0
 
-        # categories and their radio buttons
-        self.setting_groups = {
-            "Engine Plays As": ["White", "Black"],
-            "Engine Difficulty": ["Easy", "Medium", "Hard"],
-            "Time Control": ["5 Min", "10 Min", "15 Min"],
-            "Highlight Last Move": ["Enabled", "Disabled"],
-            "Auto Flip Board": ["Enabled", "Disabled"],
-            "Promotion Type": ["Auto Queen", "Manually choose"],
-            "Grab Mode": ["Drag & Drop", "Select squares"],
+        self.settings_groups_names = {
+            Settings.ENGINE_COLOUR: "Engine Plays As",
+            Settings.ENGINE_DIFFICULTY: "Engine Difficulty",
+            Settings.TIME_CONTROL: "Time Control",
+            Settings.HIGHLIGHT_MOVES: "Highlight Last Move",
+            Settings.AUTO_FLIP: "Auto Flip Board",
+            Settings.PROM_TYPE: "Promotion Type",
+            Settings.GRAB_MODE: "Grab Mode",
+        }
+
+        self.settings_button_names = {
+            Settings.ENGINE_COLOUR: ["White", "Black"],
+            Settings.ENGINE_DIFFICULTY: ["Easy", "Medium", "Hard"],
+            Settings.TIME_CONTROL: ["5 Min", "10 Min", "15 Min"],
+            Settings.HIGHLIGHT_MOVES: ["Enabled", "Disabled"],
+            Settings.AUTO_FLIP: ["Enabled", "Disabled"],
+            Settings.PROM_TYPE: ["Auto Queen", "Manually choose"],
+            Settings.GRAB_MODE: ["Drag & Drop", "Select squares"],
         }
 
         # temp positions for buttons
@@ -43,21 +62,20 @@ class Controller(game.DrawnObject):
 
         # add settings buttons
         self.settings = {}
-        for i, category in enumerate(self.setting_groups):
-            self.settings[category] = {}
-            for j, button in enumerate(self.setting_groups[category]):
-                self.settings[category][button] = game.RadioButton((x + self.unit * 3 * j, y + self.unit * i), radius, button, j == 0)
+        for group in Settings:
+            self.settings[group] = {}
+            for i, name in enumerate(self.settings_button_names[group]):
+                self.settings[group][name] = game.RadioButton((x + self.unit * 3 * i, y + self.unit * group), radius, name, i == 0)
 
         self.update()
 
     def new_game(self) -> None:
         # sets variables for new game
-        self.player_is_white = True
+        self.player_is_white = self.settings[Settings.ENGINE_COLOUR]["Black"].enabled
         self.white_pov = self.player_is_white
 
         self.board = engine.Board()
         self.computer = engine.Engine()
-
         self.board_gui = game.Board()
         self.panel = game.Panel()
 
@@ -108,9 +126,10 @@ class Controller(game.DrawnObject):
         radius = self.unit // 4
 
         # resize settings buttons
-        for i, category in enumerate(self.setting_groups):
-            for j, button in enumerate(self.setting_groups[category]):
-                self.settings[category][button].resize((x + self.unit * 3 * j, y + self.unit * i), radius)
+        self.settings_button_names
+        for group in Settings:
+            for i, name in enumerate(self.settings_button_names[group]):
+                self.settings[group][name].resize((x + self.unit * 3 * i, y + self.unit * group), radius)
 
         # back button
         self.back_button = game.Button(self.unit // 10, self.unit // 10, self.unit, self.unit, "assets/back-icon.png")
@@ -338,6 +357,6 @@ class Controller(game.DrawnObject):
                     button.draw(screen, self.settings_button_font)
 
             # draw button categories
-            for i, button_category in enumerate(self.setting_groups):
-                text = self.settings_title_font.render(button_category, True, game.WHITE)
-                screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + i) - text.get_height() // 2))
+            for setting in Settings:
+                text = self.settings_title_font.render(self.settings_groups_names[setting], True, game.WHITE)
+                screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + setting) - text.get_height() // 2))
