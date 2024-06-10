@@ -17,6 +17,7 @@ class Controller(game.DrawnObject):
         super().__init__()
 
         self.active_window = Window.MAINMENU
+        self.window_before_settings = Window.MAINMENU
         self.game_over = False
         self.engine_mode = False
         self.quit_game = False
@@ -111,6 +112,9 @@ class Controller(game.DrawnObject):
             for j, button in enumerate(self.setting_groups[category]):
                 self.settings[category][button].resize((x + self.unit * 3 * j, y + self.unit * i), radius)
 
+        # back button
+        self.back_button = game.Button(self.unit // 10, self.unit // 10, self.unit, self.unit, "assets/back-icon.png")
+
         # load the background image
         self.background_image = pygame.image.load("assets/background.png")
         self.background_image = pygame.transform.smoothscale(self.background_image, (self.screen_width, self.screen_height))
@@ -160,6 +164,7 @@ class Controller(game.DrawnObject):
                     self.active_window = Window.MAINMENU
 
                 elif self.panel_buttons["settings"].is_over():
+                    self.window_before_settings = self.active_window
                     self.active_window = Window.SETTINGS
 
         elif self.active_window == Window.MAINMENU:
@@ -175,6 +180,7 @@ class Controller(game.DrawnObject):
                 self.new_game()
 
             elif self.menu_buttons["settings"].is_over():
+                self.window_before_settings = self.active_window
                 self.active_window = Window.SETTINGS
 
             elif self.menu_buttons["quit"].is_over():
@@ -191,6 +197,10 @@ class Controller(game.DrawnObject):
                         # enable button
                         button.enabled = True
                         break
+
+            # check for back button
+            if self.back_button.is_over():
+                self.active_window = self.window_before_settings
 
     def mouse_release(self, x: int, y: int) -> None:
         if self.active_window == Window.GAME:
@@ -318,6 +328,9 @@ class Controller(game.DrawnObject):
             title_text = self.options_title_font.render("Game Options", True, game.BLUE)
             title_rect = title_text.get_rect(center=(self.x_padd + self.unit * 7, self.y_padd))
             screen.blit(title_text, title_rect)
+
+            # draw back button
+            self.back_button.draw(screen)
 
             # draw buttons
             for button_category in self.settings.values():
