@@ -357,6 +357,6 @@ class Controller(game.DrawnObject):
                     button.draw(screen, self.settings_button_font)
 
             # draw button categories
-            for setting in Settings:
-                text = self.settings_title_font.render(self.settings_groups_names[setting], True, game.WHITE)
-                screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + setting) - text.get_height() // 2))
+            for group in Settings:
+                text = self.settings_title_font.render(self.settings_groups_names[group], True, game.WHITE)
+                screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + group) - text.get_height() // 2))
