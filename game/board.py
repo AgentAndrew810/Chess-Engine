@@ -56,6 +56,7 @@ class Board(DrawnObject):
         white_pov: bool,
         held_piece: HeldPiece,
         last_move: engine.Move,
+        highlight_last_move: bool,
         x_offset: int,
         y_offset: int,
     ) -> None:
@@ -84,10 +85,12 @@ class Board(DrawnObject):
                         (self.get_x(file), self.get_y(rank), self.unit, self.unit),
                     )
 
-                # highlight square if needed
-                if pos in (last_move.pos, last_move.dest):
-                    self.highlight_square(screen, rank, file, PAST_MOVE_COLOUR)
+                # highlight last move
+                if highlight_last_move:
+                    if pos in (last_move.pos, last_move.dest):
+                        self.highlight_square(screen, rank, file, PAST_MOVE_COLOUR)
 
+                # highlight held piece
                 if pos == held_piece.pos:
                     self.highlight_square(screen, rank, file, HELD_COLOUR)
 

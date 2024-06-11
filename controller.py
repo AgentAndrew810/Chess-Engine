@@ -304,6 +304,7 @@ class Controller(game.DrawnObject):
                 self.white_pov,
                 self.held_piece,
                 self.past_moves[-1],
+                self.settings[Settings.HIGHLIGHT_MOVES].value(),
                 self.x_offset,
                 self.y_offset,
             )
