@@ -45,33 +45,26 @@ class Controller(game.DrawnObject):
             Settings.GRAB_MODE: "Grab Mode",
         }
 
-        self.settings_button_names = {
-            Settings.ENGINE_COLOUR: ["White", "Black"],
-            Settings.ENGINE_DIFFICULTY: ["Easy", "Medium", "Hard"],
-            Settings.TIME_CONTROL: ["5 Min", "10 Min", "15 Min"],
-            Settings.HIGHLIGHT_MOVES: ["Enabled", "Disabled"],
-            Settings.AUTO_FLIP: ["Enabled", "Disabled"],
-            Settings.PROM_TYPE: ["Auto Queen", "Manually choose"],
-            Settings.GRAB_MODE: ["Drag & Drop", "Select squares"],
+        self.settings = {
+            Settings.ENGINE_COLOUR: game.Setting([game.RadioButton("White", True), game.RadioButton("Black", False, True)]),
+            Settings.ENGINE_DIFFICULTY: game.Setting(
+                [game.RadioButton("Easy", "e"), game.RadioButton("Medium", "m"), game.RadioButton("Hard", "h", True)]
+            ),
+            Settings.TIME_CONTROL: game.Setting([game.RadioButton("5 Min", 5), game.RadioButton("10 Min", 10, True), game.RadioButton("15 Min", 15)]),
+            Settings.HIGHLIGHT_MOVES: game.Setting([game.RadioButton("Enabled", True, True), game.RadioButton("Disabled", False)]),
+            Settings.AUTO_FLIP: game.Setting([game.RadioButton("Enabled", True), game.RadioButton("Disabled", False, True)]),
+            Settings.PROM_TYPE: game.Setting([game.RadioButton("Auto Queen", True, True), game.RadioButton("Manually Choose", False)]),
+            Settings.GRAB_MODE: game.Setting([game.RadioButton("Drag & Drop", True, True), game.RadioButton("Select Squares", False)]),
         }
 
-        # temp positions for buttons
-        x = self.x_padd + self.unit * 6
-        y = self.y_padd + round(self.unit * 2.5)
-        radius = self.unit // 4
-
-        # add settings buttons
-        self.settings = {}
-        for group in Settings:
-            self.settings[group] = {}
-            for i, name in enumerate(self.settings_button_names[group]):
-                self.settings[group][name] = game.RadioButton((x + self.unit * 3 * i, y + self.unit * group), radius, name, i == 0)
+        for i, setting in enumerate(self.settings.values()):
+            setting.update_positions(i)
 
         self.update()
 
     def new_game(self) -> None:
         # sets variables for new game
-        self.player_is_white = self.settings[Settings.ENGINE_COLOUR]["Black"].enabled
+        self.player_is_white = not self.settings[Settings.ENGINE_COLOUR].value()
         self.white_pov = self.player_is_white
 
         self.board = engine.Board()
@@ -83,8 +76,10 @@ class Controller(game.DrawnObject):
         self.next_moves = engine.move_gen(self.board)
         self.past_moves = [engine.BLANK_MOVE]
 
-        self.wtime: float = 15 * 60  # 15 minutes
-        self.btime: float = 15 * 60
+        time_min = self.settings[Settings.TIME_CONTROL].value()
+        time_min = time_min if time_min is not None else 15
+        self.wtime: float = time_min * 60
+        self.btime: float = time_min * 60
 
         self.info_bar = "White to Move" if self.board.white_move else "Black to Move"
 
@@ -120,16 +115,8 @@ class Controller(game.DrawnObject):
             "settings": game.Button(x + width * 3, y, width, height, "assets/settings-icon.png"),
         }
 
-        # determine position and sizes of settings buttons
-        x = self.x_padd + self.unit * 6
-        y = self.y_padd + round(self.unit * 2.5)
-        radius = self.unit // 4
-
-        # resize settings buttons
-        self.settings_button_names
-        for group in Settings:
-            for i, name in enumerate(self.settings_button_names[group]):
-                self.settings[group][name].resize((x + self.unit * 3 * i, y + self.unit * group), radius)
+        for i, setting in enumerate(self.settings.values()):
+            setting.update_positions(i)
 
         # back button
         self.back_button = game.Button(self.unit // 10, self.unit // 10, self.unit, self.unit, "assets/back-icon.png")
@@ -207,15 +194,18 @@ class Controller(game.DrawnObject):
 
         elif self.active_window == Window.SETTINGS:
             # check for button presses
-            for button_category in self.settings.values():
-                for button in button_category.values():
-                    if button.is_over():
-                        # disable every other button in category
-                        for button2 in button_category.values():
-                            button2.enabled = False
-                        # enable button
-                        button.enabled = True
-                        break
+            for i, setting in enumerate(self.settings.values()):
+                # setting.update_positions(i)
+                setting.handle_click()
+            # for button_category in self.settings.values():
+            #     for button in button_category.values():
+            #         if button.is_over():
+            #             # disable every other button in category
+            #             for button2 in button_category.values():
+            #                 button2.enabled = False
+            #             # enable button
+            #             button.enabled = True
+            #             break
 
             # check for back button
             if self.back_button.is_over():
@@ -352,11 +342,11 @@ class Controller(game.DrawnObject):
             self.back_button.draw(screen)
 
             # draw buttons
-            for button_category in self.settings.values():
-                for button in button_category.values():
+            for setting in self.settings.values():
+                for button in setting.buttons:
                     button.draw(screen, self.settings_button_font)
 
             # draw button categories
-            for group in Settings:
+            for group in self.settings:
                 text = self.settings_title_font.render(self.settings_groups_names[group], True, game.WHITE)
                 screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + group) - text.get_height() // 2))

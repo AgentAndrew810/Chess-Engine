@@ -5,5 +5,6 @@ from .drawnobject import DrawnObject
 from .button import Button
 from .menubutton import MenuButton
 from .radiobutton import RadioButton
+from .setting import Setting
 from .utils import get_pos
 from .constants import *

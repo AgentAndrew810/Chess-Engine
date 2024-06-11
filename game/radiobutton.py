@@ -5,10 +5,10 @@ from .constants import WHITE, BLACK, BLUE
 
 
 class RadioButton:
-    def __init__(self, center: tuple[int, int], radius: int, text: str, enabled: bool) -> None:
-        self.resize(center, radius)
+    def __init__(self, text: str, value, enabled: bool = False) -> None:
         self.text = text
         self.enabled = enabled
+        self.value = value
 
     def resize(self, center: tuple[int, int], radius: int) -> None:
         self.center = center
