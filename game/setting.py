@@ -32,5 +32,3 @@ class Setting(DrawnObject):
         for button in self.buttons:
             if button.enabled:
                 return button.value
-
-        return None

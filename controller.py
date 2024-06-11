@@ -272,7 +272,11 @@ class Controller(game.DrawnObject):
 
                 # if it is the computer's turn to move make a move
                 if self.engine_mode and self.player_is_white != self.board.white_move:
-                    move = self.computer.search(self.board)
+                    move = self.computer.search(
+                        self.board,
+                        {"wtime": round(self.wtime * 1000), "btime": round(self.btime * 1000)},
+                        difficulty=self.settings[Settings.ENGINE_DIFFICULTY].value(),
+                    )
 
                     # since the move will be made without updating clocks we have to update here aswell
                     self.update_clocks()
