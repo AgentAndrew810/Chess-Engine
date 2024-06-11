@@ -194,18 +194,8 @@ class Controller(game.DrawnObject):
 
         elif self.active_window == Window.SETTINGS:
             # check for button presses
-            for i, setting in enumerate(self.settings.values()):
-                # setting.update_positions(i)
+            for setting in self.settings.values():
                 setting.handle_click()
-            # for button_category in self.settings.values():
-            #     for button in button_category.values():
-            #         if button.is_over():
-            #             # disable every other button in category
-            #             for button2 in button_category.values():
-            #                 button2.enabled = False
-            #             # enable button
-            #             button.enabled = True
-            #             break
 
             # check for back button
             if self.back_button.is_over():
@@ -346,7 +336,7 @@ class Controller(game.DrawnObject):
                 for button in setting.buttons:
                     button.draw(screen, self.settings_button_font)
 
-            # draw button categories
+            # draw button categories label
             for group in self.settings:
                 text = self.settings_title_font.render(self.settings_groups_names[group], True, game.WHITE)
                 screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + group) - text.get_height() // 2))
