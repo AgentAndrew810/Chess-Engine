@@ -4,7 +4,7 @@ import engine
 from .utils import get_pos
 from .heldpiece import HeldPiece
 from .drawnobject import DrawnObject
-from .constants import LIGHT, DARK, PINK, DARK_PINK
+from .constants import LIGHT, DARK, HELD_COLOUR, ATTACK_COLOUR, TARGET_COLOUR, PAST_MOVE_COLOUR
 
 
 class Board(DrawnObject):
@@ -43,6 +43,12 @@ class Board(DrawnObject):
     def get_y(self, row: int | float) -> int:
         return round(self.y_padd + self.unit * row)
 
+    def highlight_square(self, screen: pygame.surface.Surface, rank: int, file: int, colour: tuple[int, int, int, int]) -> None:
+        rect = pygame.Rect(self.get_x(file), self.get_y(rank), self.unit, self.unit)
+        s = pygame.Surface(rect.size, pygame.SRCALPHA)
+        s.fill(colour)
+        screen.blit(s, rect)
+
     def draw(
         self,
         screen: pygame.surface.Surface,
@@ -63,20 +69,27 @@ class Board(DrawnObject):
                 if piece not in " ":
                     colour = LIGHT if (rank + file) % 2 == 0 else DARK
 
-                    # colour the squares involved in the past move
-                    if pos in (last_move.pos, last_move.dest):
-                        colour = PINK
+                    # # colour the squares involved in the past move
+                    # if pos in (last_move.pos, last_move.dest):
+                    #     colour = PINK
 
-                        # change colour of past move position if the move was one square over
-                        dist = abs(last_move.pos - last_move.dest)
-                        if dist in (1, 10) and pos == last_move.pos:
-                            colour = DARK_PINK
+                    #     # change colour of past move position if the move was one square over
+                    #     dist = abs(last_move.pos - last_move.dest)
+                    #     if dist in (1, 10) and pos == last_move.pos:
+                    #         colour = DARK_PINK
 
                     pygame.draw.rect(
                         screen,
                         colour,
                         (self.get_x(file), self.get_y(rank), self.unit, self.unit),
                     )
+
+                # highlight square if needed
+                if pos in (last_move.pos, last_move.dest):
+                    self.highlight_square(screen, rank, file, PAST_MOVE_COLOUR)
+
+                if pos == held_piece.pos:
+                    self.highlight_square(screen, rank, file, HELD_COLOUR)
 
                 # draw the piece
                 if piece not in " ." and pos != held_piece.pos:
@@ -94,12 +107,12 @@ class Board(DrawnObject):
                         # circle outline on piece
                         radius = self.piece_size // 2
                         width = self.line_size
-                        colour = DARK_PINK
+                        colour = ATTACK_COLOUR
                     else:
                         # dot on square
-                        radius = self.piece_size // 6
+                        radius = self.piece_size // 5.5
                         width = 0
-                        colour = PINK
+                        colour = TARGET_COLOUR
 
                     # create a surface and draw the circle on it
                     surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)

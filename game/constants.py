@@ -15,8 +15,10 @@ DARK = (50, 108, 146)
 BLUE = (31, 81, 255)
 
 # highlight colours
-PINK = (255, 105, 180)
-DARK_PINK = (204, 76, 130)
+PAST_MOVE_COLOUR = (134, 101, 196, 175)
+HELD_COLOUR = (119, 82, 189, 235)
+TARGET_COLOUR = (149, 121, 204)
+ATTACK_COLOUR = (197, 49, 171)
 
 # panel colours
 GREY = (144, 162, 176)

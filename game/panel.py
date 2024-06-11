@@ -34,9 +34,6 @@ class Panel(DrawnObject):
         self.clock_font = pygame.font.Font("assets/Inter.ttf", self.unit // 2)
         self.info_font = pygame.font.Font("assets/Inter.ttf", round(self.unit * 0.36))
 
-        self.pfp_size = round(self.unit * 0.6)
-        self.pfp_image = pygame.transform.smoothscale(pygame.image.load("assets/pfp.png"), (self.pfp_size, self.pfp_size))
-
     def draw(self, screen: pygame.surface.Surface, wtime: float, btime: float, info: str) -> None:
         # draw all the alpha rectangles
         self.draw_alpha_rect(screen, DARK, self.info_rect, self.unit // 10, self.unit // 10)

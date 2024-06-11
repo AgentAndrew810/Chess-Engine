@@ -47,7 +47,7 @@ class Controller(game.DrawnObject):
         self.settings = {
             Settings.ENGINE_COLOUR: game.Setting([game.RadioButton("White", True), game.RadioButton("Black", False, True)]),
             Settings.ENGINE_DIFFICULTY: game.Setting(
-                [game.RadioButton("Easy", "e"), game.RadioButton("Medium", "m"), game.RadioButton("Hard", "h", True)]
+                [game.RadioButton("Easy", "e"), game.RadioButton("Medium", "m", True), game.RadioButton("Hard", "h")]
             ),
             Settings.TIME_CONTROL: game.Setting([game.RadioButton("5 Min", 5), game.RadioButton("10 Min", 10, True), game.RadioButton("15 Min", 15)]),
             Settings.HIGHLIGHT_MOVES: game.Setting([game.RadioButton("Enabled", True, True), game.RadioButton("Disabled", False)]),

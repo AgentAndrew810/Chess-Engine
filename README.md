@@ -10,7 +10,6 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
     - Highlight Last Move
     - Promotion Type
     - Grab Mode
-- Add in Sound & Sound Slider in Settings
 - Add Copy FEN Button in Game Panel
 
 ## Credit
