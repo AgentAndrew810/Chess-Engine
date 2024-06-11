@@ -159,9 +159,18 @@ class Controller(game.DrawnObject):
                     pos = game.get_pos(rank, file, self.white_pov)
                     piece = self.board.board[pos]
 
-                    # check if grabbing the correct colour
+                    # check if we can grab piece (if it is the correct colour)
                     if piece.isalpha() and piece.isupper() == self.board.white_move:
-                        self.held_piece.grab(pos, piece, self.next_moves)
+                        self.held_piece.grab(pos, piece, self.next_moves)  # grab it
+
+                    elif not self.settings[Settings.GRAB_MODE].value():
+                        # otherwise check if in select square mode and see if we can drop our piece
+                        move = self.get_move(x, y)
+                        if move != engine.BLANK_MOVE:
+                            self.make_move(move)
+
+                        self.held_piece.drop()  # either way we drop the held piece
+
             else:
                 # otherwise check for button presses
                 if self.panel_buttons["flip"].is_over():
@@ -173,6 +182,10 @@ class Controller(game.DrawnObject):
                 elif self.panel_buttons["settings"].is_over():
                     self.window_before_settings = self.active_window
                     self.active_window = Window.SETTINGS
+
+                # if we are in select square  mode drop the held piece
+                if not self.settings[Settings.GRAB_MODE].value():
+                    self.held_piece.drop()
 
         elif self.active_window == Window.MAINMENU:
             # check for button presses
@@ -204,27 +217,34 @@ class Controller(game.DrawnObject):
 
     def mouse_release(self, x: int, y: int) -> None:
         if self.active_window == Window.GAME:
-            if self.outside_board(x, y):
-                return
-
-            # get the rank and file
-            rank = (y - self.y_padd) // self.unit
-            file = (x - self.x_padd) // self.unit
-
-            # if valid move
-            dest = game.get_pos(rank, file, self.white_pov)
-
-            for move in self.next_moves:
-                if (self.held_piece.pos, dest) == (move.pos, move.dest):
-                    # set the promotion to queen since thats the one the player will want
-                    move.prom = "q" if move.prom else ""
-
+            # if in drag and drop mode
+            if self.settings[Settings.GRAB_MODE].value():
+                # determine the move played, if it wasn't blank then make the move
+                move = self.get_move(x, y)
+                if move != engine.BLANK_MOVE:
                     self.make_move(move)
 
-                    # this is to make sure other moves aren't run (since there are 4 promotions)
-                    break
+                self.held_piece.drop()
 
-            self.held_piece.drop()
+    def get_move(self, x: int, y: int) -> engine.Move:
+        if self.outside_board(x, y):
+            return engine.BLANK_MOVE
+
+        # get the rank and file
+        rank = (y - self.y_padd) // self.unit
+        file = (x - self.x_padd) // self.unit
+
+        # if valid move
+        dest = game.get_pos(rank, file, self.white_pov)
+
+        for move in self.next_moves:
+            if (self.held_piece.pos, dest) == (move.pos, move.dest):
+                # set the promotion to queen since thats the one the player will want
+                move.prom = "q" if move.prom else ""
+
+                return move
+
+        return engine.BLANK_MOVE
 
     def make_move(self, move: engine.Move) -> None:
         # make the move on the board and calculate new information
@@ -305,6 +325,7 @@ class Controller(game.DrawnObject):
                 self.held_piece,
                 self.past_moves[-1],
                 self.settings[Settings.HIGHLIGHT_MOVES].value(),
+                self.settings[Settings.GRAB_MODE].value(),
                 self.x_offset,
                 self.y_offset,
             )

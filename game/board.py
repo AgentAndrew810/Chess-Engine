@@ -57,6 +57,7 @@ class Board(DrawnObject):
         held_piece: HeldPiece,
         last_move: engine.Move,
         highlight_last_move: bool,
+        drag_mode: bool,
         x_offset: int,
         y_offset: int,
     ) -> None:
@@ -69,15 +70,6 @@ class Board(DrawnObject):
                 # draw background square
                 if piece not in " ":
                     colour = LIGHT if (rank + file) % 2 == 0 else DARK
-
-                    # # colour the squares involved in the past move
-                    # if pos in (last_move.pos, last_move.dest):
-                    #     colour = PINK
-
-                    #     # change colour of past move position if the move was one square over
-                    #     dist = abs(last_move.pos - last_move.dest)
-                    #     if dist in (1, 10) and pos == last_move.pos:
-                    #         colour = DARK_PINK
 
                     pygame.draw.rect(
                         screen,
@@ -95,14 +87,13 @@ class Board(DrawnObject):
                     self.highlight_square(screen, rank, file, HELD_COLOUR)
 
                 # draw the piece
-                if piece not in " ." and pos != held_piece.pos:
-                    screen.blit(
-                        self.images[piece],
-                        (
-                            self.get_x(file) + self.line_size,
-                            self.get_y(rank) + self.line_size,
-                        ),
-                    )
+                if piece not in " .":
+                    # if the position is not the held piece or we aren't in drag mode (in select square mode we draw held piece as normal)
+                    if pos != held_piece.pos or not drag_mode:
+                        screen.blit(
+                            self.images[piece],
+                            (self.get_x(file) + self.line_size, self.get_y(rank) + self.line_size),
+                        )
 
                 if pos in held_piece.moves:
                     # determine the radius and width based on if its attacking a piece
@@ -127,7 +118,7 @@ class Board(DrawnObject):
                     screen.blit(surface, (x, y))
 
         # draw held piece
-        if held_piece.pos:
+        if held_piece.pos and drag_mode:
             x, y = pygame.mouse.get_pos()
             screen.blit(self.images[held_piece.piece], (x - x_offset, y - y_offset))
 

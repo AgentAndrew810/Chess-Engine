@@ -12,5 +12,5 @@ class HeldPiece:
 
     def drop(self) -> None:
         self.pos = None
-        self.moves = []
         self.piece = None
+        self.moves = []
