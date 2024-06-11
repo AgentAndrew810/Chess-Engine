@@ -40,13 +40,9 @@ def main() -> None:
 
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 controller.mouse_release(*event.pos)
-                
-        # update clocks and/or make computer move
-        controller.update_game()
 
-        # draw everything to the screen
-        controller.draw(screen)
-        pygame.display.flip()
+        # update clocks and/or make computer move
+        controller.update_game(screen)
 
 
 # run the program

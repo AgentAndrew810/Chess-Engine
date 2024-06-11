@@ -28,7 +28,6 @@ class Controller(game.DrawnObject):
 
         self.active_window = Window.MAINMENU
         self.window_before_settings = Window.MAINMENU
-        self.game_over = False
         self.engine_mode = False
         self.quit_game = False
 
@@ -83,8 +82,10 @@ class Controller(game.DrawnObject):
 
         self.info_bar = "White to Move" if self.board.white_move else "Black to Move"
 
-        self.wstart = time.time()
-        self.bstart = time.time()
+        self.w_last_time = time.time()
+        self.b_last_time = time.time()
+
+        self.game_over = False
 
     def update(self) -> None:
         # determine position and sizes of menu buttons
@@ -231,15 +232,15 @@ class Controller(game.DrawnObject):
         self.past_moves.append(move)
         self.next_moves = engine.move_gen(self.board)
 
-        # switch to the pov of player to move if in friend mode
-        if not self.engine_mode:
+        # switch to the pov of player to move if auto-flip is on
+        if self.settings[Settings.AUTO_FLIP].value():
             self.white_pov = self.board.white_move
 
         # reset last clock update times
         if self.board.white_move:
-            self.wstart = time.time()
+            self.w_last_time = time.time()
         else:
-            self.bstart = time.time()
+            self.b_last_time = time.time()
 
         # update side to move in info bar
         if self.board.white_move:
@@ -260,7 +261,9 @@ class Controller(game.DrawnObject):
             self.info_bar = "Draw by repetition!"
             self.game_over = True
 
-    def update_game(self) -> None:
+    def update_game(self, screen: pygame.surface.Surface) -> None:
+        self.draw(screen)
+
         # if the game menu is active
         if self.active_window == Window.GAME:
             # if the game has not ended
@@ -280,16 +283,17 @@ class Controller(game.DrawnObject):
     def update_clocks(self) -> None:
         # update clock for the side to move
         if self.board.white_move:
-            self.wtime -= time.time() - self.wstart
-            self.wstart = time.time()
+            self.wtime -= time.time() - self.w_last_time
+            self.w_last_time = time.time()
         else:
-            self.btime -= time.time() - self.bstart
-            self.bstart = time.time()
+            self.btime -= time.time() - self.b_last_time
+            self.b_last_time = time.time()
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.blit(self.background_image, (0, 0))
 
         if self.active_window == Window.GAME:
+            # draw the board
             self.board_gui.draw(
                 screen,
                 self.board,
@@ -300,6 +304,7 @@ class Controller(game.DrawnObject):
                 self.y_offset,
             )
 
+            # draw the side panel
             self.panel.draw(screen, self.wtime, self.btime, self.info_bar)
 
             # draw buttons
@@ -340,3 +345,5 @@ class Controller(game.DrawnObject):
             for group in self.settings:
                 text = self.settings_title_font.render(self.settings_groups_names[group], True, game.WHITE)
                 screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + group) - text.get_height() // 2))
+
+        pygame.display.flip()
