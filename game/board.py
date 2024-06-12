@@ -57,7 +57,6 @@ class Board(DrawnObject):
         held_piece: HeldPiece,
         last_move: engine.Move,
         highlight_last_move: bool,
-        drag_mode: bool,
         x_offset: int,
         y_offset: int,
     ) -> None:
@@ -88,8 +87,8 @@ class Board(DrawnObject):
 
                 # draw the piece
                 if piece not in " .":
-                    # if the position is not the held piece or we aren't in drag mode (in select square mode we draw held piece as normal)
-                    if pos != held_piece.pos or not drag_mode:
+                    # if the position is not the held piece or the piece is not held (just selected)
+                    if pos != held_piece.pos or not held_piece.held:
                         screen.blit(
                             self.images[piece],
                             (self.get_x(file) + self.line_size, self.get_y(rank) + self.line_size),
@@ -118,7 +117,7 @@ class Board(DrawnObject):
                     screen.blit(surface, (x, y))
 
         # draw held piece
-        if held_piece.pos and drag_mode:
+        if held_piece.pos and held_piece.held:
             x, y = pygame.mouse.get_pos()
             screen.blit(self.images[held_piece.piece], (x - x_offset, y - y_offset))
 

@@ -19,7 +19,6 @@ class Settings(IntEnum):
     HIGHLIGHT_MOVES = 3
     AUTO_FLIP = 4
     PROM_TYPE = 5
-    GRAB_MODE = 6
 
 
 class Controller(game.DrawnObject):
@@ -41,7 +40,6 @@ class Controller(game.DrawnObject):
             Settings.HIGHLIGHT_MOVES: "Highlight Last Move",
             Settings.AUTO_FLIP: "Auto Flip Board",
             Settings.PROM_TYPE: "Promotion Type",
-            Settings.GRAB_MODE: "Grab Mode",
         }
 
         self.settings = {
@@ -53,7 +51,6 @@ class Controller(game.DrawnObject):
             Settings.HIGHLIGHT_MOVES: game.Setting([game.RadioButton("Enabled", True, True), game.RadioButton("Disabled", False)]),
             Settings.AUTO_FLIP: game.Setting([game.RadioButton("Enabled", True), game.RadioButton("Disabled", False, True)]),
             Settings.PROM_TYPE: game.Setting([game.RadioButton("Auto Queen", True, True), game.RadioButton("Manually Choose", False)]),
-            Settings.GRAB_MODE: game.Setting([game.RadioButton("Drag & Drop", True, True), game.RadioButton("Select Squares", False)]),
         }
 
         for i, setting in enumerate(self.settings.values()):
@@ -151,25 +148,19 @@ class Controller(game.DrawnObject):
             if not self.outside_board(x, y):
                 # if it is the players turn to move
                 if not self.engine_mode or self.player_is_white == self.board.white_move:
-                    # get the rank and file grabbed and their offsets
-                    rank, self.y_offset = divmod(y - self.y_padd, self.unit)
-                    file, self.x_offset = divmod(x - self.x_padd, self.unit)
+                    # if there is a piece selected
+                    if self.held_piece.selected:
+                        move = self.validate_move(x, y)
 
-                    # get the pos and piece
-                    pos = game.get_pos(rank, file, self.white_pov)
-                    piece = self.board.board[pos]
-
-                    # check if we can grab piece (if it is the correct colour)
-                    if piece.isalpha() and piece.isupper() == self.board.white_move:
-                        self.held_piece.grab(pos, piece, self.next_moves)  # grab it
-
-                    elif not self.settings[Settings.GRAB_MODE].value():
-                        # otherwise check if in select square mode and see if we can drop our piece
-                        move = self.get_move(x, y)
+                        # determine if it is a legal move
                         if move != engine.BLANK_MOVE:
                             self.make_move(move)
+                            self.held_piece.drop()
+                        else:
+                            self.handle_select(x, y)
 
-                        self.held_piece.drop()  # either way we drop the held piece
+                    else:
+                        self.handle_select(x, y)
 
             else:
                 # otherwise check for button presses
@@ -183,9 +174,8 @@ class Controller(game.DrawnObject):
                     self.window_before_settings = self.active_window
                     self.active_window = Window.SETTINGS
 
-                # if we are in select square  mode drop the held piece
-                if not self.settings[Settings.GRAB_MODE].value():
-                    self.held_piece.drop()
+                # drop the selected piece if clicked outside the board
+                self.held_piece.drop()
 
         elif self.active_window == Window.MAINMENU:
             # check for button presses
@@ -217,16 +207,31 @@ class Controller(game.DrawnObject):
 
     def mouse_release(self, x: int, y: int) -> None:
         if self.active_window == Window.GAME:
-            # if in drag and drop mode
-            if self.settings[Settings.GRAB_MODE].value():
-                # determine the move played, if it wasn't blank then make the move
-                move = self.get_move(x, y)
+            if self.held_piece.held:
+                # determine the move played is legal, if it wasn't blank then make the move
+                move = self.validate_move(x, y)
                 if move != engine.BLANK_MOVE:
                     self.make_move(move)
+                    self.held_piece.drop()
 
-                self.held_piece.drop()
+                self.held_piece.held = False
 
-    def get_move(self, x: int, y: int) -> engine.Move:
+    def handle_select(self, x: int, y: int) -> None:
+        # get the rank and file grabbed and their offsets
+        rank, self.y_offset = divmod(y - self.y_padd, self.unit)
+        file, self.x_offset = divmod(x - self.x_padd, self.unit)
+
+        # get the pos and piece
+        pos = game.get_pos(rank, file, self.white_pov)
+        piece = self.board.board[pos]
+
+        # check if we can grab piece (if it is the correct colour)
+        if piece.isalpha() and piece.isupper() == self.board.white_move:
+            self.held_piece.grab(pos, piece, self.next_moves)
+        else:
+            self.held_piece.drop()
+
+    def validate_move(self, x: int, y: int) -> engine.Move:
         if self.outside_board(x, y):
             return engine.BLANK_MOVE
 
@@ -325,7 +330,6 @@ class Controller(game.DrawnObject):
                 self.held_piece,
                 self.past_moves[-1],
                 self.settings[Settings.HIGHLIGHT_MOVES].value(),
-                self.settings[Settings.GRAB_MODE].value(),
                 self.x_offset,
                 self.y_offset,
             )
@@ -372,4 +376,5 @@ class Controller(game.DrawnObject):
                 text = self.settings_title_font.render(self.settings_groups_names[group], True, game.WHITE)
                 screen.blit(text, (self.x_padd, self.y_padd + self.unit * (2.5 + group) - text.get_height() // 2))
 
+        # update screen with changes
         pygame.display.flip()
