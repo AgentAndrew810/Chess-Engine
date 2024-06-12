@@ -16,6 +16,5 @@ A Python-based Chess GUI and Engine developed as a final project for CS40S. This
 - Black Background -> [freepik](https://www.freepik.com/free-photo/grunge-black-concrete-textured-background_17118014.htm)
 - Home Icon -> [uxwing](https://uxwing.com/home-icon/)
 - Flip Icon -> [uxwing](https://uxwing.com/convert-icon/)
-- Hint Icon -> [uxwing](https://uxwing.com/question-mark-icon/)
 - Settings Icon -> [uxwing](https://uxwing.com/setting-icon/)
 - Back Icon -> [uxwing](https://uxwing.com/reply-arrow-icon/)
