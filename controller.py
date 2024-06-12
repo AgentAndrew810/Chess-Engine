@@ -54,6 +54,7 @@ class Controller(game.DrawnObject):
             setting.update_positions(i)
 
         self.update()
+        self.new_game()
 
     def new_game(self) -> None:
         # sets variables for new game
@@ -65,7 +66,7 @@ class Controller(game.DrawnObject):
         self.board_gui = game.Board()
         self.panel = game.Panel()
 
-        self.held_piece = game.HeldPiece()
+        self.held_piece = game.SelectedPiece()
         self.next_moves = engine.move_gen(self.board)
         self.past_moves = [engine.BLANK_MOVE]
 
@@ -100,13 +101,13 @@ class Controller(game.DrawnObject):
         x = self.x_padd + self.unit * 9
         y = self.y_padd + round(self.unit * 7.25)
         height = round(self.unit * 0.75)
-        width = round(self.unit * 5 / 4)
+        width = round(self.unit * 1.25)
 
         # all of the buttons on the panel
         self.panel_buttons = {
             "home": game.Button(x, y, width, height, "assets/home-icon.png"),
             "flip": game.Button(x + width, y, width, height, "assets/flip-icon.png"),
-            "hint": game.Button(x + width * 2, y, width, height, "assets/hint-icon.png"),
+            "new": game.Button(x + width * 2, y, width, height, "assets/plus-icon.png"),
             "settings": game.Button(x + width * 3, y, width, height, "assets/settings-icon.png"),
         }
 
@@ -161,11 +162,14 @@ class Controller(game.DrawnObject):
 
             else:
                 # otherwise check for button presses
-                if self.panel_buttons["flip"].is_over():
+                if self.panel_buttons["home"].is_over():
+                    self.active_window = Window.MAINMENU
+
+                elif self.panel_buttons["flip"].is_over():
                     self.white_pov = not self.white_pov
 
-                elif self.panel_buttons["home"].is_over():
-                    self.active_window = Window.MAINMENU
+                elif self.panel_buttons["new"].is_over():
+                    self.new_game()
 
                 elif self.panel_buttons["settings"].is_over():
                     self.window_before_settings = self.active_window
@@ -178,13 +182,31 @@ class Controller(game.DrawnObject):
             # check for button presses
             if self.menu_buttons["play-engine"].is_over():
                 self.active_window = Window.GAME
-                self.engine_mode = True
-                self.new_game()
+
+                # only start a new game if last game was a different mode
+                if not self.engine_mode:
+                    self.engine_mode = True
+                    self.new_game()
+                else:
+                    # reset last clock update times
+                    if self.board.white_move:
+                        self.w_last_time = time.time()
+                    else:
+                        self.b_last_time = time.time()
 
             elif self.menu_buttons["play-friend"].is_over():
                 self.active_window = Window.GAME
-                self.engine_mode = False
-                self.new_game()
+
+                # only start a new game if last game was a different mode
+                if self.engine_mode:
+                    self.engine_mode = False
+                    self.new_game()
+                else:
+                    # reset last clock update times
+                    if self.board.white_move:
+                        self.w_last_time = time.time()
+                    else:
+                        self.b_last_time = time.time()
 
             elif self.menu_buttons["settings"].is_over():
                 self.window_before_settings = self.active_window
