@@ -142,7 +142,7 @@ class Controller(game.DrawnObject):
     def mouse_click(self, x: int, y: int) -> None:
         if self.active_window == Window.GAME:
             # if the grab is inside the board
-            if not self.outside_board(x, y):
+            if not self.outside_board(x, y) and not self.game_over:
                 # if it is the players turn to move
                 if not self.engine_mode or self.player_is_white == self.board.white_move:
                     # if there is a piece selected
@@ -314,6 +314,15 @@ class Controller(game.DrawnObject):
         else:
             self.btime -= time.time() - self.b_last_time
             self.b_last_time = time.time()
+
+        # check for game over by running out of time
+        if self.wtime <= 0:
+            self.info_bar = "Black won by White Timeout!"
+            self.game_over = True
+
+        elif self.btime <= 0:
+            self.info_bar = "White won by Black Timeout!"
+            self.game_over = True
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.blit(self.background_image, (0, 0))
