@@ -1,7 +1,7 @@
 from engine import Move
 
 
-class HeldPiece:
+class SelectedPiece:
     def __init__(self) -> None:
         self.drop()
 

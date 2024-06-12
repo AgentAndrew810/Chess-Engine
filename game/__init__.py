@@ -1,6 +1,6 @@
 from .board import Board
 from .panel import Panel
-from .heldpiece import HeldPiece
+from .selectedpiece import SelectedPiece
 from .drawnobject import DrawnObject
 from .button import Button
 from .menubutton import MenuButton
