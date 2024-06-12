@@ -18,7 +18,6 @@ class Settings(IntEnum):
     TIME_CONTROL = 2
     HIGHLIGHT_MOVES = 3
     AUTO_FLIP = 4
-    PROM_TYPE = 5
 
 
 class Controller(game.DrawnObject):
@@ -39,7 +38,6 @@ class Controller(game.DrawnObject):
             Settings.TIME_CONTROL: "Time Control",
             Settings.HIGHLIGHT_MOVES: "Highlight Last Move",
             Settings.AUTO_FLIP: "Auto Flip Board",
-            Settings.PROM_TYPE: "Promotion Type",
         }
 
         self.settings = {
@@ -50,7 +48,6 @@ class Controller(game.DrawnObject):
             Settings.TIME_CONTROL: game.Setting([game.RadioButton("5 Min", 5), game.RadioButton("10 Min", 10, True), game.RadioButton("15 Min", 15)]),
             Settings.HIGHLIGHT_MOVES: game.Setting([game.RadioButton("Enabled", True, True), game.RadioButton("Disabled", False)]),
             Settings.AUTO_FLIP: game.Setting([game.RadioButton("Enabled", True), game.RadioButton("Disabled", False, True)]),
-            Settings.PROM_TYPE: game.Setting([game.RadioButton("Auto Queen", True, True), game.RadioButton("Manually Choose", False)]),
         }
 
         for i, setting in enumerate(self.settings.values()):
