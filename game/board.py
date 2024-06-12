@@ -2,7 +2,7 @@ import pygame
 
 import engine
 from .utils import get_pos
-from .heldpiece import HeldPiece
+from .selectedpiece import SelectedPiece
 from .drawnobject import DrawnObject
 from .constants import LIGHT, DARK, HELD_COLOUR, ATTACK_COLOUR, TARGET_COLOUR, PAST_MOVE_COLOUR
 
@@ -54,7 +54,7 @@ class Board(DrawnObject):
         screen: pygame.surface.Surface,
         board: engine.Board,
         white_pov: bool,
-        held_piece: HeldPiece,
+        held_piece: SelectedPiece,
         last_move: engine.Move,
         highlight_last_move: bool,
         x_offset: int,
