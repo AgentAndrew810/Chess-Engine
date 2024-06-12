@@ -1,43 +1,33 @@
 import pygame
 
-from .drawnobject import DrawnObject
 
-
-class Button(DrawnObject):
-    def __init__(self, x: int, y: int, colour: tuple[int, int, int]) -> None:
+class Button:
+    def __init__(self, x: int, y: int, width: int, height: int, file: str) -> None:
         self.x = x
         self.y = y
+        self.width = width
+        self.height = height
 
-        self.colour = colour
-        self.edge = self.darken(colour, 0.5)
-        self.hover = self.darken(colour, 0.6)
-        self.edge_hover = self.darken(self.edge, 0.6)
+        size = round(min(width, height) * 0.6)
+        big_size = round(min(width, height) * 0.7)
 
-    def darken(self, colour: tuple[int, int, int], factor: float) -> tuple[int, int, int]:
-        return (
-            round(colour[0] * factor),
-            round(colour[1] * factor),
-            round(colour[2] * factor),
-        )
+        self.location = (x + (width - size) // 2, y + (height - size) // 2)
+        self.big_location = (x + (width - big_size) // 2, y + (height - big_size) // 2)
 
-    def is_over(self):
+        self.image = pygame.transform.smoothscale(pygame.image.load(file), (size, size))
+        self.big_image = pygame.transform.smoothscale(pygame.image.load(file), (big_size, big_size))
+
+    def is_over(self) -> bool:
         x, y = pygame.mouse.get_pos()
-        if self.x <= x <= self.x + self.square_size:
-            if self.y <= y <= self.y + self.square_size:
+
+        if self.x <= x <= self.x + self.width:
+            if self.y <= y <= self.y + self.height:
                 return True
 
         return False
 
     def draw(self, screen: pygame.surface.Surface) -> None:
-        colour, edge = (self.hover, self.edge_hover) if self.is_over() else (self.colour, self.edge)
-
-        # draw inside
-        pygame.draw.rect(screen, colour, (self.x, self.y, self.square_size, self.square_size))
-
-        # draw outline
-        pygame.draw.rect(
-            screen,
-            edge,
-            (self.x, self.y, self.square_size, self.square_size),
-            self.line_size,
-        )
+        if self.is_over():
+            screen.blit(self.big_image, self.big_location)
+        else:
+            screen.blit(self.image, self.location)

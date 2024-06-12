@@ -14,7 +14,7 @@ MAX_PLY = 1000
 
 
 class Engine:
-    def search(self, board: Board, options: dict[str, int] = {}) -> Move:
+    def search(self, board: Board, options: dict[str, int] = {}, difficulty: str = "NA") -> Move:
         window = EG_VALUES["P"] // 2  # half of pawn
 
         self.stopped = False
@@ -29,19 +29,33 @@ class Engine:
 
         # time calculaton
         remaining_time = options.get("wtime", 30000) if board.white_move else options.get("btime", 30000)  # defaults to 30 seconds
-        increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)  # get the increment
-        moves_to_go = max(options.get("movestogo", 30), 5)  # get moves till next time control
-        move_time = min(
-            remaining_time / moves_to_go + increment, remaining_time
-        )  # calculate time to move, if it is more than we have set it to how much we have left
-        self.max_time = move_time / 1000 - 0.05  # convert to seconds and remove part of a second to make sure it responds in time
+        if difficulty == "NA":
+            increment = options.get("winc", 0) if board.white_move else options.get("binc", 0)  # get the increment
+            moves_to_go = max(options.get("movestogo", 30), 3)  # get moves till next time control
+            move_time = min(
+                remaining_time / moves_to_go + increment, remaining_time
+            )  # calculate time to move, if it is more than we have set it to how much we have left
+
+            self.max_ply = MAX_PLY
+        else:
+            move_time = min(remaining_time // 30, 4000)  # no more than 4 seconds
+
+            # set difficulty
+            if difficulty == "h":
+                self.max_ply = MAX_PLY
+            elif difficulty == "m":
+                self.max_ply = 5
+            else:
+                self.max_ply = 2
+
+        self.max_time = move_time / 1000 - 0.01  # convert to seconds and remove part of a second to make sure it responds in time
 
         # start initial search with a depth of 1
         last_value = self.negamax(board, 1, -MATE_SCORE - 1, MATE_SCORE + 1)
         self.print_info(last_value, 1)
 
         # iterative deepening until time limit is reached
-        for depth in range(2, MAX_PLY + 1):
+        for depth in range(2, self.max_ply + 1):
             alpha, beta = last_value - window, last_value + window
             value = self.negamax(board, depth, alpha, beta, 0)
 
@@ -102,7 +116,7 @@ class Engine:
 
         # check extension
         # if the king is in_check, increase depth, this enhances search so that we are only evaluating quiet positions + positions in check usually have really low branching factors
-        if checked:
+        if checked and depth + ply <= self.max_ply:
             depth += 1
 
         # null move pruning

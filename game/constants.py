@@ -1,17 +1,27 @@
-# the default width / height of the window
-SCREEN_WIDTH = 840
-SCREEN_HEIGHT = 720
+# the default width & height of the window
+FACTOR = 60
+SCREEN_WIDTH = 20 * FACTOR
+SCREEN_HEIGHT = 12 * FACTOR
 
 # the minimum width / height of the window
-MIN_WIDTH = 410
-MIN_HEIGHT = 360
+MIN_WIDTH = SCREEN_WIDTH // 2
+MIN_HEIGHT = SCREEN_HEIGHT // 2
 
-# colours
-BLACK = (25, 23, 20)
-WHITE = (203,218,225)
-BLUE = (119,154,176)
-PINK = (255, 105, 180)
-DARK_PINK = (204, 76, 130)
-PURPLE = (138, 43, 226)
-GREY = (128, 128, 128)
-RED = (255, 20, 60)
+# board colours
+LIGHT = (223, 238, 245)
+DARK = (50, 108, 146)
+
+# menu colours
+BLUE = (31, 81, 255)
+
+# highlight colours
+PAST_MOVE_COLOUR = (134, 101, 196, 175)
+HELD_COLOUR = (119, 82, 189, 235)
+TARGET_COLOUR = (149, 121, 204)
+ATTACK_COLOUR = (197, 49, 171)
+
+# panel colours
+GREY = (144, 162, 176)
+LIGHT_GREY = (196, 206, 212, 200)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
