@@ -60,6 +60,10 @@ class Controller(game.DrawnObject):
         # sets variables for new game
         self.player_is_white = not self.settings[Settings.ENGINE_COLOUR].value()
         self.white_pov = self.player_is_white
+        
+        # pov to player to move if autoflip is on
+        if self.settings[Settings.AUTO_FLIP].value():
+            self.white_pov = self.board.white_move
 
         self.board = engine.Board()
         self.computer = engine.Engine()
